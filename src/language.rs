@@ -15,7 +15,6 @@
  */
 
 use std::fmt::{Debug, Display, Formatter, Result};
-use std::str::FromStr;
 
 use ahash::AHashSet;
 use serde::{Deserialize, Serialize};
@@ -291,7 +290,7 @@ impl Language {
         Language::iter()
             .filter(|it| {
                 if cfg!(feature = "latin") {
-                    it != &Language::from_str("Latin").unwrap()
+                    it != &Language::Latin
                 } else {
                     true
                 }

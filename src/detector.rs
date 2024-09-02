@@ -17,7 +17,6 @@
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::hash::{BuildHasher, Hash};
-use std::str::FromStr;
 use std::sync::RwLock;
 
 use ahash::{AHashMap, AHashSet};
@@ -616,14 +615,11 @@ impl LanguageDetector {
 
         let text_str = text.into();
         let words = split_text_into_words(&text_str);
-
         if words.is_empty() {
-            values.sort_by(confidence_values_comparator);
             return values;
         }
 
         let language_detected_by_rules = self.detect_language_with_rules(&words, languages);
-
         if let Some(language) = language_detected_by_rules {
             update_confidence_values(&mut values, language, 1.0);
             values.sort_by(confidence_values_comparator);
@@ -812,19 +808,11 @@ impl LanguageDetector {
 
                 if !is_match {
                     if cfg!(feature = "chinese") && Alphabet::Han.matches_char(character) {
-                        self.increment_counter(
-                            &mut word_language_counts,
-                            Language::from_str("Chinese").unwrap(),
-                            1,
-                        );
+                        self.increment_counter(&mut word_language_counts, Language::Chinese, 1);
                     } else if cfg!(feature = "japanese")
                         && JAPANESE_CHARACTER_SET.is_char_match(character)
                     {
-                        self.increment_counter(
-                            &mut word_language_counts,
-                            Language::from_str("Japanese").unwrap(),
-                            1,
-                        );
+                        self.increment_counter(&mut word_language_counts, Language::Japanese, 1);
                     } else if Alphabet::Latin.matches_char(character)
                         || Alphabet::Cyrillic.matches_char(character)
                         || Alphabet::Devanagari.matches_char(character)
@@ -851,14 +839,10 @@ impl LanguageDetector {
                 }
             } else if cfg!(feature = "chinese")
                 && cfg!(feature = "japanese")
-                && word_language_counts.contains_key(&Language::from_str("Chinese").unwrap())
-                && word_language_counts.contains_key(&Language::from_str("Japanese").unwrap())
+                && word_language_counts.contains_key(&Language::Chinese)
+                && word_language_counts.contains_key(&Language::Japanese)
             {
-                self.increment_counter(
-                    &mut total_language_counts,
-                    Some(Language::from_str("Japanese").unwrap()),
-                    1,
-                );
+                self.increment_counter(&mut total_language_counts, Some(Language::Japanese), 1);
             } else {
                 let sorted_word_language_counts = word_language_counts
                     .into_iter()
@@ -896,10 +880,10 @@ impl LanguageDetector {
         if total_language_counts.len() == 2
             && cfg!(feature = "chinese")
             && cfg!(feature = "japanese")
-            && total_language_counts.contains_key(&Some(Language::from_str("Chinese").unwrap()))
-            && total_language_counts.contains_key(&Some(Language::from_str("Japanese").unwrap()))
+            && total_language_counts.contains_key(&Some(Language::Chinese))
+            && total_language_counts.contains_key(&Some(Language::Japanese))
         {
-            return Some(Language::from_str("Japanese").unwrap());
+            return Some(Language::Japanese);
         }
 
         let sorted_total_language_counts = total_language_counts
