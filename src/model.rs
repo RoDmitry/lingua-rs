@@ -737,7 +737,7 @@ mod tests {
             let mut model = TestDataLanguageModel::from(&words, ngram_length);
             model
                 .ngrams
-                .sort_by(|first, second| first[0].value.cmp(&second[0].value));
+                .sort_by(|first, second| first[0].value.cmp(second[0].value));
             assert_eq!(model.ngrams, expected_ngrams);
         }
     }

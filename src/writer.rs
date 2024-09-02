@@ -506,7 +506,7 @@ mod tests {
             assert_eq!(files.len(), 5);
 
             let unigrams_file_path = files.get(4).unwrap();
-            let bigrams_file_path = files.get(0).unwrap();
+            let bigrams_file_path = files.first().unwrap();
             let trigrams_file_path = files.get(3).unwrap();
             let quadrigrams_file_path = files.get(2).unwrap();
             let fivegrams_file_path = files.get(1).unwrap();
