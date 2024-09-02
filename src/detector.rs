@@ -188,7 +188,7 @@ impl LanguageDetector {
     ///
     /// assert_eq!(detected_language, Some(English));
     /// ```
-    pub fn detect_language_of<T: Into<String>>(&self, text: T) -> Option<Language> {
+    pub fn detect_language_of(&self, text: &str) -> Option<Language> {
         self.detect_language_from_languages(text, &self.languages)
     }
 
@@ -233,19 +233,16 @@ impl LanguageDetector {
     /// );
     /// ```
     #[cfg(not(target_family = "wasm"))]
-    pub fn detect_languages_in_parallel_of<T: Into<String> + Clone + Send + Sync>(
-        &self,
-        texts: &[T],
-    ) -> Vec<Option<Language>> {
+    pub fn detect_languages_in_parallel_of(&self, texts: &[&str]) -> Vec<Option<Language>> {
         texts
             .into_par_iter()
-            .map(|text| self.detect_language_of(text.clone()))
+            .map(|text| self.detect_language_of(text))
             .collect()
     }
 
-    fn detect_language_from_languages<T: Into<String>, S: BuildHasher>(
+    fn detect_language_from_languages<S: BuildHasher>(
         &self,
-        text: T,
+        text: &str,
         languages: &HashSet<Language, S>,
     ) -> Option<Language> {
         let confidence_values =
@@ -323,15 +320,13 @@ impl LanguageDetector {
     ///     );
     /// }
     /// ```
-    pub fn detect_multiple_languages_of<T: Into<String>>(&self, text: T) -> Vec<DetectionResult> {
-        let text_str = text.into();
-
+    pub fn detect_multiple_languages_of(&self, text_str: &str) -> Vec<DetectionResult> {
         if text_str.is_empty() {
             return vec![];
         }
 
         let tokens_without_whitespace = TOKENS_WITHOUT_WHITESPACE
-            .find_iter(&text_str)
+            .find_iter(text_str)
             .map(|mat| mat.as_str())
             .collect_vec();
 
@@ -342,7 +337,7 @@ impl LanguageDetector {
         let mut results = vec![];
         let mut language_counts = AHashMap::new();
 
-        let language = self.detect_language_of(&text_str);
+        let language = self.detect_language_of(text_str);
         if let Some(lang) = language {
             self.increment_counter(&mut language_counts, lang, 1);
         }
@@ -376,8 +371,8 @@ impl LanguageDetector {
             let mut word_count = 0;
             let mut current_language = None;
 
-            let last_index = TOKENS_WITH_OPTIONAL_WHITESPACE.find_iter(&text_str).count() - 1;
-            let token_matches = TOKENS_WITH_OPTIONAL_WHITESPACE.find_iter(&text_str);
+            let last_index = TOKENS_WITH_OPTIONAL_WHITESPACE.find_iter(text_str).count() - 1;
+            let token_matches = TOKENS_WITH_OPTIONAL_WHITESPACE.find_iter(text_str);
 
             for (i, token_match) in token_matches.enumerate() {
                 let word = token_match.as_str();
@@ -466,13 +461,13 @@ impl LanguageDetector {
     /// [`detect_multiple_languages_of`](#method.detect_multiple_languages_of)
     /// instead.
     #[cfg(not(target_family = "wasm"))]
-    pub fn detect_multiple_languages_in_parallel_of<T: Into<String> + Clone + Send + Sync>(
+    pub fn detect_multiple_languages_in_parallel_of(
         &self,
-        texts: &[T],
+        texts: &[&str],
     ) -> Vec<Vec<DetectionResult>> {
         texts
             .into_par_iter()
-            .map(|text| self.detect_multiple_languages_of(text.clone()))
+            .map(|text| self.detect_multiple_languages_of(text))
             .collect()
     }
 
@@ -521,10 +516,7 @@ impl LanguageDetector {
     ///     ]
     /// );
     /// ```
-    pub fn compute_language_confidence_values<T: Into<String>>(
-        &self,
-        text: T,
-    ) -> Vec<(Language, f64)> {
+    pub fn compute_language_confidence_values(&self, text: &str) -> Vec<(Language, f64)> {
         self.compute_language_confidence_values_for_languages(text, &self.languages)
     }
 
@@ -586,19 +578,19 @@ impl LanguageDetector {
     ///     ]
     /// );
     #[cfg(not(target_family = "wasm"))]
-    pub fn compute_language_confidence_values_in_parallel<T: Into<String> + Clone + Send + Sync>(
+    pub fn compute_language_confidence_values_in_parallel(
         &self,
-        texts: &[T],
+        texts: &[&str],
     ) -> Vec<Vec<(Language, f64)>> {
         texts
             .into_par_iter()
-            .map(|text| self.compute_language_confidence_values(text.clone()))
+            .map(|&text| self.compute_language_confidence_values(text))
             .collect()
     }
 
-    fn compute_language_confidence_values_for_languages<T: Into<String>, S: BuildHasher>(
+    fn compute_language_confidence_values_for_languages<S: BuildHasher>(
         &self,
-        text: T,
+        text_str: &str,
         languages: &HashSet<Language, S>,
     ) -> Vec<(Language, f64)> {
         let mut values = Vec::with_capacity(languages.len());
@@ -607,20 +599,21 @@ impl LanguageDetector {
             values.push((*language, 0.0));
         }
 
-        let text_str = text.into();
-        let words = split_text_into_words(&text_str);
+        let words = split_text_into_words(text_str);
         if words.is_empty() {
             return values;
         }
 
-        let language_detected_by_rules = self.detect_language_with_rules(&words, languages);
+        let half_word_count = (words.len() as f64) * 0.5;
+        let language_detected_by_rules =
+            self.detect_language_with_rules(&words, languages, half_word_count);
         if let Some(language) = language_detected_by_rules {
             update_confidence_values(&mut values, language, 1.0);
             values.sort_by(confidence_values_comparator);
             return values;
         }
 
-        let filtered_languages = self.filter_languages_by_rules(&words, languages);
+        let filtered_languages = self.filter_languages_by_rules(&words, languages, half_word_count);
 
         if filtered_languages.len() == 1 {
             let filtered_language = filtered_languages.into_iter().next().unwrap();
@@ -704,7 +697,7 @@ impl LanguageDetector {
     ///
     /// assert_eq!(rounded_confidence, 0.04);
     /// ```
-    pub fn compute_language_confidence<T: Into<String>>(&self, text: T, language: Language) -> f64 {
+    pub fn compute_language_confidence(&self, text: &str, language: Language) -> f64 {
         let confidence_values = self.compute_language_confidence_values(text);
         for (lang, confidence_value) in confidence_values {
             if lang == language {
@@ -767,14 +760,14 @@ impl LanguageDetector {
     /// );
     /// ```
     #[cfg(not(target_family = "wasm"))]
-    pub fn compute_language_confidence_in_parallel<T: Into<String> + Clone + Send + Sync>(
+    pub fn compute_language_confidence_in_parallel(
         &self,
-        texts: &[T],
+        texts: &[&str],
         language: Language,
     ) -> Vec<f64> {
         texts
             .into_par_iter()
-            .map(|text| self.compute_language_confidence(text.clone(), language))
+            .map(|text| self.compute_language_confidence(text, language))
             .collect()
     }
 
@@ -782,41 +775,35 @@ impl LanguageDetector {
         &self,
         words: &[String],
         languages: &HashSet<Language, S>,
+        half_word_count: f64,
     ) -> Option<Language> {
         let mut total_language_counts = AHashMap::<Option<Language>, u32>::new();
 
         for word in words {
             let mut word_language_counts = AHashMap::<Language, u32>::new();
 
-            for character in word.chars() {
-                let mut is_match = false;
-
+            'ch: for character in word.chars() {
                 for (alphabet, language) in self.one_language_alphabets.iter() {
                     if alphabet.matches_char(character) {
                         self.increment_counter(&mut word_language_counts, *language, 1);
-                        is_match = true;
-                        break;
+                        continue 'ch;
                     }
                 }
 
-                if !is_match {
-                    if cfg!(feature = "chinese") && Alphabet::Han.matches_char(character) {
-                        self.increment_counter(&mut word_language_counts, Language::Chinese, 1);
-                    } else if cfg!(feature = "japanese")
-                        && JAPANESE_CHARACTER_SET.is_char_match(character)
-                    {
-                        self.increment_counter(&mut word_language_counts, Language::Japanese, 1);
-                    } else if Alphabet::Latin.matches_char(character)
-                        || Alphabet::Cyrillic.matches_char(character)
-                        || Alphabet::Devanagari.matches_char(character)
-                    {
-                        self.languages_with_unique_characters
-                            .iter()
-                            .filter(|it| it.unique_characters().unwrap().contains(character))
-                            .for_each(|it| {
-                                self.increment_counter(&mut word_language_counts, *it, 1)
-                            });
-                    }
+                if cfg!(feature = "chinese") && Alphabet::Han.matches_char(character) {
+                    self.increment_counter(&mut word_language_counts, Language::Chinese, 1);
+                } else if cfg!(feature = "japanese")
+                    && JAPANESE_CHARACTER_SET.is_char_match(character)
+                {
+                    self.increment_counter(&mut word_language_counts, Language::Japanese, 1);
+                } else if Alphabet::Latin.matches_char(character)
+                    || Alphabet::Cyrillic.matches_char(character)
+                    || Alphabet::Devanagari.matches_char(character)
+                {
+                    self.languages_with_unique_characters
+                        .iter()
+                        .filter(|it| it.unique_characters().unwrap().contains(character))
+                        .for_each(|it| self.increment_counter(&mut word_language_counts, *it, 1));
                 }
             }
 
@@ -857,7 +844,6 @@ impl LanguageDetector {
 
         let unknown_language_count = *total_language_counts.get(&None).unwrap_or(&0) as f64;
 
-        let half_word_count = (words.len() as f64) * 0.5;
         if unknown_language_count < half_word_count {
             total_language_counts.remove(&None);
         }
@@ -897,18 +883,21 @@ impl LanguageDetector {
         &self,
         words: &[String],
         languages: &HashSet<Language, S>,
+        half_word_count: f64,
     ) -> AHashSet<Language> {
         let mut detected_alphabets = AHashMap::<Alphabet, u32>::new();
 
-        for word in words.iter() {
-            for alphabet in Alphabet::iter() {
-                if alphabet.matches(word) {
-                    self.increment_counter(
-                        &mut detected_alphabets,
-                        alphabet,
-                        word.chars().count() as u32,
-                    );
-                    break;
+        for word in words {
+            'ch: for character in word.chars() {
+                for alphabet in Alphabet::iter() {
+                    if alphabet.matches_char(character) {
+                        self.increment_counter(
+                            &mut detected_alphabets,
+                            alphabet,
+                            word.chars().count() as u32,
+                        );
+                        break 'ch;
+                    }
                 }
             }
         }
@@ -942,22 +931,23 @@ impl LanguageDetector {
 
         let mut language_counts = AHashMap::<Language, u32>::new();
 
-        for (characters, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
+        for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
             // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
             let relevant_languages = filtered_languages.intersection(langs).collect::<Vec<_>>();
 
-            for word in words.iter() {
-                for character in characters.chars() {
-                    if word.contains(character) {
-                        for language in relevant_languages.iter() {
-                            self.increment_counter(&mut language_counts, **language, 1);
+            if !relevant_languages.is_empty() {
+                for word in words {
+                    for character in word.chars() {
+                        if specifics.contains(character) {
+                            for language in relevant_languages.iter() {
+                                self.increment_counter(&mut language_counts, **language, 1);
+                            }
                         }
                     }
                 }
             }
         }
 
-        let half_word_count = (words.len() as f64) * 0.5;
         let languages_subset = language_counts
             .into_iter()
             .filter(|(_, count)| (*count as f64) >= half_word_count)
@@ -2155,8 +2145,12 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let detected_language = detector_for_all_languages
-            .detect_language_with_rules(&[word.to_string()], &detector_for_all_languages.languages);
+        let half_word_count = 0.5;
+        let detected_language = detector_for_all_languages.detect_language_with_rules(
+            &[word.to_string()],
+            &detector_for_all_languages.languages,
+            half_word_count,
+        );
         assert_eq!(
             detected_language, expected_language,
             "expected {:?} for word '{}', got {:?}",
@@ -2286,8 +2280,12 @@ mod tests {
         word: &str,
         expected_languages: AHashSet<Language>,
     ) {
-        let filtered_languages = detector_for_all_languages
-            .filter_languages_by_rules(&[word.to_string()], &detector_for_all_languages.languages);
+        let half_word_count = 0.5;
+        let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
+            &[word.to_string()],
+            &detector_for_all_languages.languages,
+            half_word_count,
+        );
         assert_eq!(
             filtered_languages, expected_languages,
             "expected {:?} for word '{}', got {:?}",

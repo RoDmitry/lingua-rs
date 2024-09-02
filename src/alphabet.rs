@@ -44,9 +44,9 @@ pub(crate) enum Alphabet {
 }
 
 impl Alphabet {
-    pub fn matches(&self, text: &str) -> bool {
+    /* pub fn matches(&self, text: &str) -> bool {
         self.char_set().is_match(text)
-    }
+    } */
 
     pub fn matches_char(&self, ch: char) -> bool {
         self.char_set().is_char_match(ch)
@@ -73,7 +73,7 @@ impl Alphabet {
         languages
     }
 
-    fn char_set(&self) -> &Lazy<CharSet> {
+    pub(crate) fn char_set(&self) -> &Lazy<CharSet> {
         match self {
             Alphabet::Arabic => &ARABIC,
             Alphabet::Armenian => &ARMENIAN,
@@ -126,9 +126,9 @@ impl CharSet {
         Self::from_char_classes(&[char_class])
     }
 
-    pub fn is_match(&self, text: &str) -> bool {
+    /* pub fn is_match(&self, text: &str) -> bool {
         text.chars().all(|ch| self.is_char_match(ch))
-    }
+    } */
 
     pub fn is_char_match(&self, ch: char) -> bool {
         self.characters.contains(&ch)
