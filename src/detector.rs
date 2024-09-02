@@ -251,28 +251,22 @@ impl LanguageDetector {
         let confidence_values =
             self.compute_language_confidence_values_for_languages(text, languages);
 
-        if confidence_values.is_empty() {
-            return None;
-        }
-
-        let (most_likely_language, most_likely_language_probability) =
-            &confidence_values.first().unwrap();
+        let (most_likely_language, most_likely_language_probability) = confidence_values.first()?;
 
         if confidence_values.len() == 1 {
             return Some(*most_likely_language);
         }
 
-        let (_, second_most_likely_language_probability) = &confidence_values.get(1).unwrap();
+        let (_, second_most_likely_language_probability) = confidence_values.get(1)?;
 
-        if (most_likely_language_probability - second_most_likely_language_probability).abs()
-            < f64::EPSILON
-        {
+        let language_probability_diff =
+            most_likely_language_probability - second_most_likely_language_probability;
+
+        if language_probability_diff.abs() < f64::EPSILON {
             return None;
         }
 
-        if (most_likely_language_probability - second_most_likely_language_probability)
-            < self.minimum_relative_distance
-        {
+        if language_probability_diff < self.minimum_relative_distance {
             return None;
         }
 
@@ -346,7 +340,7 @@ impl LanguageDetector {
         }
 
         let mut results = vec![];
-        let mut language_counts = HashMap::new();
+        let mut language_counts = AHashMap::new();
 
         let language = self.detect_language_of(&text_str);
         if let Some(lang) = language {
@@ -789,11 +783,10 @@ impl LanguageDetector {
         words: &[String],
         languages: &HashSet<Language, S>,
     ) -> Option<Language> {
-        let mut total_language_counts = HashMap::<Option<Language>, u32>::new();
-        let half_word_count = (words.len() as f64) * 0.5;
+        let mut total_language_counts = AHashMap::<Option<Language>, u32>::new();
 
         for word in words {
-            let mut word_language_counts = HashMap::<Language, u32>::new();
+            let mut word_language_counts = AHashMap::<Language, u32>::new();
 
             for character in word.chars() {
                 let mut is_match = false;
@@ -830,8 +823,7 @@ impl LanguageDetector {
             if word_language_counts.is_empty() {
                 self.increment_counter(&mut total_language_counts, None, 1);
             } else if word_language_counts.len() == 1 {
-                let counted_languages = word_language_counts.keys().collect_vec();
-                let language = *counted_languages.first().unwrap();
+                let language = word_language_counts.keys().next().unwrap();
                 if languages.contains(language) {
                     self.increment_counter(&mut total_language_counts, Some(*language), 1);
                 } else {
@@ -865,6 +857,7 @@ impl LanguageDetector {
 
         let unknown_language_count = *total_language_counts.get(&None).unwrap_or(&0) as f64;
 
+        let half_word_count = (words.len() as f64) * 0.5;
         if unknown_language_count < half_word_count {
             total_language_counts.remove(&None);
         }
@@ -906,7 +899,6 @@ impl LanguageDetector {
         languages: &HashSet<Language, S>,
     ) -> AHashSet<Language> {
         let mut detected_alphabets = AHashMap::<Alphabet, u32>::new();
-        let half_word_count = (words.len() as f64) * 0.5;
 
         for word in words.iter() {
             for alphabet in Alphabet::iter() {
@@ -965,6 +957,7 @@ impl LanguageDetector {
             }
         }
 
+        let half_word_count = (words.len() as f64) * 0.5;
         let languages_subset = language_counts
             .into_iter()
             .filter(|(_, count)| (*count as f64) >= half_word_count)
@@ -1201,8 +1194,8 @@ impl LanguageDetector {
                 .sum();
 
             if let Some(counts) = unigram_counts {
-                if counts.contains_key(language) {
-                    sum /= *counts.get(language).unwrap() as f64;
+                if let Some(&count) = counts.get(language) {
+                    sum /= count as f64;
                 }
             }
 
