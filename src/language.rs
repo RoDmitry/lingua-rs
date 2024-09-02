@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-use std::collections::HashSet;
 use std::fmt::{Debug, Display, Formatter, Result};
 use std::str::FromStr;
 
+use ahash::AHashSet;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, EnumString};
@@ -42,7 +42,10 @@ use crate::isocode::{IsoCode639_1, IsoCode639_3};
 )]
 #[serde(rename_all(serialize = "UPPERCASE", deserialize = "UPPERCASE"))]
 #[strum(ascii_case_insensitive)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(eq, eq_int, frozen, hash, ord, rename_all = "UPPERCASE"))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(eq, eq_int, frozen, hash, ord, rename_all = "UPPERCASE")
+)]
 pub enum Language {
     #[cfg(feature = "afrikaans")]
     Afrikaans,
@@ -279,12 +282,12 @@ impl Display for Language {
 
 impl Language {
     /// Returns a set of all supported languages.
-    pub fn all() -> HashSet<Language> {
+    pub fn all() -> AHashSet<Language> {
         Language::iter().collect()
     }
 
     /// Returns a set of all supported spoken languages.
-    pub fn all_spoken_ones() -> HashSet<Language> {
+    pub fn all_spoken_ones() -> AHashSet<Language> {
         Language::iter()
             .filter(|it| {
                 if cfg!(feature = "latin") {
@@ -297,28 +300,28 @@ impl Language {
     }
 
     /// Returns a set of all languages supporting the Arabic script.
-    pub fn all_with_arabic_script() -> HashSet<Language> {
+    pub fn all_with_arabic_script() -> AHashSet<Language> {
         Language::iter()
             .filter(|it| it.alphabets().contains(&Alphabet::Arabic))
             .collect()
     }
 
     /// Returns a set of all languages supporting the Cyrillic script.
-    pub fn all_with_cyrillic_script() -> HashSet<Language> {
+    pub fn all_with_cyrillic_script() -> AHashSet<Language> {
         Language::iter()
             .filter(|it| it.alphabets().contains(&Alphabet::Cyrillic))
             .collect()
     }
 
     /// Returns a set of all languages supporting the Devanagari script.
-    pub fn all_with_devanagari_script() -> HashSet<Language> {
+    pub fn all_with_devanagari_script() -> AHashSet<Language> {
         Language::iter()
             .filter(|it| it.alphabets().contains(&Alphabet::Devanagari))
             .collect()
     }
 
     /// Returns a set of all languages supporting the Latin script.
-    pub fn all_with_latin_script() -> HashSet<Language> {
+    pub fn all_with_latin_script() -> AHashSet<Language> {
         Language::iter()
             .filter(|it| it.alphabets().contains(&Alphabet::Latin))
             .collect()
@@ -800,232 +803,232 @@ impl Language {
         }
     }
 
-    pub(crate) fn alphabets(&self) -> HashSet<Alphabet> {
+    pub(crate) fn alphabets(&self) -> &[Alphabet] {
         match self {
             #[cfg(feature = "afrikaans")]
-            Language::Afrikaans => hashset!(Alphabet::Latin),
+            Language::Afrikaans => &[Alphabet::Latin],
 
             #[cfg(feature = "albanian")]
-            Language::Albanian => hashset!(Alphabet::Latin),
+            Language::Albanian => &[Alphabet::Latin],
 
             #[cfg(feature = "azerbaijani")]
-            Language::Azerbaijani => hashset!(Alphabet::Latin),
+            Language::Azerbaijani => &[Alphabet::Latin],
 
             #[cfg(feature = "basque")]
-            Language::Basque => hashset!(Alphabet::Latin),
+            Language::Basque => &[Alphabet::Latin],
 
             #[cfg(feature = "bokmal")]
-            Language::Bokmal => hashset!(Alphabet::Latin),
+            Language::Bokmal => &[Alphabet::Latin],
 
             #[cfg(feature = "bosnian")]
-            Language::Bosnian => hashset!(Alphabet::Latin),
+            Language::Bosnian => &[Alphabet::Latin],
 
             #[cfg(feature = "catalan")]
-            Language::Catalan => hashset!(Alphabet::Latin),
+            Language::Catalan => &[Alphabet::Latin],
 
             #[cfg(feature = "croatian")]
-            Language::Croatian => hashset!(Alphabet::Latin),
+            Language::Croatian => &[Alphabet::Latin],
 
             #[cfg(feature = "czech")]
-            Language::Czech => hashset!(Alphabet::Latin),
+            Language::Czech => &[Alphabet::Latin],
 
             #[cfg(feature = "danish")]
-            Language::Danish => hashset!(Alphabet::Latin),
+            Language::Danish => &[Alphabet::Latin],
 
             #[cfg(feature = "dutch")]
-            Language::Dutch => hashset!(Alphabet::Latin),
+            Language::Dutch => &[Alphabet::Latin],
 
             #[cfg(feature = "english")]
-            Language::English => hashset!(Alphabet::Latin),
+            Language::English => &[Alphabet::Latin],
 
             #[cfg(feature = "esperanto")]
-            Language::Esperanto => hashset!(Alphabet::Latin),
+            Language::Esperanto => &[Alphabet::Latin],
 
             #[cfg(feature = "estonian")]
-            Language::Estonian => hashset!(Alphabet::Latin),
+            Language::Estonian => &[Alphabet::Latin],
 
             #[cfg(feature = "finnish")]
-            Language::Finnish => hashset!(Alphabet::Latin),
+            Language::Finnish => &[Alphabet::Latin],
 
             #[cfg(feature = "french")]
-            Language::French => hashset!(Alphabet::Latin),
+            Language::French => &[Alphabet::Latin],
 
             #[cfg(feature = "ganda")]
-            Language::Ganda => hashset!(Alphabet::Latin),
+            Language::Ganda => &[Alphabet::Latin],
 
             #[cfg(feature = "german")]
-            Language::German => hashset!(Alphabet::Latin),
+            Language::German => &[Alphabet::Latin],
 
             #[cfg(feature = "hungarian")]
-            Language::Hungarian => hashset!(Alphabet::Latin),
+            Language::Hungarian => &[Alphabet::Latin],
 
             #[cfg(feature = "icelandic")]
-            Language::Icelandic => hashset!(Alphabet::Latin),
+            Language::Icelandic => &[Alphabet::Latin],
 
             #[cfg(feature = "indonesian")]
-            Language::Indonesian => hashset!(Alphabet::Latin),
+            Language::Indonesian => &[Alphabet::Latin],
 
             #[cfg(feature = "irish")]
-            Language::Irish => hashset!(Alphabet::Latin),
+            Language::Irish => &[Alphabet::Latin],
 
             #[cfg(feature = "italian")]
-            Language::Italian => hashset!(Alphabet::Latin),
+            Language::Italian => &[Alphabet::Latin],
 
             #[cfg(feature = "latin")]
-            Language::Latin => hashset!(Alphabet::Latin),
+            Language::Latin => &[Alphabet::Latin],
 
             #[cfg(feature = "latvian")]
-            Language::Latvian => hashset!(Alphabet::Latin),
+            Language::Latvian => &[Alphabet::Latin],
 
             #[cfg(feature = "lithuanian")]
-            Language::Lithuanian => hashset!(Alphabet::Latin),
+            Language::Lithuanian => &[Alphabet::Latin],
 
             #[cfg(feature = "malay")]
-            Language::Malay => hashset!(Alphabet::Latin),
+            Language::Malay => &[Alphabet::Latin],
 
             #[cfg(feature = "maori")]
-            Language::Maori => hashset!(Alphabet::Latin),
+            Language::Maori => &[Alphabet::Latin],
 
             #[cfg(feature = "nynorsk")]
-            Language::Nynorsk => hashset!(Alphabet::Latin),
+            Language::Nynorsk => &[Alphabet::Latin],
 
             #[cfg(feature = "polish")]
-            Language::Polish => hashset!(Alphabet::Latin),
+            Language::Polish => &[Alphabet::Latin],
 
             #[cfg(feature = "portuguese")]
-            Language::Portuguese => hashset!(Alphabet::Latin),
+            Language::Portuguese => &[Alphabet::Latin],
 
             #[cfg(feature = "romanian")]
-            Language::Romanian => hashset!(Alphabet::Latin),
+            Language::Romanian => &[Alphabet::Latin],
 
             #[cfg(feature = "shona")]
-            Language::Shona => hashset!(Alphabet::Latin),
+            Language::Shona => &[Alphabet::Latin],
 
             #[cfg(feature = "slovak")]
-            Language::Slovak => hashset!(Alphabet::Latin),
+            Language::Slovak => &[Alphabet::Latin],
 
             #[cfg(feature = "slovene")]
-            Language::Slovene => hashset!(Alphabet::Latin),
+            Language::Slovene => &[Alphabet::Latin],
 
             #[cfg(feature = "somali")]
-            Language::Somali => hashset!(Alphabet::Latin),
+            Language::Somali => &[Alphabet::Latin],
 
             #[cfg(feature = "sotho")]
-            Language::Sotho => hashset!(Alphabet::Latin),
+            Language::Sotho => &[Alphabet::Latin],
 
             #[cfg(feature = "spanish")]
-            Language::Spanish => hashset!(Alphabet::Latin),
+            Language::Spanish => &[Alphabet::Latin],
 
             #[cfg(feature = "swahili")]
-            Language::Swahili => hashset!(Alphabet::Latin),
+            Language::Swahili => &[Alphabet::Latin],
 
             #[cfg(feature = "swedish")]
-            Language::Swedish => hashset!(Alphabet::Latin),
+            Language::Swedish => &[Alphabet::Latin],
 
             #[cfg(feature = "tagalog")]
-            Language::Tagalog => hashset!(Alphabet::Latin),
+            Language::Tagalog => &[Alphabet::Latin],
 
             #[cfg(feature = "tsonga")]
-            Language::Tsonga => hashset!(Alphabet::Latin),
+            Language::Tsonga => &[Alphabet::Latin],
 
             #[cfg(feature = "tswana")]
-            Language::Tswana => hashset!(Alphabet::Latin),
+            Language::Tswana => &[Alphabet::Latin],
 
             #[cfg(feature = "turkish")]
-            Language::Turkish => hashset!(Alphabet::Latin),
+            Language::Turkish => &[Alphabet::Latin],
 
             #[cfg(feature = "vietnamese")]
-            Language::Vietnamese => hashset!(Alphabet::Latin),
+            Language::Vietnamese => &[Alphabet::Latin],
 
             #[cfg(feature = "welsh")]
-            Language::Welsh => hashset!(Alphabet::Latin),
+            Language::Welsh => &[Alphabet::Latin],
 
             #[cfg(feature = "xhosa")]
-            Language::Xhosa => hashset!(Alphabet::Latin),
+            Language::Xhosa => &[Alphabet::Latin],
 
             #[cfg(feature = "yoruba")]
-            Language::Yoruba => hashset!(Alphabet::Latin),
+            Language::Yoruba => &[Alphabet::Latin],
 
             #[cfg(feature = "zulu")]
-            Language::Zulu => hashset!(Alphabet::Latin),
+            Language::Zulu => &[Alphabet::Latin],
 
             #[cfg(feature = "belarusian")]
-            Language::Belarusian => hashset!(Alphabet::Cyrillic),
+            Language::Belarusian => &[Alphabet::Cyrillic],
 
             #[cfg(feature = "bulgarian")]
-            Language::Bulgarian => hashset!(Alphabet::Cyrillic),
+            Language::Bulgarian => &[Alphabet::Cyrillic],
 
             #[cfg(feature = "kazakh")]
-            Language::Kazakh => hashset!(Alphabet::Cyrillic),
+            Language::Kazakh => &[Alphabet::Cyrillic],
 
             #[cfg(feature = "macedonian")]
-            Language::Macedonian => hashset!(Alphabet::Cyrillic),
+            Language::Macedonian => &[Alphabet::Cyrillic],
 
             #[cfg(feature = "mongolian")]
-            Language::Mongolian => hashset!(Alphabet::Cyrillic),
+            Language::Mongolian => &[Alphabet::Cyrillic],
 
             #[cfg(feature = "russian")]
-            Language::Russian => hashset!(Alphabet::Cyrillic),
+            Language::Russian => &[Alphabet::Cyrillic],
 
             #[cfg(feature = "serbian")]
-            Language::Serbian => hashset!(Alphabet::Cyrillic),
+            Language::Serbian => &[Alphabet::Cyrillic],
 
             #[cfg(feature = "ukrainian")]
-            Language::Ukrainian => hashset!(Alphabet::Cyrillic),
+            Language::Ukrainian => &[Alphabet::Cyrillic],
 
             #[cfg(feature = "arabic")]
-            Language::Arabic => hashset!(Alphabet::Arabic),
+            Language::Arabic => &[Alphabet::Arabic],
 
             #[cfg(feature = "persian")]
-            Language::Persian => hashset!(Alphabet::Arabic),
+            Language::Persian => &[Alphabet::Arabic],
 
             #[cfg(feature = "urdu")]
-            Language::Urdu => hashset!(Alphabet::Arabic),
+            Language::Urdu => &[Alphabet::Arabic],
 
             #[cfg(feature = "hindi")]
-            Language::Hindi => hashset!(Alphabet::Devanagari),
+            Language::Hindi => &[Alphabet::Devanagari],
 
             #[cfg(feature = "marathi")]
-            Language::Marathi => hashset!(Alphabet::Devanagari),
+            Language::Marathi => &[Alphabet::Devanagari],
 
             #[cfg(feature = "armenian")]
-            Language::Armenian => hashset!(Alphabet::Armenian),
+            Language::Armenian => &[Alphabet::Armenian],
 
             #[cfg(feature = "bengali")]
-            Language::Bengali => hashset!(Alphabet::Bengali),
+            Language::Bengali => &[Alphabet::Bengali],
 
             #[cfg(feature = "chinese")]
-            Language::Chinese => hashset!(Alphabet::Han),
+            Language::Chinese => &[Alphabet::Han],
 
             #[cfg(feature = "georgian")]
-            Language::Georgian => hashset!(Alphabet::Georgian),
+            Language::Georgian => &[Alphabet::Georgian],
 
             #[cfg(feature = "greek")]
-            Language::Greek => hashset!(Alphabet::Greek),
+            Language::Greek => &[Alphabet::Greek],
 
             #[cfg(feature = "gujarati")]
-            Language::Gujarati => hashset!(Alphabet::Gujarati),
+            Language::Gujarati => &[Alphabet::Gujarati],
 
             #[cfg(feature = "hebrew")]
-            Language::Hebrew => hashset!(Alphabet::Hebrew),
+            Language::Hebrew => &[Alphabet::Hebrew],
 
             #[cfg(feature = "japanese")]
-            Language::Japanese => hashset!(Alphabet::Hiragana, Alphabet::Katakana, Alphabet::Han),
+            Language::Japanese => &[Alphabet::Hiragana, Alphabet::Katakana, Alphabet::Han],
 
             #[cfg(feature = "korean")]
-            Language::Korean => hashset!(Alphabet::Hangul),
+            Language::Korean => &[Alphabet::Hangul],
 
             #[cfg(feature = "punjabi")]
-            Language::Punjabi => hashset!(Alphabet::Gurmukhi),
+            Language::Punjabi => &[Alphabet::Gurmukhi],
 
             #[cfg(feature = "tamil")]
-            Language::Tamil => hashset!(Alphabet::Tamil),
+            Language::Tamil => &[Alphabet::Tamil],
 
             #[cfg(feature = "telugu")]
-            Language::Telugu => hashset!(Alphabet::Telugu),
+            Language::Telugu => &[Alphabet::Telugu],
 
             #[cfg(feature = "thai")]
-            Language::Thai => hashset!(Alphabet::Thai),
+            Language::Thai => &[Alphabet::Thai],
         }
     }
 
@@ -1128,7 +1131,7 @@ mod tests {
     fn assert_all_languages_are_available() {
         assert_eq!(
             Language::all(),
-            hashset!(
+            ahashset!(
                 Afrikaans,
                 Albanian,
                 Arabic,
@@ -1212,7 +1215,7 @@ mod tests {
     fn assert_all_spoken_languages_are_available() {
         assert_eq!(
             Language::all_spoken_ones(),
-            hashset!(
+            ahashset!(
                 Afrikaans,
                 Albanian,
                 Arabic,
@@ -1295,7 +1298,7 @@ mod tests {
     fn assert_certain_languages_support_arabic_script() {
         assert_eq!(
             Language::all_with_arabic_script(),
-            hashset!(Arabic, Persian, Urdu)
+            ahashset!(Arabic, Persian, Urdu)
         );
     }
 
@@ -1303,7 +1306,7 @@ mod tests {
     fn assert_certain_languages_support_cyrillic_script() {
         assert_eq!(
             Language::all_with_cyrillic_script(),
-            hashset!(
+            ahashset!(
                 Belarusian, Bulgarian, Kazakh, Macedonian, Mongolian, Russian, Serbian, Ukrainian
             )
         );
@@ -1313,7 +1316,7 @@ mod tests {
     fn assert_certain_languages_support_devanagari_script() {
         assert_eq!(
             Language::all_with_devanagari_script(),
-            hashset!(Hindi, Marathi)
+            ahashset!(Hindi, Marathi)
         );
     }
 
@@ -1321,7 +1324,7 @@ mod tests {
     fn assert_certain_languages_support_latin_script() {
         assert_eq!(
             Language::all_with_latin_script(),
-            hashset!(
+            ahashset!(
                 Afrikaans,
                 Albanian,
                 Azerbaijani,

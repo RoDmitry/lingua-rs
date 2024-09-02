@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 
 use ahash::AHashMap;
 use compact_str::CompactString;
@@ -34,8 +34,8 @@ struct JsonLanguageModel {
 
 pub(crate) struct TrainingDataLanguageModel {
     language: Language,
-    pub(crate) absolute_frequencies: Option<HashMap<Ngram, u32>>,
-    relative_frequencies: Option<HashMap<Ngram, Fraction>>,
+    pub(crate) absolute_frequencies: Option<AHashMap<Ngram, u32>>,
+    relative_frequencies: Option<AHashMap<Ngram, Fraction>>,
 }
 
 impl TrainingDataLanguageModel {
@@ -44,7 +44,7 @@ impl TrainingDataLanguageModel {
         language: &Language,
         ngram_length: usize,
         char_class: &str,
-        lower_ngram_absolute_frequencies: &HashMap<Ngram, u32>,
+        lower_ngram_absolute_frequencies: &AHashMap<Ngram, u32>,
     ) -> Self {
         let absolute_frequencies =
             Self::compute_absolute_frequencies(text, ngram_length, char_class);
@@ -77,7 +77,7 @@ impl TrainingDataLanguageModel {
     }
 
     pub(crate) fn to_json(&self) -> String {
-        let mut fractions_to_ngrams = hashmap!();
+        let mut fractions_to_ngrams = AHashMap::new();
         for (ngram, fraction) in self.relative_frequencies.as_ref().unwrap() {
             let ngrams = fractions_to_ngrams.entry(fraction).or_insert_with(Vec::new);
             ngrams.push(ngram);
@@ -103,8 +103,8 @@ impl TrainingDataLanguageModel {
         text: &[&str],
         ngram_length: usize,
         char_class: &str,
-    ) -> HashMap<Ngram, u32> {
-        let mut absolute_frequencies = hashmap!();
+    ) -> AHashMap<Ngram, u32> {
+        let mut absolute_frequencies = AHashMap::new();
         let regex = Regex::new(&format!("^[{char_class}]+$")).unwrap_or_else(|_| {
             panic!(
                 "The character class '{char_class}' cannot be compiled to a valid regular expression"
@@ -129,10 +129,10 @@ impl TrainingDataLanguageModel {
 
     fn compute_relative_frequencies(
         ngram_length: usize,
-        absolute_frequencies: &HashMap<Ngram, u32>,
-        lower_ngram_absolute_frequencies: &HashMap<Ngram, u32>,
-    ) -> HashMap<Ngram, Fraction> {
-        let mut ngram_probabilities = hashmap!();
+        absolute_frequencies: &AHashMap<Ngram, u32>,
+        lower_ngram_absolute_frequencies: &AHashMap<Ngram, u32>,
+    ) -> AHashMap<Ngram, Fraction> {
+        let mut ngram_probabilities = AHashMap::new();
         let total_ngram_frequency = absolute_frequencies.values().sum::<u32>();
 
         for (ngram, frequency) in absolute_frequencies {
@@ -241,15 +241,15 @@ mod tests {
     mod training_data {
         use super::*;
 
-        fn map_keys_to_ngrams(map: HashMap<&str, u32>) -> HashMap<Ngram, u32> {
+        fn map_keys_to_ngrams(map: AHashMap<&str, u32>) -> AHashMap<Ngram, u32> {
             map.into_iter()
                 .map(|(key, value)| (Ngram::new(key), value))
                 .collect()
         }
 
         fn map_keys_to_ngrams_and_values_to_fractions(
-            map: HashMap<&str, &str>,
-        ) -> HashMap<Ngram, Fraction> {
+            map: AHashMap<&str, &str>,
+        ) -> AHashMap<Ngram, Fraction> {
             map.into_iter()
                 .map(|(key, value)| {
                     let (numerator, denominator) = value
@@ -263,8 +263,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_unigram_absolute_frequencies() -> HashMap<Ngram, u32> {
-            map_keys_to_ngrams(hashmap!(
+        fn expected_unigram_absolute_frequencies() -> AHashMap<Ngram, u32> {
+            map_keys_to_ngrams(ahashmap!(
                 "a" => 3, "b" => 1, "c" => 3, "d" => 5, "e" => 14,
                 "f" => 2, "g" => 1, "h" => 4, "i" => 6, "l" => 1,
                 "m" => 1, "n" => 10, "o" => 10, "p" => 3, "r" => 5,
@@ -273,8 +273,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_unigram_relative_frequencies() -> HashMap<Ngram, Fraction> {
-            map_keys_to_ngrams_and_values_to_fractions(hashmap!(
+        fn expected_unigram_relative_frequencies() -> AHashMap<Ngram, Fraction> {
+            map_keys_to_ngrams_and_values_to_fractions(ahashmap!(
                 "a" => "3/100", "b" => "1/100", "c" => "3/100", "d" => "1/20",
                 "e" => "7/50", "f" => "1/50", "g" => "1/100", "h" => "1/25",
                 "i" => "3/50", "l" => "1/100", "m" => "1/100", "n" => "1/10",
@@ -293,8 +293,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_bigram_absolute_frequencies() -> HashMap<Ngram, u32> {
-            map_keys_to_ngrams(hashmap!(
+        fn expected_bigram_absolute_frequencies() -> AHashMap<Ngram, u32> {
+            map_keys_to_ngrams(ahashmap!(
                 "de" => 1, "pr" => 1, "pu" => 1, "do" => 1, "uc" => 1, "ds" => 1,
                 "du" => 1, "ur" => 1, "us" => 1, "ed" => 1, "in" => 4, "io" => 1,
                 "em" => 1, "en" => 3, "is" => 1, "al" => 1, "es" => 4, "ar" => 1,
@@ -308,8 +308,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_bigram_relative_frequencies() -> HashMap<Ngram, Fraction> {
-            map_keys_to_ngrams_and_values_to_fractions(hashmap!(
+        fn expected_bigram_relative_frequencies() -> AHashMap<Ngram, Fraction> {
+            map_keys_to_ngrams_and_values_to_fractions(ahashmap!(
                 "de" => "1/5", "pr" => "1/3", "pu" => "1/3", "do" => "1/5",
                 "uc" => "1/3", "ds" => "1/5", "du" => "1/5", "ur" => "1/3",
                 "us" => "1/3", "ed" => "1/14", "in" => "2/3", "io" => "1/6",
@@ -328,8 +328,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_trigram_absolute_frequencies() -> HashMap<Ngram, u32> {
-            map_keys_to_ngrams(hashmap!(
+        fn expected_trigram_absolute_frequencies() -> AHashMap<Ngram, u32> {
+            map_keys_to_ngrams(ahashmap!(
                 "rds" => 1, "ose" => 1, "ded" => 1, "con" => 1, "use" => 1,
                 "est" => 1, "ion" => 1, "ist" => 1, "pur" => 1, "hem" => 1,
                 "hes" => 1, "tin" => 1, "cti" => 1, "wor" => 1, "tio" => 1,
@@ -345,8 +345,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_trigram_relative_frequencies() -> HashMap<Ngram, Fraction> {
-            map_keys_to_ngrams_and_values_to_fractions(hashmap!(
+        fn expected_trigram_relative_frequencies() -> AHashMap<Ngram, Fraction> {
+            map_keys_to_ngrams_and_values_to_fractions(ahashmap!(
                 "rds" => "1/1", "ose" => "1/1", "ded" => "1/1", "con" => "1/1",
                 "use" => "1/1", "est" => "1/4", "ion" => "1/1", "ist" => "1/1",
                 "pur" => "1/1", "hem" => "1/4", "hes" => "1/4", "tin" => "1/2",
@@ -364,8 +364,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_quadrigram_absolute_frequencies() -> HashMap<Ngram, u32> {
-            map_keys_to_ngrams(hashmap!(
+        fn expected_quadrigram_absolute_frequencies() -> AHashMap<Ngram, u32> {
+            map_keys_to_ngrams(ahashmap!(
                 "onsi" => 1, "sist" => 1, "ende" => 1, "ords" => 1, "esti" => 1,
                 "oduc" => 1, "nces" => 1, "tenc" => 1, "tend" => 1, "thes" => 1,
                 "rpos" => 1, "ting" => 1, "nsis" => 1, "nten" => 2, "tota" => 1,
@@ -378,8 +378,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_quadrigram_relative_frequencies() -> HashMap<Ngram, Fraction> {
-            map_keys_to_ngrams_and_values_to_fractions(hashmap!(
+        fn expected_quadrigram_relative_frequencies() -> AHashMap<Ngram, Fraction> {
+            map_keys_to_ngrams_and_values_to_fractions(ahashmap!(
                 "onsi" => "1/1", "sist" => "1/1", "ende" => "1/1", "ords" => "1/1",
                 "esti" => "1/1", "oduc" => "1/1", "nces" => "1/1", "tenc" => "1/2",
                 "tend" => "1/2", "thes" => "1/4", "rpos" => "1/1", "ting" => "1/1",
@@ -394,8 +394,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_fivegram_absolute_frequencies() -> HashMap<Ngram, u32> {
-            map_keys_to_ngrams(hashmap!(
+        fn expected_fivegram_absolute_frequencies() -> AHashMap<Ngram, u32> {
+            map_keys_to_ngrams(ahashmap!(
                 "testi" => 1, "sente" => 1, "ences" => 1, "tende" => 1,
                 "ducti" => 1, "ntenc" => 1, "these" => 1, "onsis" => 1,
                 "ntend" => 1, "total" => 1, "uctio" => 1, "enten" => 1,
@@ -407,8 +407,8 @@ mod tests {
         }
 
         #[fixture]
-        fn expected_fivegram_relative_frequencies() -> HashMap<Ngram, Fraction> {
-            map_keys_to_ngrams_and_values_to_fractions(hashmap!(
+        fn expected_fivegram_relative_frequencies() -> AHashMap<Ngram, Fraction> {
+            map_keys_to_ngrams_and_values_to_fractions(ahashmap!(
                 "testi" => "1/1", "sente" => "1/1", "ences" => "1/1", "tende" => "1/1",
                 "ducti" => "1/1", "ntenc" => "1/2", "these" => "1/1", "onsis" => "1/1",
                 "ntend" => "1/2", "total" => "1/1", "uctio" => "1/1", "enten" => "1/1",
@@ -428,7 +428,7 @@ mod tests {
                 1,
                 expected_unigram_absolute_frequencies(),
                 expected_unigram_relative_frequencies(),
-                hashmap!()
+                ahashmap!()
             ),
             case::bigram_model(
                 2,
@@ -457,9 +457,9 @@ mod tests {
         )]
         fn test_ngram_model_creation(
             ngram_length: usize,
-            expected_absolute_frequencies: HashMap<Ngram, u32>,
-            expected_relative_frequencies: HashMap<Ngram, Fraction>,
-            lower_ngram_absolute_frequencies: HashMap<Ngram, u32>,
+            expected_absolute_frequencies: AHashMap<Ngram, u32>,
+            expected_relative_frequencies: AHashMap<Ngram, Fraction>,
+            lower_ngram_absolute_frequencies: AHashMap<Ngram, u32>,
         ) {
             let model = TrainingDataLanguageModel::from_text(
                 &TEXT.trim().to_lowercase().lines().collect::<Vec<_>>(),

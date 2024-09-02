@@ -16,11 +16,11 @@
 
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
+use std::hash::{BuildHasher, Hash};
 use std::str::FromStr;
 use std::sync::RwLock;
 
-use ahash::AHashMap;
+use ahash::{AHashMap, AHashSet};
 use compact_str::CompactString;
 use fraction::Zero;
 use itertools::Itertools;
@@ -39,24 +39,24 @@ use crate::language::Language;
 use crate::model::{TestDataLanguageModel, TrainingDataLanguageModel};
 use crate::result::DetectionResult;
 
-type LazyLanguageModelMap = Lazy<RwLock<HashMap<Language, AHashMap<CompactString, f64>>>>;
-type StaticLanguageModelMap = &'static RwLock<HashMap<Language, AHashMap<CompactString, f64>>>;
-type LanguageModelArray<'a> = [Option<&'a HashMap<Language, AHashMap<CompactString, f64>>>; 5];
+type LazyLanguageModelMap = Lazy<RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>>;
+type StaticLanguageModelMap = &'static RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>;
+type LanguageModelArray<'a> = [Option<&'a AHashMap<Language, AHashMap<CompactString, f64>>>; 5];
 
-static UNIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(HashMap::new()));
-static BIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(HashMap::new()));
-static TRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(HashMap::new()));
-static QUADRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(HashMap::new()));
-static FIVEGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(HashMap::new()));
+static UNIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
+static BIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
+static TRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
+static QUADRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
+static FIVEGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
 
 /// This struct detects the language of given input text.
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
 pub struct LanguageDetector {
-    languages: HashSet<Language>,
+    languages: AHashSet<Language>,
     minimum_relative_distance: f64,
     is_low_accuracy_mode_enabled: bool,
-    languages_with_unique_characters: HashSet<Language>,
-    one_language_alphabets: HashMap<Alphabet, Language>,
+    languages_with_unique_characters: AHashSet<Language>,
+    one_language_alphabets: AHashMap<Alphabet, Language>,
     unigram_language_models: StaticLanguageModelMap,
     bigram_language_models: StaticLanguageModelMap,
     trigram_language_models: StaticLanguageModelMap,
@@ -66,7 +66,7 @@ pub struct LanguageDetector {
 
 impl LanguageDetector {
     pub(crate) fn from(
-        languages: HashSet<Language>,
+        languages: AHashSet<Language>,
         minimum_relative_distance: f64,
         is_every_language_model_preloaded: bool,
         is_low_accuracy_mode_enabled: bool,
@@ -91,7 +91,7 @@ impl LanguageDetector {
         detector
     }
 
-    fn preload_language_models(&mut self, languages: &HashSet<Language>) {
+    fn preload_language_models(&mut self, languages: &AHashSet<Language>) {
         #[cfg(not(target_family = "wasm"))]
         let languages_iter = languages.par_iter();
         #[cfg(target_family = "wasm")]
@@ -244,10 +244,10 @@ impl LanguageDetector {
             .collect()
     }
 
-    fn detect_language_from_languages<T: Into<String>>(
+    fn detect_language_from_languages<T: Into<String>, S: BuildHasher>(
         &self,
         text: T,
-        languages: &HashSet<Language>,
+        languages: &HashSet<Language, S>,
     ) -> Option<Language> {
         let confidence_values =
             self.compute_language_confidence_values_for_languages(text, languages);
@@ -367,7 +367,7 @@ impl LanguageDetector {
         let languages = language_counts
             .keys()
             .cloned()
-            .collect::<HashSet<Language>>();
+            .collect::<AHashSet<Language>>();
 
         if languages.len() == 1 {
             let result = DetectionResult {
@@ -603,10 +603,10 @@ impl LanguageDetector {
             .collect()
     }
 
-    fn compute_language_confidence_values_for_languages<T: Into<String>>(
+    fn compute_language_confidence_values_for_languages<T: Into<String>, S: BuildHasher>(
         &self,
         text: T,
-        languages: &HashSet<Language>,
+        languages: &HashSet<Language, S>,
     ) -> Vec<(Language, f64)> {
         let mut values = Vec::with_capacity(languages.len());
 
@@ -654,8 +654,8 @@ impl LanguageDetector {
 
         #[allow(clippy::type_complexity)]
         let all_probabilities_and_unigram_counts: Vec<(
-            HashMap<Language, f64>,
-            Option<HashMap<Language, u32>>,
+            AHashMap<Language, f64>,
+            Option<AHashMap<Language, u32>>,
         )> = ngram_length_range
             .into_iter()
             .filter(|i| character_count >= *i)
@@ -788,10 +788,10 @@ impl LanguageDetector {
             .collect()
     }
 
-    fn detect_language_with_rules(
+    fn detect_language_with_rules<S: BuildHasher>(
         &self,
         words: &[String],
-        languages: &HashSet<Language>,
+        languages: &HashSet<Language, S>,
     ) -> Option<Language> {
         let mut total_language_counts = HashMap::<Option<Language>, u32>::new();
         let half_word_count = (words.len() as f64) * 0.5;
@@ -916,12 +916,12 @@ impl LanguageDetector {
         most_frequent_language
     }
 
-    fn filter_languages_by_rules(
+    fn filter_languages_by_rules<S: BuildHasher>(
         &self,
         words: &[String],
-        languages: &HashSet<Language>,
-    ) -> HashSet<Language> {
-        let mut detected_alphabets = HashMap::<Alphabet, u32>::new();
+        languages: &HashSet<Language, S>,
+    ) -> AHashSet<Language> {
+        let mut detected_alphabets = AHashMap::<Alphabet, u32>::new();
         let half_word_count = (words.len() as f64) * 0.5;
 
         for word in words.iter() {
@@ -938,16 +938,16 @@ impl LanguageDetector {
         }
 
         if detected_alphabets.is_empty() {
-            return languages.clone();
+            return AHashSet::from_iter(languages.iter().cloned());
         }
 
         if detected_alphabets.len() > 1 {
-            let mut distinct_alphabets = hashset!();
+            let mut distinct_alphabets = AHashSet::with_capacity(detected_alphabets.len());
             for count in detected_alphabets.values() {
                 distinct_alphabets.insert(count);
             }
             if distinct_alphabets.len() == 1 {
-                return languages.clone();
+                return AHashSet::from_iter(languages.iter().cloned());
             }
         }
 
@@ -962,20 +962,19 @@ impl LanguageDetector {
             .iter()
             .cloned()
             .filter(|it| it.alphabets().contains(&most_frequent_alphabet))
-            .collect::<HashSet<_>>();
+            .collect::<AHashSet<_>>();
 
-        let mut language_counts = HashMap::<&Language, u32>::new();
+        let mut language_counts = AHashMap::<Language, u32>::new();
 
         for (characters, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
-            let relevant_languages = filtered_languages
-                .intersection(langs)
-                .collect::<HashSet<_>>();
+            // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
+            let relevant_languages = filtered_languages.intersection(langs).collect::<Vec<_>>();
 
             for word in words.iter() {
                 for character in characters.chars() {
                     if word.contains(character) {
                         for language in relevant_languages.iter() {
-                            self.increment_counter(&mut language_counts, language, 1);
+                            self.increment_counter(&mut language_counts, **language, 1);
                         }
                     }
                 }
@@ -985,8 +984,8 @@ impl LanguageDetector {
         let languages_subset = language_counts
             .into_iter()
             .filter(|(_, count)| (*count as f64) >= half_word_count)
-            .map(|(language, _)| *language)
-            .collect::<HashSet<_>>();
+            .map(|(language, _)| language)
+            .collect::<AHashSet<_>>();
 
         if !languages_subset.is_empty() {
             languages_subset
@@ -998,7 +997,7 @@ impl LanguageDetector {
     fn get_language_models<R>(
         &self,
         ngram_length: usize,
-        filtered_languages: &HashSet<Language>,
+        filtered_languages: &AHashSet<Language>,
         callback_handler: impl FnOnce(LanguageModelArray) -> R,
     ) -> R {
         let mut model_read_locks = [None, None, None, None, None];
@@ -1053,8 +1052,8 @@ impl LanguageDetector {
         &self,
         words: &[String],
         ngram_length: usize,
-        filtered_languages: &HashSet<Language>,
-    ) -> (HashMap<Language, f64>, Option<HashMap<Language, u32>>) {
+        filtered_languages: &AHashSet<Language>,
+    ) -> (AHashMap<Language, f64>, Option<AHashMap<Language, u32>>) {
         let test_data_model = TestDataLanguageModel::from(words, ngram_length);
 
         self.get_language_models(ngram_length, filtered_languages, |language_models| {
@@ -1091,10 +1090,10 @@ impl LanguageDetector {
     fn compute_language_probabilities(
         &self,
         model: &TestDataLanguageModel,
-        filtered_languages: &HashSet<Language>,
+        filtered_languages: &AHashSet<Language>,
         language_models: &LanguageModelArray,
-    ) -> HashMap<Language, f64> {
-        let mut probabilities = hashmap!();
+    ) -> AHashMap<Language, f64> {
+        let mut probabilities = AHashMap::with_capacity(filtered_languages.len());
         for language in filtered_languages.iter() {
             let sum = self.compute_sum_of_ngram_probabilities(language, model, language_models);
             if sum < 0.0 {
@@ -1107,8 +1106,8 @@ impl LanguageDetector {
     fn compute_confidence_values(
         &self,
         values: &mut Vec<(Language, f64)>,
-        probability_maps: Vec<&HashMap<Language, f64>>,
-        probabilities: HashMap<Language, f64>,
+        probability_maps: Vec<&AHashMap<Language, f64>>,
+        probabilities: AHashMap<Language, f64>,
     ) {
         let denominator: f64 = probabilities.values().sum();
 
@@ -1177,10 +1176,10 @@ impl LanguageDetector {
     fn count_unigrams(
         &self,
         unigram_model: &TestDataLanguageModel,
-        filtered_languages: &HashSet<Language>,
-        language_models: &HashMap<Language, AHashMap<CompactString, f64>>,
-    ) -> HashMap<Language, u32> {
-        let mut unigram_counts = HashMap::new();
+        filtered_languages: &AHashSet<Language>,
+        language_models: &AHashMap<Language, AHashMap<CompactString, f64>>,
+    ) -> AHashMap<Language, u32> {
+        let mut unigram_counts = AHashMap::new();
         for language in filtered_languages.iter() {
             let model = match language_models.get(language) {
                 Some(model) => model,
@@ -1203,11 +1202,11 @@ impl LanguageDetector {
 
     fn sum_up_probabilities(
         &self,
-        probability_maps: &[&HashMap<Language, f64>],
-        unigram_counts: &Option<HashMap<Language, u32>>,
-        filtered_languages: HashSet<Language>,
-    ) -> HashMap<Language, f64> {
-        let mut summed_up_probabilities = hashmap!();
+        probability_maps: &[&AHashMap<Language, f64>],
+        unigram_counts: &Option<AHashMap<Language, u32>>,
+        filtered_languages: AHashSet<Language>,
+    ) -> AHashMap<Language, f64> {
+        let mut summed_up_probabilities = AHashMap::with_capacity(filtered_languages.len());
         for language in filtered_languages.iter() {
             let mut sum: f64 = probability_maps
                 .iter()
@@ -1251,7 +1250,12 @@ impl LanguageDetector {
         }
     }
 
-    fn increment_counter<T: Eq + Hash>(&self, counts: &mut HashMap<T, u32>, key: T, value: u32) {
+    fn increment_counter<T: Eq + Hash, S: BuildHasher>(
+        &self,
+        counts: &mut HashMap<T, u32, S>,
+        key: T,
+        value: u32,
+    ) {
         let counter = counts.entry(key).or_insert(0);
         *counter += value;
     }
@@ -1264,7 +1268,7 @@ pub(crate) fn split_text_into_words(text: &str) -> Vec<String> {
         .collect()
 }
 
-fn collect_languages_with_unique_characters(languages: &HashSet<Language>) -> HashSet<Language> {
+fn collect_languages_with_unique_characters(languages: &AHashSet<Language>) -> AHashSet<Language> {
     languages
         .iter()
         .filter(|it| it.unique_characters().is_some())
@@ -1272,7 +1276,7 @@ fn collect_languages_with_unique_characters(languages: &HashSet<Language>) -> Ha
         .collect()
 }
 
-fn collect_one_language_alphabets(languages: &HashSet<Language>) -> HashMap<Alphabet, Language> {
+fn collect_one_language_alphabets(languages: &AHashSet<Language>) -> AHashMap<Alphabet, Language> {
     Alphabet::all_supporting_single_language()
         .into_iter()
         .filter(|(_, language)| languages.contains(language))
@@ -1354,7 +1358,9 @@ mod tests {
     // HELPER FUNCTIONS
     // ##############################
 
-    fn create_language_model_map(data: HashMap<&'static str, f64>) -> AHashMap<CompactString, f64> {
+    fn create_language_model_map(
+        data: AHashMap<&'static str, f64>,
+    ) -> AHashMap<CompactString, f64> {
         data.iter()
             .map(|(&k, &v)| (CompactString::new(k), v))
             .collect()
@@ -1370,7 +1376,7 @@ mod tests {
 
     #[fixture]
     fn unigram_language_model_for_english() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "a" => 0.01,
             "l" => 0.02,
             "t" => 0.03,
@@ -1383,7 +1389,7 @@ mod tests {
 
     #[fixture]
     fn bigram_language_model_for_english() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "al" => 0.11,
             "lt" => 0.12,
             "te" => 0.13,
@@ -1396,7 +1402,7 @@ mod tests {
 
     #[fixture]
     fn trigram_language_model_for_english() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "alt" => 0.19,
             "lte" => 0.2,
             "ter" => 0.21,
@@ -1409,7 +1415,7 @@ mod tests {
 
     #[fixture]
     fn quadrigram_language_model_for_english() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "alte" => 0.25,
             "lter" => 0.26,
             // unknown quadrigrams
@@ -1420,7 +1426,7 @@ mod tests {
 
     #[fixture]
     fn fivegram_language_model_for_english() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "alter" => 0.29,
             // unknown fivegrams
             "aquas" => 0.0
@@ -1433,7 +1439,7 @@ mod tests {
 
     #[fixture]
     fn unigram_language_model_for_german() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "a" => 0.06,
             "l" => 0.07,
             "t" => 0.08,
@@ -1446,7 +1452,7 @@ mod tests {
 
     #[fixture]
     fn bigram_language_model_for_german() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "al" => 0.15,
             "lt" => 0.16,
             "te" => 0.17,
@@ -1458,7 +1464,7 @@ mod tests {
 
     #[fixture]
     fn trigram_language_model_for_german() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "alt" => 0.22,
             "lte" => 0.23,
             "ter" => 0.24,
@@ -1469,7 +1475,7 @@ mod tests {
 
     #[fixture]
     fn quadrigram_language_model_for_german() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!(
+        create_language_model_map(ahashmap!(
             "alte" => 0.27,
             "lter" => 0.28,
             // unknown quadrigrams
@@ -1479,7 +1485,7 @@ mod tests {
 
     #[fixture]
     fn fivegram_language_model_for_german() -> AHashMap<CompactString, f64> {
-        create_language_model_map(hashmap!("alter" => 0.3))
+        create_language_model_map(ahashmap!("alter" => 0.3))
     }
 
     // ##############################
@@ -1492,10 +1498,10 @@ mod tests {
         unigram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
         static UNIGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<HashMap<Language, AHashMap<CompactString, f64>>>,
+            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
         > = OnceCell::new();
         UNIGRAM_MODELS_FIXTURE.get_or_init(|| {
-            RwLock::new(hashmap!(
+            RwLock::new(ahashmap!(
                 English => unigram_language_model_for_english,
                 German => unigram_language_model_for_german
             ))
@@ -1508,10 +1514,10 @@ mod tests {
         bigram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
         static BIGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<HashMap<Language, AHashMap<CompactString, f64>>>,
+            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
         > = OnceCell::new();
         BIGRAM_MODELS_FIXTURE.get_or_init(|| {
-            RwLock::new(hashmap!(
+            RwLock::new(ahashmap!(
                 English => bigram_language_model_for_english,
                 German => bigram_language_model_for_german
             ))
@@ -1524,10 +1530,10 @@ mod tests {
         trigram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
         static TRIGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<HashMap<Language, AHashMap<CompactString, f64>>>,
+            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
         > = OnceCell::new();
         TRIGRAM_MODELS_FIXTURE.get_or_init(|| {
-            RwLock::new(hashmap!(
+            RwLock::new(ahashmap!(
                 English => trigram_language_model_for_english,
                 German => trigram_language_model_for_german
             ))
@@ -1540,10 +1546,10 @@ mod tests {
         quadrigram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
         static QUADRIGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<HashMap<Language, AHashMap<CompactString, f64>>>,
+            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
         > = OnceCell::new();
         QUADRIGRAM_MODELS_FIXTURE.get_or_init(|| {
-            RwLock::new(hashmap!(
+            RwLock::new(ahashmap!(
                 English => quadrigram_language_model_for_english,
                 German => quadrigram_language_model_for_german
             ))
@@ -1556,10 +1562,10 @@ mod tests {
         fivegram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
         static FIVEGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<HashMap<Language, AHashMap<CompactString, f64>>>,
+            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
         > = OnceCell::new();
         FIVEGRAM_MODELS_FIXTURE.get_or_init(|| {
-            RwLock::new(hashmap!(
+            RwLock::new(ahashmap!(
                 English => fivegram_language_model_for_english,
                 German => fivegram_language_model_for_german
             ))
@@ -1597,7 +1603,7 @@ mod tests {
         quadrigram_language_models: StaticLanguageModelMap,
         fivegram_language_models: StaticLanguageModelMap,
     ) -> LanguageDetector {
-        let languages = hashset!(English, German);
+        let languages = ahashset!(English, German);
         let languages_with_unique_characters = collect_languages_with_unique_characters(&languages);
         let one_language_alphabets = collect_one_language_alphabets(&languages);
 
@@ -1669,7 +1675,7 @@ mod tests {
         let ngram_length = ngram.chars().count();
         let probability = detector_for_english_and_german.get_language_models(
             ngram_length,
-            &hashset!(language.clone()),
+            &ahashset!(language.clone()),
             |language_models| {
                 language_models[ngram_length - 1]
                     .unwrap()
@@ -1713,7 +1719,7 @@ mod tests {
     ) {
         let sum_of_probabilities = detector_for_english_and_german.get_language_models(
             5,
-            &hashset!(English),
+            &ahashset!(English),
             |language_models| {
                 detector_for_english_and_german.compute_sum_of_ngram_probabilities(
                     &English,
@@ -1743,21 +1749,21 @@ mod tests {
         expected_probabilities,
         case::unigram_model(
             test_data_model(vec![vec!["a"], vec!["l"], vec!["t"], vec!["e"], vec!["r"]]),
-            hashmap!(
+            ahashmap!(
                 English => 0.01_f64.ln() + 0.02_f64.ln() + 0.03_f64.ln() + 0.04_f64.ln() + 0.05_f64.ln(),
                 German => 0.06_f64.ln() + 0.07_f64.ln() + 0.08_f64.ln() + 0.09_f64.ln() + 0.1_f64.ln()
             )
         ),
         case::trigram_model(
             test_data_model(vec![vec!["alt", "al", "a"], vec!["lte", "lt", "l"], vec!["ter", "te", "t"], vec!["wxy", "wx", "w"]]),
-            hashmap!(
+            ahashmap!(
                 English => 0.19_f64.ln() + 0.2_f64.ln() + 0.21_f64.ln(),
                 German => 0.22_f64.ln() + 0.23_f64.ln() + 0.24_f64.ln()
             )
         ),
         case::quadrigram_model(
             test_data_model(vec![vec!["alte", "alt", "al", "a"], vec!["lter", "lte", "lt", "l"], vec!["wxyz", "wxy", "wx", "w"]]),
-            hashmap!(
+            ahashmap!(
                 English => 0.25_f64.ln() + 0.26_f64.ln(),
                 German => 0.27_f64.ln() + 0.28_f64.ln()
             )
@@ -1766,9 +1772,9 @@ mod tests {
     fn assert_computation_of_language_probabilities_works_correctly(
         detector_for_english_and_german: LanguageDetector,
         test_data_model: TestDataLanguageModel,
-        expected_probabilities: HashMap<Language, f64>,
+        expected_probabilities: AHashMap<Language, f64>,
     ) {
-        let languages = hashset!(English, German);
+        let languages = ahashset!(English, German);
         let probabilities =
             detector_for_english_and_german.get_language_models(5, &languages, |language_models| {
                 detector_for_english_and_german.compute_language_probabilities(
@@ -1814,7 +1820,7 @@ mod tests {
 
     #[rstest]
     fn test_compute_language_confidence_values_for_very_large_input_text() {
-        let detector = LanguageDetector::from(hashset!(English, German), 0.0, true, false);
+        let detector = LanguageDetector::from(ahashset!(English, German), 0.0, true, false);
         let confidence_values = detector.compute_language_confidence_values(VERY_LARGE_INPUT_TEXT);
         let expected_confidence_values = vec![(German, 1.0), (English, 0.0)];
         assert_eq!(confidence_values, expected_confidence_values);
@@ -2184,114 +2190,114 @@ mod tests {
     }
 
     #[rstest(word, expected_languages,
-        case("والموضوع", hashset!(Arabic, Persian, Urdu)),
+        case("والموضوع", ahashset!(Arabic, Persian, Urdu)),
         case(
             "сопротивление",
-            hashset!(
+            ahashset!(
                 Belarusian, Bulgarian, Kazakh, Macedonian, Mongolian, Russian, Serbian, Ukrainian
             )
         ),
-        case("раскрывае", hashset!(Belarusian, Kazakh, Mongolian, Russian)),
-        case("этот", hashset!(Belarusian, Kazakh, Mongolian, Russian)),
-        case("огнём", hashset!(Belarusian, Kazakh, Mongolian, Russian)),
-        case("плаваща", hashset!(Bulgarian, Kazakh, Mongolian, Russian)),
-        case("довършат", hashset!(Bulgarian, Kazakh, Mongolian, Russian)),
-        case("павінен", hashset!(Belarusian, Kazakh, Ukrainian)),
-        case("үндсэн", hashset!(Belarusian, Kazakh, Mongolian, Russian)),
-        case("дөхөж", hashset!(Kazakh, Mongolian)),
-        case("затоплување", hashset!(Macedonian, Serbian)),
-        case("ректасцензија", hashset!(Macedonian, Serbian)),
-        case("набљудувач", hashset!(Macedonian, Serbian)),
-        case("aizklātā", hashset!(Latvian, Maori, Yoruba)),
-        case("sistēmas", hashset!(Latvian, Maori, Yoruba)),
-        case("palīdzi", hashset!(Latvian, Maori, Yoruba)),
-        case("nhẹn", hashset!(Vietnamese, Yoruba)),
-        case("chọn", hashset!(Vietnamese, Yoruba)),
-        case("prihvaćanju", hashset!(Bosnian, Croatian, Polish)),
-        case("nađete", hashset!(Bosnian, Croatian, Vietnamese)),
-        case("visão", hashset!(Portuguese, Vietnamese)),
-        case("wystąpią", hashset!(Lithuanian, Polish)),
-        case("budowę", hashset!(Lithuanian, Polish)),
-        case("nebūsime", hashset!(Latvian, Lithuanian, Maori, Yoruba)),
-        case("afişate", hashset!(Azerbaijani, Romanian, Turkish)),
-        case("kradzieżami", hashset!(Polish, Romanian)),
-        case("înviat", hashset!(French, Romanian)),
-        case("venerdì", hashset!(Italian, Vietnamese, Yoruba)),
-        case("años", hashset!(Basque, Spanish)),
-        case("rozohňuje", hashset!(Czech, Slovak)),
-        case("rtuť", hashset!(Czech, Slovak)),
-        case("pregătire", hashset!(Romanian, Vietnamese)),
-        case("jeďte", hashset!(Czech, Romanian, Slovak)),
-        case("minjaverðir", hashset!(Icelandic, Turkish)),
-        case("þagnarskyldu", hashset!(Icelandic, Turkish)),
-        case("nebûtu", hashset!(French, Hungarian)),
-        case("hashemidëve", hashset!(Afrikaans, Albanian, Dutch, French)),
-        case("forêt", hashset!(Afrikaans, French, Portuguese, Vietnamese)),
-        case("succèdent", hashset!(French, Italian, Vietnamese, Yoruba)),
-        case("où", hashset!(French, Italian, Vietnamese, Yoruba)),
-        case("tõeliseks", hashset!(Estonian, Hungarian, Portuguese, Vietnamese)),
-        case("viòiem", hashset!(Catalan, Italian, Vietnamese, Yoruba)),
-        case("contrôle", hashset!(French, Portuguese, Slovak, Vietnamese)),
-        case("direktør", hashset!(Bokmal, Danish, Nynorsk)),
-        case("vývoj", hashset!(Czech, Icelandic, Slovak, Turkish, Vietnamese)),
-        case("päralt", hashset!(Estonian, Finnish, German, Slovak, Swedish)),
-        case("labâk", hashset!(French, Portuguese, Romanian, Turkish, Vietnamese)),
-        case("pràctiques", hashset!(Catalan, French, Italian, Portuguese, Vietnamese)),
+        case("раскрывае", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
+        case("этот", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
+        case("огнём", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
+        case("плаваща", ahashset!(Bulgarian, Kazakh, Mongolian, Russian)),
+        case("довършат", ahashset!(Bulgarian, Kazakh, Mongolian, Russian)),
+        case("павінен", ahashset!(Belarusian, Kazakh, Ukrainian)),
+        case("үндсэн", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
+        case("дөхөж", ahashset!(Kazakh, Mongolian)),
+        case("затоплување", ahashset!(Macedonian, Serbian)),
+        case("ректасцензија", ahashset!(Macedonian, Serbian)),
+        case("набљудувач", ahashset!(Macedonian, Serbian)),
+        case("aizklātā", ahashset!(Latvian, Maori, Yoruba)),
+        case("sistēmas", ahashset!(Latvian, Maori, Yoruba)),
+        case("palīdzi", ahashset!(Latvian, Maori, Yoruba)),
+        case("nhẹn", ahashset!(Vietnamese, Yoruba)),
+        case("chọn", ahashset!(Vietnamese, Yoruba)),
+        case("prihvaćanju", ahashset!(Bosnian, Croatian, Polish)),
+        case("nađete", ahashset!(Bosnian, Croatian, Vietnamese)),
+        case("visão", ahashset!(Portuguese, Vietnamese)),
+        case("wystąpią", ahashset!(Lithuanian, Polish)),
+        case("budowę", ahashset!(Lithuanian, Polish)),
+        case("nebūsime", ahashset!(Latvian, Lithuanian, Maori, Yoruba)),
+        case("afişate", ahashset!(Azerbaijani, Romanian, Turkish)),
+        case("kradzieżami", ahashset!(Polish, Romanian)),
+        case("înviat", ahashset!(French, Romanian)),
+        case("venerdì", ahashset!(Italian, Vietnamese, Yoruba)),
+        case("años", ahashset!(Basque, Spanish)),
+        case("rozohňuje", ahashset!(Czech, Slovak)),
+        case("rtuť", ahashset!(Czech, Slovak)),
+        case("pregătire", ahashset!(Romanian, Vietnamese)),
+        case("jeďte", ahashset!(Czech, Romanian, Slovak)),
+        case("minjaverðir", ahashset!(Icelandic, Turkish)),
+        case("þagnarskyldu", ahashset!(Icelandic, Turkish)),
+        case("nebûtu", ahashset!(French, Hungarian)),
+        case("hashemidëve", ahashset!(Afrikaans, Albanian, Dutch, French)),
+        case("forêt", ahashset!(Afrikaans, French, Portuguese, Vietnamese)),
+        case("succèdent", ahashset!(French, Italian, Vietnamese, Yoruba)),
+        case("où", ahashset!(French, Italian, Vietnamese, Yoruba)),
+        case("tõeliseks", ahashset!(Estonian, Hungarian, Portuguese, Vietnamese)),
+        case("viòiem", ahashset!(Catalan, Italian, Vietnamese, Yoruba)),
+        case("contrôle", ahashset!(French, Portuguese, Slovak, Vietnamese)),
+        case("direktør", ahashset!(Bokmal, Danish, Nynorsk)),
+        case("vývoj", ahashset!(Czech, Icelandic, Slovak, Turkish, Vietnamese)),
+        case("päralt", ahashset!(Estonian, Finnish, German, Slovak, Swedish)),
+        case("labâk", ahashset!(French, Portuguese, Romanian, Turkish, Vietnamese)),
+        case("pràctiques", ahashset!(Catalan, French, Italian, Portuguese, Vietnamese)),
         case(
             "überrascht",
-            hashset!(Azerbaijani, Catalan, Estonian, German, Hungarian, Spanish, Turkish)
+            ahashset!(Azerbaijani, Catalan, Estonian, German, Hungarian, Spanish, Turkish)
         ),
-        case("indebærer", hashset!(Bokmal, Danish, Icelandic, Nynorsk)),
-        case("måned", hashset!(Bokmal, Danish, Nynorsk, Swedish)),
-        case("zaručen", hashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
-        case("zkouškou", hashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
-        case("navržen", hashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
+        case("indebærer", ahashset!(Bokmal, Danish, Icelandic, Nynorsk)),
+        case("måned", ahashset!(Bokmal, Danish, Nynorsk, Swedish)),
+        case("zaručen", ahashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
+        case("zkouškou", ahashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
+        case("navržen", ahashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
         case(
             "façonnage",
-            hashset!(Albanian, Azerbaijani, Basque, Catalan, French, Portuguese, Turkish)
+            ahashset!(Albanian, Azerbaijani, Basque, Catalan, French, Portuguese, Turkish)
         ),
         case(
             "höher",
-            hashset!(Azerbaijani, Estonian, Finnish, German, Hungarian, Icelandic, Swedish, Turkish)
+            ahashset!(Azerbaijani, Estonian, Finnish, German, Hungarian, Icelandic, Swedish, Turkish)
         ),
         case(
             "catedráticos",
-            hashset!(
+            ahashset!(
                 Catalan, Czech, Icelandic, Irish, Hungarian, Portuguese, Slovak, Spanish,
                 Vietnamese, Yoruba
             )
         ),
         case(
             "política",
-            hashset!(
+            ahashset!(
                 Catalan, Czech, Icelandic, Irish, Hungarian, Portuguese, Slovak, Spanish,
                 Vietnamese, Yoruba
             )
         ),
         case(
             "música",
-            hashset!(
+            ahashset!(
                 Catalan, Czech, Icelandic, Irish, Hungarian, Portuguese, Slovak, Spanish,
                 Vietnamese, Yoruba
             )
         ),
         case(
             "contradicció",
-            hashset!(
+            ahashset!(
                 Catalan, Hungarian, Icelandic, Irish, Polish, Portuguese, Slovak, Spanish,
                 Vietnamese, Yoruba
             )
         ),
         case(
             "només",
-            hashset!(
+            ahashset!(
                 Catalan, Czech, French, Hungarian, Icelandic, Irish, Italian, Portuguese, Slovak,
                 Spanish, Vietnamese, Yoruba
             )
         ),
         case(
             "house",
-            hashset!(
+            ahashset!(
                 Afrikaans, Albanian, Azerbaijani, Basque, Bokmal, Bosnian, Catalan, Croatian, Czech,
                 Danish, Dutch, English, Esperanto, Estonian, Finnish, French, Ganda, German, Hungarian,
                 Icelandic, Indonesian, Irish, Italian, Latin, Latvian, Lithuanian, Malay, Maori, Nynorsk,
@@ -2303,7 +2309,7 @@ mod tests {
     fn assert_language_filtering_with_rules_works_correctly(
         detector_for_all_languages: LanguageDetector,
         word: &str,
-        expected_languages: HashSet<Language>,
+        expected_languages: AHashSet<Language>,
     ) {
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
             &vec![word.to_string()],
@@ -2340,7 +2346,7 @@ mod tests {
     fn assert_language_detection_is_deterministic(text: &str, languages: Vec<Language>) {
         let detector =
             LanguageDetector::from(languages.iter().cloned().collect(), 0.0, true, false);
-        let mut detected_languages = hashset!();
+        let mut detected_languages = AHashSet::new();
         for _ in 0..100 {
             let language = detector.detect_language_of(text);
             detected_languages.insert(language.unwrap());
@@ -2355,7 +2361,7 @@ mod tests {
 
     #[rstest]
     fn assert_low_accuracy_mode_returns_no_language_for_unigrams_and_bigrams() {
-        let detector = LanguageDetector::from(hashset!(English, German), 0.0, true, true);
+        let detector = LanguageDetector::from(ahashset!(English, German), 0.0, true, true);
 
         assert_ne!(detector.detect_language_of("bed"), None);
         assert_eq!(detector.detect_language_of("be"), None);

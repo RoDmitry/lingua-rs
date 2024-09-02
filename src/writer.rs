@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-use std::collections::HashMap;
 use std::fs::{remove_file, File};
 use std::io;
 use std::io::{BufRead, BufReader, LineWriter, Write};
 use std::path::Path;
 
+use ahash::AHashMap;
 use brotli::CompressorWriter;
 use itertools::Itertools;
 use regex::Regex;
@@ -67,7 +67,7 @@ impl LanguageModelFilesWriter {
         check_output_directory_path(output_directory_path);
 
         let unigram_model =
-            Self::create_language_model(input_file_path, language, 1, char_class, &hashmap!())?;
+            Self::create_language_model(input_file_path, language, 1, char_class, &ahashmap!())?;
 
         let bigram_model = Self::create_language_model(
             input_file_path,
@@ -135,7 +135,7 @@ impl LanguageModelFilesWriter {
         language: &Language,
         ngram_length: usize,
         char_class: &str,
-        lower_ngram_absolute_frequencies: &HashMap<Ngram, u32>,
+        lower_ngram_absolute_frequencies: &AHashMap<Ngram, u32>,
     ) -> io::Result<TrainingDataLanguageModel> {
         let file = File::open(input_file_path)?;
         let reader = BufReader::new(file);

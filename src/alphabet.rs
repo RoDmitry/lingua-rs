@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-use std::collections::HashMap;
-
-use ahash::AHashSet;
+use ahash::{AHashMap, AHashSet};
 use once_cell::sync::Lazy;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -54,8 +52,8 @@ impl Alphabet {
         self.char_set().is_char_match(ch)
     }
 
-    pub fn all_supporting_single_language() -> HashMap<Alphabet, Language> {
-        let mut alphabets = HashMap::new();
+    pub fn all_supporting_single_language() -> AHashMap<Alphabet, Language> {
+        let mut alphabets = AHashMap::new();
         for alphabet in Alphabet::iter() {
             let supported_languages = alphabet.supported_languages();
             if supported_languages.len() == 1 {

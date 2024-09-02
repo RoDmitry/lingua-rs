@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use std::collections::{HashMap, HashSet};
+use ahash::{AHashMap, AHashSet};
 use std::str::FromStr;
 
 use once_cell::sync::Lazy;
@@ -39,13 +39,13 @@ pub(crate) static TOKENS_WITH_OPTIONAL_WHITESPACE: Lazy<Regex> = Lazy::new(|| {
 pub(crate) static TOKENS_WITHOUT_WHITESPACE: Lazy<Regex> =
     Lazy::new(|| Regex::new("\\p{Han}|\\p{Hangul}|\\p{Hiragana}|\\p{Katakana}|\\p{L}+").unwrap());
 
-pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet<Language>>> =
+pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashSet<Language>>> =
     Lazy::new(|| {
-        let mut mapping = hashmap!();
+        let mut mapping = AHashMap::new();
 
         if cfg!(feature = "portuguese") || cfg!(feature = "vietnamese") {
             mapping.insert("Ãã", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "portuguese") {
                     languages.insert(Language::from_str("Portuguese").unwrap());
                 }
@@ -58,7 +58,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "lithuanian") || cfg!(feature = "polish") {
             mapping.insert("ĄąĘę", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "lithuanian") {
                     languages.insert(Language::from_str("Lithuanian").unwrap());
                 }
@@ -71,7 +71,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "polish") || cfg!(feature = "romanian") {
             mapping.insert("Żż", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "polish") {
                     languages.insert(Language::from_str("Polish").unwrap());
                 }
@@ -84,7 +84,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "french") || cfg!(feature = "romanian") {
             mapping.insert("Îî", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "french") {
                     languages.insert(Language::from_str("French").unwrap());
                 }
@@ -97,7 +97,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "basque") || cfg!(feature = "spanish") {
             mapping.insert("Ññ", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "basque") {
                     languages.insert(Language::from_str("Basque").unwrap());
                 }
@@ -110,7 +110,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "czech") || cfg!(feature = "slovak") {
             mapping.insert("ŇňŤť", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "czech") {
                     languages.insert(Language::from_str("Czech").unwrap());
                 }
@@ -123,7 +123,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "romanian") || cfg!(feature = "vietnamese") {
             mapping.insert("Ăă", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "romanian") {
                     languages.insert(Language::from_str("Romanian").unwrap());
                 }
@@ -136,7 +136,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "azerbaijani") || cfg!(feature = "turkish") {
             mapping.insert("İıĞğ", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "azerbaijani") {
                     languages.insert(Language::from_str("Azerbaijani").unwrap());
                 }
@@ -149,7 +149,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "macedonian") || cfg!(feature = "serbian") {
             mapping.insert("ЈјЉљЊњ", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "macedonian") {
                     languages.insert(Language::from_str("Macedonian").unwrap());
                 }
@@ -162,7 +162,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "vietnamese") || cfg!(feature = "yoruba") {
             mapping.insert("ẸẹỌọ", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "vietnamese") {
                     languages.insert(Language::from_str("Vietnamese").unwrap());
                 }
@@ -175,7 +175,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "icelandic") || cfg!(feature = "turkish") {
             mapping.insert("ÐðÞþ", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "icelandic") {
                     languages.insert(Language::from_str("Icelandic").unwrap());
                 }
@@ -188,7 +188,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "french") || cfg!(feature = "hungarian") {
             mapping.insert("Ûû", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "french") {
                     languages.insert(Language::from_str("French").unwrap());
                 }
@@ -201,7 +201,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "maori") || cfg!(feature = "yoruba") {
             mapping.insert("Ōō", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "maori") {
                     languages.insert(Language::from_str("Maori").unwrap());
                 }
@@ -214,7 +214,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "kazakh") || cfg!(feature = "mongolian") {
             mapping.insert("ӨөҮү", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "kazakh") {
                     languages.insert(Language::from_str("Kazakh").unwrap());
                 }
@@ -227,7 +227,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "latvian") || cfg!(feature = "maori") || cfg!(feature = "yoruba") {
             mapping.insert("ĀāĒēĪī", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "latvian") {
                     languages.insert(Language::from_str("Latvian").unwrap());
                 }
@@ -244,7 +244,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
         if cfg!(feature = "azerbaijani") || cfg!(feature = "romanian") || cfg!(feature = "turkish")
         {
             mapping.insert("Şş", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "azerbaijani") {
                     languages.insert(Language::from_str("Azerbaijani").unwrap());
                 }
@@ -260,7 +260,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "czech") || cfg!(feature = "romanian") || cfg!(feature = "slovak") {
             mapping.insert("Ďď", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "czech") {
                     languages.insert(Language::from_str("Czech").unwrap());
                 }
@@ -276,7 +276,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "bosnian") || cfg!(feature = "croatian") || cfg!(feature = "polish") {
             mapping.insert("Ćć", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "bosnian") {
                     languages.insert(Language::from_str("Bosnian").unwrap());
                 }
@@ -292,7 +292,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "bosnian") || cfg!(feature = "croatian") || cfg!(feature = "vietnamese") {
             mapping.insert("Đđ", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "bosnian") {
                     languages.insert(Language::from_str("Bosnian").unwrap());
                 }
@@ -308,7 +308,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "belarusian") || cfg!(feature = "kazakh") || cfg!(feature = "ukrainian") {
             mapping.insert("Іі", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "belarusian") {
                     languages.insert(Language::from_str("Belarusian").unwrap());
                 }
@@ -324,7 +324,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "italian") || cfg!(feature = "vietnamese") || cfg!(feature = "yoruba") {
             mapping.insert("Ìì", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "italian") {
                     languages.insert(Language::from_str("Italian").unwrap());
                 }
@@ -340,7 +340,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
 
         if cfg!(feature = "bokmal") || cfg!(feature = "danish") || cfg!(feature = "nynorsk") {
             mapping.insert("Øø", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "bokmal") {
                     languages.insert(Language::from_str("Bokmal").unwrap());
                 }
@@ -360,7 +360,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
             || cfg!(feature = "yoruba")
         {
             mapping.insert("Ūū", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "latvian") {
                     languages.insert(Language::from_str("Latvian").unwrap());
                 }
@@ -383,7 +383,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
             || cfg!(feature = "french")
         {
             mapping.insert("Ëë", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "afrikaans") {
                     languages.insert(Language::from_str("Afrikaans").unwrap());
                 }
@@ -406,7 +406,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
             || cfg!(feature = "yoruba")
         {
             mapping.insert("ÈèÙù", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "french") {
                     languages.insert(Language::from_str("French").unwrap());
                 }
@@ -429,7 +429,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
             || cfg!(feature = "vietnamese")
         {
             mapping.insert("Êê", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "afrikaans") {
                     languages.insert(Language::from_str("Afrikaans").unwrap());
                 }
@@ -452,7 +452,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
             || cfg!(feature = "vietnamese")
         {
             mapping.insert("Õõ", {
-                let mut languages = hashset!();
+                let mut languages = AHashSet::new();
                 if cfg!(feature = "estonian") {
                     languages.insert(Language::from_str("Estonian").unwrap());
                 }
@@ -474,7 +474,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "vietnamese")
             {
                 mapping.insert("Ôô", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "french") {
                         languages.insert(Language::from_str("French").unwrap());
                     }
@@ -497,7 +497,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "russian")
             {
                 mapping.insert("ЁёЫыЭэ", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "belarusian") {
                         languages.insert(Language::from_str("Belarusian").unwrap());
                     }
@@ -520,7 +520,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "russian")
             {
                 mapping.insert("ЩщЪъ", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "bulgarian") {
                         languages.insert(Language::from_str("Bulgarian").unwrap());
                     }
@@ -543,7 +543,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "yoruba")
             {
                 mapping.insert("Òò", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "catalan") {
                         languages.insert(Language::from_str("Catalan").unwrap());
                     }
@@ -567,7 +567,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "vietnamese")
             {
                 mapping.insert("Ââ", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "french") {
                         languages.insert(Language::from_str("French").unwrap());
                     }
@@ -593,7 +593,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "nynorsk")
             {
                 mapping.insert("Ææ", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "bokmal") {
                         languages.insert(Language::from_str("Bokmal").unwrap());
                     }
@@ -616,7 +616,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "swedish")
             {
                 mapping.insert("Åå", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "bokmal") {
                         languages.insert(Language::from_str("Bokmal").unwrap());
                     }
@@ -640,7 +640,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "vietnamese")
             {
                 mapping.insert("Ýý", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "czech") {
                         languages.insert(Language::from_str("Czech").unwrap());
                     }
@@ -667,7 +667,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "swedish")
             {
                 mapping.insert("Ää", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "estonian") {
                         languages.insert(Language::from_str("Estonian").unwrap());
                     }
@@ -694,7 +694,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "vietnamese")
             {
                 mapping.insert("Àà", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "catalan") {
                         languages.insert(Language::from_str("Catalan").unwrap());
                     }
@@ -723,7 +723,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "turkish")
             {
                 mapping.insert("Üü", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "azerbaijani") {
                         languages.insert(Language::from_str("Azerbaijani").unwrap());
                     }
@@ -758,7 +758,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "slovene")
             {
                 mapping.insert("ČčŠšŽž", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "bosnian") {
                         languages.insert(Language::from_str("Bosnian").unwrap());
                     }
@@ -793,7 +793,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "turkish")
             {
                 mapping.insert("Çç", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "albanian") {
                         languages.insert(Language::from_str("Albanian").unwrap());
                     }
@@ -829,7 +829,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "turkish")
             {
                 mapping.insert("Öö", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "azerbaijani") {
                         languages.insert(Language::from_str("Azerbaijani").unwrap());
                     }
@@ -870,7 +870,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "yoruba")
             {
                 mapping.insert("Óó", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "catalan") {
                         languages.insert(Language::from_str("Catalan").unwrap());
                     }
@@ -917,7 +917,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "yoruba")
             {
                 mapping.insert("ÁáÍíÚú", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "catalan") {
                         languages.insert(Language::from_str("Catalan").unwrap());
                     }
@@ -966,7 +966,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<HashMap<&'static str, HashSet
                 || cfg!(feature = "yoruba")
             {
                 mapping.insert("Éé", {
-                    let mut languages = hashset!();
+                    let mut languages = AHashSet::new();
                     if cfg!(feature = "catalan") {
                         languages.insert(Language::from_str("Catalan").unwrap());
                     }

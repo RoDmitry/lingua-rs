@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use std::collections::HashSet;
+use ahash::AHashSet;
 
 use crate::detector::LanguageDetector;
 use crate::isocode::{IsoCode639_1, IsoCode639_3};
@@ -30,7 +30,7 @@ pub(crate) const MINIMUM_RELATIVE_DISTANCE_MESSAGE: &str =
 #[derive(Clone)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
 pub struct LanguageDetectorBuilder {
-    languages: HashSet<Language>,
+    languages: AHashSet<Language>,
     minimum_relative_distance: f64,
     is_every_language_model_preloaded: bool,
     is_low_accuracy_mode_enabled: bool,
@@ -108,7 +108,7 @@ impl LanguageDetectorBuilder {
         let languages = iso_codes
             .iter()
             .map(Language::from_iso_code_639_1)
-            .collect::<HashSet<_>>();
+            .collect::<AHashSet<_>>();
         Self::from(languages)
     }
 
@@ -123,7 +123,7 @@ impl LanguageDetectorBuilder {
         let languages = iso_codes
             .iter()
             .map(Language::from_iso_code_639_3)
-            .collect::<HashSet<_>>();
+            .collect::<AHashSet<_>>();
         Self::from(languages)
     }
 
@@ -187,14 +187,14 @@ impl LanguageDetectorBuilder {
     /// Creates and returns the configured instance of [LanguageDetector].
     pub fn build(&mut self) -> LanguageDetector {
         LanguageDetector::from(
-            self.languages.clone(),
+            AHashSet::from_iter(self.languages.iter().cloned()),
             self.minimum_relative_distance,
             self.is_every_language_model_preloaded,
             self.is_low_accuracy_mode_enabled,
         )
     }
 
-    fn from(languages: HashSet<Language>) -> Self {
+    fn from(languages: AHashSet<Language>) -> Self {
         Self {
             languages,
             minimum_relative_distance: 0.0,
@@ -259,9 +259,9 @@ mod tests {
             Language::Romanian,
         ]);
         let expected_languages = Language::all()
-            .difference(&hashset!(Language::Turkish, Language::Romanian))
+            .difference(&ahashset!(Language::Turkish, Language::Romanian))
             .cloned()
-            .collect::<HashSet<Language>>();
+            .collect::<AHashSet<Language>>();
 
         assert_eq!(builder.languages, expected_languages);
     }
@@ -270,7 +270,7 @@ mod tests {
     #[should_panic(expected = "LanguageDetector needs at least 2 languages to choose from")]
     fn assert_detector_cannot_be_built_from_too_long_blacklist() {
         let languages = Language::all()
-            .difference(&hashset!(Language::German))
+            .difference(&ahashset!(Language::German))
             .cloned()
             .collect::<Vec<_>>();
 
@@ -284,7 +284,7 @@ mod tests {
 
         assert_eq!(
             builder.languages,
-            hashset!(Language::German, Language::English)
+            ahashset!(Language::German, Language::English)
         );
     }
 
@@ -301,7 +301,7 @@ mod tests {
 
         assert_eq!(
             builder.languages,
-            hashset!(Language::German, Language::Zulu)
+            ahashset!(Language::German, Language::Zulu)
         );
     }
 
@@ -318,7 +318,7 @@ mod tests {
 
         assert_eq!(
             builder.languages,
-            hashset!(Language::German, Language::Zulu)
+            ahashset!(Language::German, Language::Zulu)
         );
     }
 

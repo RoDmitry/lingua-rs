@@ -15,11 +15,11 @@
  */
 
 use std::any::Any;
-use std::collections::HashSet;
 use std::io;
 use std::panic;
 use std::path::PathBuf;
 
+use ahash::AHashSet;
 use pyo3::exceptions::{PyException, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyTuple, PyType};
@@ -184,42 +184,42 @@ impl Language {
     /// Return a set of all supported languages.
     #[pyo3(name = "all")]
     #[classmethod]
-    fn py_all(_cls: &Bound<PyType>) -> HashSet<Self> {
+    fn py_all(_cls: &Bound<PyType>) -> AHashSet<Self> {
         Self::all()
     }
 
     /// Return a set of all supported spoken languages.
     #[pyo3(name = "all_spoken_ones")]
     #[classmethod]
-    fn py_all_spoken_ones(_cls: &Bound<PyType>) -> HashSet<Self> {
+    fn py_all_spoken_ones(_cls: &Bound<PyType>) -> AHashSet<Self> {
         Self::all_spoken_ones()
     }
 
     /// Return a set of all languages supporting the Arabic script.
     #[pyo3(name = "all_with_arabic_script")]
     #[classmethod]
-    fn py_all_with_arabic_script(_cls: &Bound<PyType>) -> HashSet<Self> {
+    fn py_all_with_arabic_script(_cls: &Bound<PyType>) -> AHashSet<Self> {
         Self::all_with_arabic_script()
     }
 
     /// Return a set of all languages supporting the Cyrillic script.
     #[pyo3(name = "all_with_cyrillic_script")]
     #[classmethod]
-    fn py_all_with_cyrillic_script(_cls: &Bound<PyType>) -> HashSet<Self> {
+    fn py_all_with_cyrillic_script(_cls: &Bound<PyType>) -> AHashSet<Self> {
         Self::all_with_cyrillic_script()
     }
 
     /// Return a set of all languages supporting the Devanagari script.
     #[pyo3(name = "all_with_devanagari_script")]
     #[classmethod]
-    fn py_all_with_devanagari_script(_cls: &Bound<PyType>) -> HashSet<Self> {
+    fn py_all_with_devanagari_script(_cls: &Bound<PyType>) -> AHashSet<Self> {
         Self::all_with_devanagari_script()
     }
 
     /// Return a set of all languages supporting the Latin script.
     #[pyo3(name = "all_with_latin_script")]
     #[classmethod]
-    fn py_all_with_latin_script(_cls: &Bound<PyType>) -> HashSet<Self> {
+    fn py_all_with_latin_script(_cls: &Bound<PyType>) -> AHashSet<Self> {
         Self::all_with_latin_script()
     }
 
@@ -319,7 +319,10 @@ impl LanguageDetectorBuilder {
     /// with all built-in languages except those passed to this method.
     #[pyo3(name = "from_all_languages_without", signature = (*languages))]
     #[classmethod]
-    fn py_from_all_languages_without(_cls: &Bound<PyType>, languages: &Bound<PyTuple>) -> PyResult<Self> {
+    fn py_from_all_languages_without(
+        _cls: &Bound<PyType>,
+        languages: &Bound<PyTuple>,
+    ) -> PyResult<Self> {
         match languages.extract::<Vec<Language>>() {
             Ok(vector) => match panic::catch_unwind(|| Self::from_all_languages_without(&vector)) {
                 Ok(builder) => Ok(builder),
