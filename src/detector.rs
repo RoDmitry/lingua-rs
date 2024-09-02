@@ -346,7 +346,7 @@ impl LanguageDetector {
             if word.chars().count() < 5 {
                 continue;
             }
-            let language = self.detect_language_of(*word);
+            let language = self.detect_language_of(word);
             if let Some(lang) = language {
                 self.increment_counter(&mut language_counts, lang, 1);
             }
@@ -604,16 +604,20 @@ impl LanguageDetector {
             return values;
         }
 
-        let half_word_count = (words.len() as f64) * 0.5;
+        let (half_word_count, total_language_counts, detected_alphabets) =
+            self.process_words(&words, languages);
+
         let language_detected_by_rules =
-            self.detect_language_with_rules(&words, languages, half_word_count);
+            self.detect_language_with_rules(half_word_count, total_language_counts);
+
         if let Some(language) = language_detected_by_rules {
             update_confidence_values(&mut values, language, 1.0);
             values.sort_by(confidence_values_comparator);
             return values;
         }
 
-        let filtered_languages = self.filter_languages_by_rules(&words, languages, half_word_count);
+        let filtered_languages =
+            self.filter_languages_by_rules(&words, languages, half_word_count, detected_alphabets);
 
         if filtered_languages.len() == 1 {
             let filtered_language = filtered_languages.into_iter().next().unwrap();
@@ -771,21 +775,26 @@ impl LanguageDetector {
             .collect()
     }
 
-    fn detect_language_with_rules<S: BuildHasher>(
+    #[inline]
+    fn process_words<S: BuildHasher>(
         &self,
         words: &[String],
         languages: &HashSet<Language, S>,
-        half_word_count: f64,
-    ) -> Option<Language> {
+    ) -> (
+        f64,
+        AHashMap<Option<Language>, u32>,
+        AHashMap<Alphabet, u32>,
+    ) {
         let mut total_language_counts = AHashMap::<Option<Language>, u32>::new();
+        let mut detected_alphabets = AHashMap::<Alphabet, u32>::new();
 
         for word in words {
             let mut word_language_counts = AHashMap::<Language, u32>::new();
 
             'ch: for character in word.chars() {
-                for (alphabet, language) in self.one_language_alphabets.iter() {
+                for (&alphabet, &language) in self.one_language_alphabets.iter() {
                     if alphabet.matches_char(character) {
-                        self.increment_counter(&mut word_language_counts, *language, 1);
+                        self.increment_counter(&mut word_language_counts, language, 1);
                         continue 'ch;
                     }
                 }
@@ -806,6 +815,57 @@ impl LanguageDetector {
                         .for_each(|it| self.increment_counter(&mut word_language_counts, *it, 1));
                 }
             }
+            'ch: for character in word.chars() {
+                for alphabet in Alphabet::iter() {
+                    if alphabet.matches_char(character) {
+                        self.increment_counter(
+                            &mut detected_alphabets,
+                            alphabet,
+                            word.chars().count() as u32,
+                        );
+                        break 'ch;
+                    }
+                }
+            }
+            /* for character in word.chars() {
+                for alphabet in Alphabet::iter() {
+                    if alphabet.matches_char(character) {
+                        self.increment_counter(&mut detected_alphabets, alphabet, 1);
+
+                        let language =
+                            self.one_language_alphabets
+                                .get(&alphabet)
+                                .copied()
+                                .or_else(|| match alphabet {
+                                    #[cfg(feature = "chinese")]
+                                    Alphabet::Han => Some(Language::Chinese),
+                                    #[cfg(feature = "japanese")]
+                                    #[allow(unreachable_patterns)]
+                                    Alphabet::Han | Alphabet::Hiragana | Alphabet::Katakana => {
+                                        Some(Language::Japanese)
+                                    }
+                                    Alphabet::Latin | Alphabet::Cyrillic | Alphabet::Devanagari => {
+                                        word.chars()
+                                            .filter_map(|c| {
+                                                self.languages_with_unique_characters
+                                                    .iter()
+                                                    .find(|it| {
+                                                        it.unique_characters().unwrap().contains(c)
+                                                    })
+                                                    .copied()
+                                            })
+                                            .next()
+                                    }
+                                    _ => None,
+                                });
+
+                        if let Some(lang) = language {
+                            self.increment_counter(&mut word_language_counts, lang, 1);
+                        }
+                        break;
+                    }
+                }
+            } */
 
             if word_language_counts.is_empty() {
                 self.increment_counter(&mut total_language_counts, None, 1);
@@ -842,6 +902,16 @@ impl LanguageDetector {
             }
         }
 
+        let half_word_count = (words.len() as f64) * 0.5;
+
+        (half_word_count, total_language_counts, detected_alphabets)
+    }
+
+    fn detect_language_with_rules(
+        &self,
+        half_word_count: f64,
+        mut total_language_counts: AHashMap<Option<Language>, u32>,
+    ) -> Option<Language> {
         let unknown_language_count = *total_language_counts.get(&None).unwrap_or(&0) as f64;
 
         if unknown_language_count < half_word_count {
@@ -884,24 +954,8 @@ impl LanguageDetector {
         words: &[String],
         languages: &HashSet<Language, S>,
         half_word_count: f64,
+        detected_alphabets: AHashMap<Alphabet, u32>,
     ) -> AHashSet<Language> {
-        let mut detected_alphabets = AHashMap::<Alphabet, u32>::new();
-
-        for word in words {
-            'ch: for character in word.chars() {
-                for alphabet in Alphabet::iter() {
-                    if alphabet.matches_char(character) {
-                        self.increment_counter(
-                            &mut detected_alphabets,
-                            alphabet,
-                            word.chars().count() as u32,
-                        );
-                        break 'ch;
-                    }
-                }
-            }
-        }
-
         if detected_alphabets.is_empty() {
             return AHashSet::from_iter(languages.iter().cloned());
         }
@@ -1239,7 +1293,7 @@ fn collect_languages_with_unique_characters(languages: &AHashSet<Language>) -> A
     languages
         .iter()
         .filter(|it| it.unique_characters().is_some())
-        .cloned()
+        .copied()
         .collect()
 }
 
@@ -2145,12 +2199,12 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let half_word_count = 0.5;
-        let detected_language = detector_for_all_languages.detect_language_with_rules(
-            &[word.to_string()],
-            &detector_for_all_languages.languages,
-            half_word_count,
-        );
+        let (half_word_count, total_language_counts, _) = detector_for_all_languages
+            .process_words(&[word.to_owned()], &detector_for_all_languages.languages);
+
+        let detected_language = detector_for_all_languages
+            .detect_language_with_rules(half_word_count, total_language_counts);
+
         assert_eq!(
             detected_language, expected_language,
             "expected {:?} for word '{}', got {:?}",
@@ -2280,11 +2334,16 @@ mod tests {
         word: &str,
         expected_languages: AHashSet<Language>,
     ) {
-        let half_word_count = 0.5;
+        let words = &[word.to_owned()];
+
+        let (half_word_count, _, detected_alphabets) =
+            detector_for_all_languages.process_words(words, &detector_for_all_languages.languages);
+
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
-            &[word.to_string()],
+            words,
             &detector_for_all_languages.languages,
             half_word_count,
+            detected_alphabets,
         );
         assert_eq!(
             filtered_languages, expected_languages,
