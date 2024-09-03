@@ -641,12 +641,12 @@ impl LanguageDetector {
             return values;
         }
 
-        let (total_language_counts, total_alphabet_counts) =
+        let (mut total_language_counts, total_alphabet_counts) =
             self.process_words(&words, search_languages);
         let words_count_half = (words.len() as f64) * 0.5;
 
         let language_detected_by_rules =
-            self.detect_language_with_rules(words_count_half, total_language_counts);
+            Self::find_most_frequent_opt(&mut total_language_counts);
 
         if let Some(language) = language_detected_by_rules {
             update_confidence_values(&mut values, language, 1.0);
@@ -1093,7 +1093,7 @@ impl LanguageDetector {
         (total_language_counts, total_alphabet_counts)
     }
 
-    /// TODO replace with find_most_frequent
+    // replaced by find_most_frequent_opt
     fn detect_language_with_rules(
         &self,
         words_count_half: f64,
