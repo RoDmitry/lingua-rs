@@ -6,6 +6,7 @@
 //
 // ucd-generate 0.3.0 is available on crates.io.
 #![allow(dead_code)]
+#![allow(clippy::redundant_static_lifetimes)]
 
 use crate::alphabet::Alphabet;
 

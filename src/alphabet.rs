@@ -261,14 +261,12 @@ fn testing() {
 
 #[inline(always)]
 fn compare(c_low: char, c_high: char, ch: char) -> Ordering {
-    if ch > c_low {
-        if ch > c_high {
-            Ordering::Less
-        } else {
-            Ordering::Equal
-        }
-    } else {
+    if ch < c_low {
         Ordering::Greater
+    } else if ch > c_high {
+        Ordering::Less
+    } else {
+        Ordering::Equal
     }
 }
 

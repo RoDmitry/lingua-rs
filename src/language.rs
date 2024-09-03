@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter, Result};
+use std::hash::BuildHasher;
 
 use ahash::AHashSet;
 use serde::{Deserialize, Serialize};
@@ -282,17 +284,34 @@ impl Display for Language {
 
 impl ExtraCheck for Language {
     #[inline]
-    fn check(lang_counts: &[(Option<Self>, usize)]) -> Option<Self> {
+    fn check_opt<S: BuildHasher>(lang_counts: &HashMap<Option<Self>, usize, S>) -> Option<Self> {
         if cfg!(feature = "chinese")
             && cfg!(feature = "japanese")
-            && lang_counts
-                .iter()
-                .filter_map(|(l, _)| *l)
-                .any(|l| l == Language::Chinese)
-            && lang_counts
-                .iter()
-                .filter_map(|(l, _)| *l)
-                .any(|l| l == Language::Japanese)
+            && lang_counts.contains_key(&Some(Language::Chinese))
+                // .iter()
+                // .filter_map(|(l, _)| *l)
+                // .any(|l| l == Language::Chinese)
+            && lang_counts.contains_key(&Some(Language::Japanese))
+        // .iter()
+        // .filter_map(|(l, _)| *l)
+        // .any(|l| l == Language::Japanese)
+        {
+            return Some(Language::Japanese);
+        }
+        None
+    }
+    #[inline]
+    fn check<S: BuildHasher>(lang_counts: &HashMap<Self, usize, S>) -> Option<Self> {
+        if cfg!(feature = "chinese")
+            && cfg!(feature = "japanese")
+            && lang_counts.contains_key(&Language::Chinese)
+                // .iter()
+                // .filter_map(|(l, _)| *l)
+                // .any(|l| l == Language::Chinese)
+            && lang_counts.contains_key(&Language::Japanese)
+        // .iter()
+        // .filter_map(|(l, _)| *l)
+        // .any(|l| l == Language::Japanese)
         {
             return Some(Language::Japanese);
         }

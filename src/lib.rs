@@ -423,6 +423,8 @@ macro_rules! ahashset {
     };
 }
 
+use std::{collections::HashMap, hash::BuildHasher};
+
 #[cfg(test)]
 use regex::Regex;
 
@@ -453,7 +455,10 @@ mod script;
 mod writer;
 
 pub(crate) trait ExtraCheck<T: Sized = Self> {
-    fn check(_: &[(Option<T>, usize)]) -> Option<T> {
+    fn check_opt<S: BuildHasher>(_: &HashMap<Option<T>, usize, S>) -> Option<T> {
+        None
+    }
+    fn check<S: BuildHasher>(_: &HashMap<T, usize, S>) -> Option<T> {
         None
     }
 }

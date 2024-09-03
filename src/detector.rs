@@ -27,7 +27,6 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
-use strum::IntoEnumIterator;
 
 use crate::alphabet::{find_alphabet, Alphabet};
 use crate::constant::{
@@ -818,15 +817,53 @@ impl LanguageDetector {
             .collect()
     }
 
-    fn find_most_frequent<
+    fn filter_opt_data<
         T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>,
         S: BuildHasher,
         C: Contains<T, S>,
     >(
-        data_counts: &AHashMap<Option<T>, usize>,
+        data_counts: &mut AHashMap<Option<T>, usize>,
         search_data: &C,
+    ) {
+        data_counts.retain(|v, _| v.as_ref().map_or(true, |v2| search_data.contains(v2)));
+        /* let mut data_counts = data_counts_iter
+            .filter(|(v, _)| v.as_ref().map_or(true, |v2| search_data.contains(v2)))
+            .map(|(k, v)| (*k, *v))
+            .collect_vec();
+        data_counts */
+    }
+
+    fn filter_data<
+        T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>,
+        S: BuildHasher,
+        C: Contains<T, S>,
+    >(
+        data_counts: &mut AHashMap<T, usize>,
+        search_data: &C,
+    ) {
+        data_counts.retain(|v, _| search_data.contains(v));
+        /* let mut data_counts = data_counts_iter
+            .filter(|(v, _)| v.as_ref().map_or(true, |v2| search_data.contains(v2)))
+            .map(|(k, v)| (*k, *v))
+            .collect_vec();
+        data_counts */
+    }
+
+    fn find_most_frequent_opt<
+        T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>,
+    >(
+        data_counts: &mut AHashMap<Option<T>, usize>,
+        // search_data: &C,
     ) -> Option<T> {
-        let data_counts_iter = data_counts.iter().filter(|(k, unknown_data_count)| {
+        if let Some(&unknown_data_count) = data_counts.get(&None) {
+            let half_data_count = data_counts.values().sum::<usize>() as f64 * 0.5;
+            if (unknown_data_count as f64) < half_data_count {
+                data_counts.remove(&None);
+            } else {
+                return None;
+            }
+        }
+        /* let data_counts_iter = data_counts.iter().filter(|(k, unknown_data_count)| {
             k.map_or_else(
                 || {
                     let half_data_count = data_counts.values().sum::<usize>() as f64 * 0.5;
@@ -838,33 +875,67 @@ impl LanguageDetector {
                 },
                 |_| true,
             )
-        });
+        }); */
 
-        let mut data_counts = data_counts_iter
-            .filter(|(v, _)| v.as_ref().map_or(true, |v2| search_data.contains(v2)))
-            .map(|(k, v)| (*k, *v))
-            .collect_vec();
+        /* let mut data_counts = data_counts_iter
+        .filter(|(v, _)| v.as_ref().map_or(true, |v2| search_data.contains(v2)))
+        .map(|(k, v)| (*k, *v))
+        .collect_vec(); */
 
         if data_counts.is_empty() {
             return None;
         }
 
         if data_counts.len() == 1 {
-            return data_counts.first().and_then(|v| v.0);
+            return data_counts.iter().next().and_then(|v| *v.0);
         }
 
-        if let Some(res) = T::check(&data_counts) {
+        if let Some(res) = T::check_opt(data_counts) {
             return Some(res);
         }
 
         // TODO: refactor
-        data_counts.sort_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+        let mut data_counts_iter = data_counts
+            .into_iter()
+            .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+        // data_counts.sort_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
         // safe because we checked `word_data_counts.is_empty()`
-        let &(most_frequent, most_frequent_count) = data_counts.first().unwrap();
+        let (most_frequent, most_frequent_count) = data_counts_iter.next().unwrap();
         // safe because we checked `word_data_counts.len() == 1`, so len is > 1
-        let &(_, second_count) = data_counts.get(1).unwrap();
+        let (_, second_count) = data_counts_iter.next().unwrap();
         if most_frequent_count > second_count {
-            return most_frequent;
+            return *most_frequent;
+        }
+
+        None
+    }
+
+    fn find_most_frequent<T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>>(
+        data_counts: &mut AHashMap<T, usize>,
+    ) -> Option<T> {
+        if data_counts.is_empty() {
+            return None;
+        }
+
+        if data_counts.len() == 1 {
+            return data_counts.iter().next().map(|v| *v.0);
+        }
+
+        if let Some(res) = T::check(data_counts) {
+            return Some(res);
+        }
+
+        // TODO: refactor
+        let mut data_counts_iter = data_counts
+            .into_iter()
+            .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+        // data_counts.sort_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+        // safe because we checked `word_data_counts.is_empty()`
+        let (most_frequent, most_frequent_count) = data_counts_iter.next().unwrap();
+        // safe because we checked `word_data_counts.len() == 1`, so len is > 1
+        let (_, second_count) = data_counts_iter.next().unwrap();
+        if most_frequent_count > second_count {
+            return Some(*most_frequent);
         }
 
         None
@@ -879,58 +950,65 @@ impl LanguageDetector {
         AHashMap<Option<Language>, usize>,
         AHashMap<Option<Alphabet>, usize>,
     ) {
-        let mut total_language_counts = AHashMap::<Option<Language>, usize>::new();
         let mut total_alphabet_counts = AHashMap::<Option<Alphabet>, usize>::new();
+        let mut total_language_counts = AHashMap::<Option<Language>, usize>::new();
 
         let mut search_alphabets: AHashMap<Alphabet, Vec<Language>> = AHashMap::new();
         for lang in search_languages {
             for a in lang.alphabets() {
-                search_alphabets
-                    .entry(*a)
-                    .or_insert_with(Vec::new)
-                    .push(*lang);
+                search_alphabets.entry(*a).or_default().push(*lang);
             }
         }
 
         for word in words {
-            let mut word_alphabet_count = AHashMap::<Option<Alphabet>, usize>::new();
+            let mut word_alphabet_count = AHashMap::<Alphabet, usize>::new();
             for ch in word.chars() {
-                let a = find_alphabet(ch);
-                self.increment_counter(&mut word_alphabet_count, a, 1);
+                let Some(alphabet) = find_alphabet(ch) else {
+                    continue;
+                };
+                self.increment_counter(&mut word_alphabet_count, alphabet, 1);
             }
 
-            let alphabet = Self::find_most_frequent(&word_alphabet_count, &search_alphabets);
-            self.increment_counter(&mut total_alphabet_counts, alphabet, word.len());
-            drop(alphabet); // most frequent alphabet should not be used to detect langs, use word detected alphabets instead
-
-            let mut word_language_counts = AHashMap::<Option<Language>, usize>::new();
+            // let mut word_alphabet_count_to_remove = Vec::new();
+            let mut word_language_counts = AHashMap::<Language, usize>::new();
             for (alphabet, &len) in word_alphabet_count.iter() {
-                let Some(alphabet) = alphabet else {
-                    self.increment_counter(&mut word_language_counts, None, len);
+                let Some(search_langs) = search_alphabets.get(alphabet) else {
+                    // word_alphabet_count_to_remove.push(*alphabet);
                     continue;
                 };
-                let Some(langs) = search_alphabets.get(alphabet) else {
-                    self.increment_counter(&mut word_language_counts, None, len);
-                    continue;
-                };
-                if langs.is_empty() {
-                    self.increment_counter(&mut word_language_counts, None, len);
+                if search_langs.is_empty() {
                     continue;
                 }
-                if langs.len() == 1 {
-                    self.increment_counter(&mut word_language_counts, Some(langs[0]), len);
+                // used to prioritize Chinese over Japanese
+                // else Alphabet::Han will be associated with Japanese
+                if cfg!(feature = "chinese")
+                    && alphabet == &Alphabet::Han
+                    && search_langs.contains(&Language::Chinese)
+                {
+                    self.increment_counter(&mut word_language_counts, Language::Chinese, len);
+                    continue;
                 }
-                'lang: for &lang in langs {
-                    if let Some(chars) = lang.unique_characters() {
+                if search_langs.len() == 1 {
+                    self.increment_counter(&mut word_language_counts, search_langs[0], len);
+                    continue;
+                }
+                for search_lang in search_langs {
+                    if let Some(unique_chars) = search_lang.unique_characters() {
                         for ch in word.chars() {
-                            if chars.contains(ch) {
-                                self.increment_counter(&mut word_language_counts, Some(lang), len);
-                                continue 'lang;
+                            if unique_chars.contains(ch) {
+                                self.increment_counter(&mut word_language_counts, *search_lang, 1);
                             }
                         }
                     }
                 }
             }
+
+            /* word_alphabet_count_to_remove.into_iter().for_each(|a| {
+                _ = word_alphabet_count.remove(&a);
+            }); */
+            let alphabet = Self::find_most_frequent(&mut word_alphabet_count);
+            self.increment_counter(&mut total_alphabet_counts, alphabet, word.len());
+            //drop(alphabet); // most frequent alphabet should not be used to detect langs, use word detected alphabets instead
 
             /* 'ch: for character in word.chars() {
                 for (&alphabet, &language) in self.one_language_alphabets.iter() {
@@ -1008,7 +1086,7 @@ impl LanguageDetector {
                 }
             } */
 
-            let lang = Self::find_most_frequent(&word_language_counts, search_languages);
+            let lang = Self::find_most_frequent(&mut word_language_counts);
             self.increment_counter(&mut total_language_counts, lang, word.len());
         }
 
