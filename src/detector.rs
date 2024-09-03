@@ -686,7 +686,7 @@ impl LanguageDetector {
         #[allow(clippy::type_complexity)]
         let all_probabilities_and_unigram_counts: Vec<(
             AHashMap<Language, f64>,
-            Option<AHashMap<Language, u32>>,
+            Option<AHashMap<Language, usize>>,
         )> = ngram_length_range
             .into_iter()
             .filter(|i| character_count >= *i)
@@ -824,13 +824,13 @@ impl LanguageDetector {
         S: BuildHasher,
         C: Contains<T, S>,
     >(
-        data_counts: &AHashMap<Option<T>, u32>,
+        data_counts: &AHashMap<Option<T>, usize>,
         search_data: &C,
     ) -> Option<T> {
         let data_counts_iter = data_counts.iter().filter(|(k, unknown_data_count)| {
             k.map_or_else(
                 || {
-                    let half_data_count = data_counts.values().sum::<u32>() as f64 * 0.5;
+                    let half_data_count = data_counts.values().sum::<usize>() as f64 * 0.5;
                     if (**unknown_data_count as f64) < half_data_count {
                         false
                     } else {
@@ -877,11 +877,11 @@ impl LanguageDetector {
         words: &[String],
         search_languages: &HashSet<Language, S>,
     ) -> (
-        AHashMap<Option<Language>, u32>,
-        AHashMap<Option<Alphabet>, u32>,
+        AHashMap<Option<Language>, usize>,
+        AHashMap<Option<Alphabet>, usize>,
     ) {
-        let mut total_language_counts = AHashMap::<Option<Language>, u32>::new();
-        let mut total_alphabet_counts = AHashMap::<Option<Alphabet>, u32>::new();
+        let mut total_language_counts = AHashMap::<Option<Language>, usize>::new();
+        let mut total_alphabet_counts = AHashMap::<Option<Alphabet>, usize>::new();
 
         let mut search_alphabets: AHashMap<Alphabet, Vec<Language>> = AHashMap::new();
         for lang in search_languages {
@@ -894,17 +894,17 @@ impl LanguageDetector {
         }
 
         for word in words {
-            let mut word_alphabet_count = AHashMap::<Option<Alphabet>, u32>::new();
+            let mut word_alphabet_count = AHashMap::<Option<Alphabet>, usize>::new();
             for ch in word.chars() {
                 let a = find_alphabet(ch);
                 self.increment_counter(&mut word_alphabet_count, a, 1);
             }
 
             let alphabet = Self::find_most_frequent(&word_alphabet_count, &search_alphabets);
-            self.increment_counter(&mut total_alphabet_counts, alphabet, 1);
+            self.increment_counter(&mut total_alphabet_counts, alphabet, word.len());
             drop(alphabet); // most frequent alphabet should not be used to detect langs, use all detected alphabets instead
 
-            let mut word_language_counts = AHashMap::<Option<Language>, u32>::new();
+            let mut word_language_counts = AHashMap::<Option<Language>, usize>::new();
 
             /* 'ch: for character in word.chars() {
                 for (&alphabet, &language) in self.one_language_alphabets.iter() {
@@ -993,7 +993,7 @@ impl LanguageDetector {
     fn detect_language_with_rules(
         &self,
         half_word_count: f64,
-        mut total_language_counts: AHashMap<Option<Language>, u32>,
+        mut total_language_counts: AHashMap<Option<Language>, usize>,
     ) -> Option<Language> {
         let unknown_language_count = *total_language_counts.get(&None).unwrap_or(&0) as f64;
 
@@ -1037,7 +1037,7 @@ impl LanguageDetector {
         words: &[String],
         languages: &HashSet<Language, S>,
         half_word_count: f64,
-        total_alphabet_counts: AHashMap<Option<Alphabet>, u32>,
+        total_alphabet_counts: AHashMap<Option<Alphabet>, usize>,
     ) -> AHashSet<Language> {
         if total_alphabet_counts.is_empty() {
             return AHashSet::from_iter(languages.iter().cloned());
@@ -1066,7 +1066,7 @@ impl LanguageDetector {
             .filter(|it| it.alphabets().contains(&most_frequent_alphabet))
             .collect::<AHashSet<_>>();
 
-        let mut language_counts = AHashMap::<Language, u32>::new();
+        let mut language_counts = AHashMap::<Language, usize>::new();
 
         for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
             // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
@@ -1157,7 +1157,7 @@ impl LanguageDetector {
         words: &[String],
         ngram_length: usize,
         filtered_languages: &AHashSet<Language>,
-    ) -> (AHashMap<Language, f64>, Option<AHashMap<Language, u32>>) {
+    ) -> (AHashMap<Language, f64>, Option<AHashMap<Language, usize>>) {
         let test_data_model = TestDataLanguageModel::from(words, ngram_length);
 
         self.get_language_models(ngram_length, filtered_languages, |language_models| {
@@ -1282,7 +1282,7 @@ impl LanguageDetector {
         unigram_model: &TestDataLanguageModel,
         filtered_languages: &AHashSet<Language>,
         language_models: &AHashMap<Language, AHashMap<CompactString, f64>>,
-    ) -> AHashMap<Language, u32> {
+    ) -> AHashMap<Language, usize> {
         let mut unigram_counts = AHashMap::new();
         for language in filtered_languages.iter() {
             let model = match language_models.get(language) {
@@ -1307,7 +1307,7 @@ impl LanguageDetector {
     fn sum_up_probabilities(
         &self,
         probability_maps: &[&AHashMap<Language, f64>],
-        unigram_counts: &Option<AHashMap<Language, u32>>,
+        unigram_counts: &Option<AHashMap<Language, usize>>,
         filtered_languages: AHashSet<Language>,
     ) -> AHashMap<Language, f64> {
         let mut summed_up_probabilities = AHashMap::with_capacity(filtered_languages.len());
@@ -1356,9 +1356,9 @@ impl LanguageDetector {
 
     fn increment_counter<T: Eq + Hash, S: BuildHasher>(
         &self,
-        counts: &mut HashMap<T, u32, S>,
+        counts: &mut HashMap<T, usize, S>,
         key: T,
-        value: u32,
+        value: usize,
     ) {
         let counter = counts.entry(key).or_insert(0);
         *counter += value;
