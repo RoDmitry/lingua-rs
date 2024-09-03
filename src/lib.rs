@@ -452,6 +452,12 @@ mod result;
 mod script;
 mod writer;
 
+pub(crate) trait ExtraCheck<T: Sized = Self> {
+    fn check(_: &[(Option<T>, u32)]) -> Option<T> {
+        None
+    }
+}
+
 #[cfg(feature = "python")]
 mod python;
 

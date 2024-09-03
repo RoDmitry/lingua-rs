@@ -18,10 +18,10 @@ use ahash::{AHashMap, AHashSet};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-use crate::{alphabet::CharSet, language::Language};
+use crate::language::Language;
 
-pub(crate) static JAPANESE_CHARACTER_SET: Lazy<CharSet> =
-    Lazy::new(|| CharSet::from_char_classes(&["Hiragana", "Katakana", "Han"]));
+/* pub(crate) static JAPANESE_CHARACTER_SET: Lazy<CharSet> =
+Lazy::new(|| CharSet::from_char_classes(&["Hiragana", "Katakana", "Han"])); */
 pub(crate) static MULTIPLE_WHITESPACE: Lazy<Regex> = Lazy::new(|| Regex::new("\\s+").unwrap());
 pub(crate) static NUMBERS: Lazy<Regex> = Lazy::new(|| Regex::new("\\p{N}").unwrap());
 pub(crate) static PUNCTUATION: Lazy<Regex> = Lazy::new(|| Regex::new("\\p{P}").unwrap());

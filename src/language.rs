@@ -23,6 +23,7 @@ use strum_macros::{EnumIter, EnumString};
 
 use crate::alphabet::Alphabet;
 use crate::isocode::{IsoCode639_1, IsoCode639_3};
+use crate::ExtraCheck;
 
 /// This enum specifies the so far 75 supported languages which can be detected by *Lingua*.
 #[derive(
@@ -276,6 +277,25 @@ impl Display for Language {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let debug_repr = format!("{self:?}");
         write!(f, "{}", debug_repr)
+    }
+}
+
+impl ExtraCheck for Language {
+    fn check(lang_counts: &[(Option<Self>, u32)]) -> Option<Self> {
+        if cfg!(feature = "chinese")
+            && cfg!(feature = "japanese")
+            && lang_counts
+                .iter()
+                .filter_map(|(l, _)| *l)
+                .any(|l| l == Language::Chinese)
+            && lang_counts
+                .iter()
+                .filter_map(|(l, _)| *l)
+                .any(|l| l == Language::Japanese)
+        {
+            return Some(Language::Japanese);
+        }
+        None
     }
 }
 

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+use core::slice::SlicePattern;
+use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::hash::{BuildHasher, Hash};
@@ -28,15 +30,15 @@ use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use strum::IntoEnumIterator;
 
-use crate::alphabet::Alphabet;
+use crate::alphabet::{find_alphabet, Alphabet};
 use crate::constant::{
-    CHARS_TO_LANGUAGES_MAPPING, JAPANESE_CHARACTER_SET, LETTERS, TOKENS_WITHOUT_WHITESPACE,
-    TOKENS_WITH_OPTIONAL_WHITESPACE,
+    CHARS_TO_LANGUAGES_MAPPING, LETTERS, TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE,
 };
 use crate::json::load_json;
 use crate::language::Language;
 use crate::model::{TestDataLanguageModel, TrainingDataLanguageModel};
 use crate::result::DetectionResult;
+use crate::ExtraCheck;
 
 type LazyLanguageModelMap = Lazy<RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>>;
 type StaticLanguageModelMap = &'static RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>;
@@ -47,6 +49,43 @@ static BIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::
 static TRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
 static QUADRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
 static FIVEGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
+
+trait Contains<T, S: BuildHasher> {
+    fn contains<Q>(&self, value: &Q) -> bool
+    where
+        T: Eq + Hash + Borrow<Q>,
+        Q: ?Sized + Hash + Eq;
+}
+
+impl<T, S: BuildHasher> Contains<T, S> for HashSet<T, S> {
+    fn contains<Q>(&self, value: &Q) -> bool
+    where
+        T: Eq + Hash + Borrow<Q>,
+        Q: ?Sized + Hash + Eq,
+    {
+        self.contains(value)
+    }
+}
+
+impl<T, V, S: BuildHasher> Contains<T, S> for HashMap<T, V, S> {
+    fn contains<Q>(&self, value: &Q) -> bool
+    where
+        T: Eq + Hash + Borrow<Q>,
+        Q: ?Sized + Hash + Eq,
+    {
+        self.contains_key(value)
+    }
+}
+
+impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
+    fn contains<Q>(&self, value: &Q) -> bool
+    where
+        T: Eq + Hash + Borrow<Q>,
+        Q: ?Sized + Hash + Eq,
+    {
+        self.contains_key(value)
+    }
+}
 
 /// This struct detects the language of given input text.
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
@@ -591,11 +630,11 @@ impl LanguageDetector {
     fn compute_language_confidence_values_for_languages<S: BuildHasher>(
         &self,
         text_str: &str,
-        languages: &HashSet<Language, S>,
+        search_languages: &HashSet<Language, S>,
     ) -> Vec<(Language, f64)> {
-        let mut values = Vec::with_capacity(languages.len());
+        let mut values = Vec::with_capacity(search_languages.len());
 
-        for language in languages {
+        for language in search_languages {
             values.push((*language, 0.0));
         }
 
@@ -604,8 +643,9 @@ impl LanguageDetector {
             return values;
         }
 
-        let (half_word_count, total_language_counts, detected_alphabets) =
-            self.process_words(&words, languages);
+        let (total_language_counts, total_alphabet_counts) =
+            self.process_words(&words, search_languages);
+        let half_word_count = (words.len() as f64) * 0.5;
 
         let language_detected_by_rules =
             self.detect_language_with_rules(half_word_count, total_language_counts);
@@ -616,8 +656,12 @@ impl LanguageDetector {
             return values;
         }
 
-        let filtered_languages =
-            self.filter_languages_by_rules(&words, languages, half_word_count, detected_alphabets);
+        let filtered_languages = self.filter_languages_by_rules(
+            &words,
+            search_languages,
+            half_word_count,
+            total_alphabet_counts,
+        );
 
         if filtered_languages.len() == 1 {
             let filtered_language = filtered_languages.into_iter().next().unwrap();
@@ -775,23 +819,94 @@ impl LanguageDetector {
             .collect()
     }
 
+    fn find_most_frequent<
+        T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>,
+        S: BuildHasher,
+        C: Contains<T, S>,
+    >(
+        data_counts: &AHashMap<Option<T>, u32>,
+        search_data: &C,
+    ) -> Option<T> {
+        let data_counts_iter = data_counts.iter().filter(|(k, unknown_data_count)| {
+            k.map_or_else(
+                || {
+                    let half_data_count = data_counts.values().sum::<u32>() as f64 * 0.5;
+                    if (**unknown_data_count as f64) < half_data_count {
+                        false
+                    } else {
+                        true
+                    }
+                },
+                |_| true,
+            )
+        });
+
+        let mut data_counts = data_counts_iter
+            .filter(|(v, _)| v.as_ref().map_or(true, |v2| search_data.contains(v2)))
+            .map(|(k, v)| (*k, *v))
+            .collect_vec();
+
+        if data_counts.is_empty() {
+            return None;
+        }
+
+        if data_counts.len() == 1 {
+            return data_counts.first().and_then(|v| v.0);
+        }
+
+        if let Some(res) = T::check(&data_counts) {
+            return Some(res);
+        }
+
+        // TODO: refactor
+        data_counts.sort_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+        // safe because we checked `word_data_counts.is_empty()`
+        let &(most_frequent, most_frequent_count) = data_counts.first().unwrap();
+        // safe because we checked `word_data_counts.len() == 1`, so len is > 1
+        let &(_, second_count) = data_counts.get(1).unwrap();
+        if most_frequent_count > second_count {
+            return most_frequent;
+        }
+
+        None
+    }
+
     #[inline]
     fn process_words<S: BuildHasher>(
         &self,
         words: &[String],
-        languages: &HashSet<Language, S>,
+        search_languages: &HashSet<Language, S>,
     ) -> (
-        f64,
         AHashMap<Option<Language>, u32>,
-        AHashMap<Alphabet, u32>,
+        AHashMap<Option<Alphabet>, u32>,
     ) {
         let mut total_language_counts = AHashMap::<Option<Language>, u32>::new();
-        let mut detected_alphabets = AHashMap::<Alphabet, u32>::new();
+        let mut total_alphabet_counts = AHashMap::<Option<Alphabet>, u32>::new();
+
+        let mut search_alphabets: AHashMap<Alphabet, Vec<Language>> = AHashMap::new();
+        for lang in search_languages {
+            for a in lang.alphabets() {
+                search_alphabets
+                    .entry(*a)
+                    .or_insert_with(Vec::new)
+                    .push(*lang);
+            }
+        }
 
         for word in words {
-            let mut word_language_counts = AHashMap::<Language, u32>::new();
+            let mut word_alphabet_count = AHashMap::<Option<Alphabet>, u32>::new();
+            for ch in word.chars() {
+                let a = find_alphabet(ch);
+                self.increment_counter(&mut word_alphabet_count, a, 1);
+            }
 
-            'ch: for character in word.chars() {
+            let alphabet = Self::find_most_frequent(&word_alphabet_count, &search_alphabets);
+            self.increment_counter(&mut total_alphabet_counts, alphabet, 1);
+            drop(alphabet); // most frequent alphabet should not be used to detect langs, use all detected alphabets instead
+
+            let mut word_language_counts = AHashMap::<Option<Language>, u32>::new();
+
+            /* 'ch: for character in word.chars() {
                 for (&alphabet, &language) in self.one_language_alphabets.iter() {
                     if alphabet.matches_char(character) {
                         self.increment_counter(&mut word_language_counts, language, 1);
@@ -826,7 +941,7 @@ impl LanguageDetector {
                         break 'ch;
                     }
                 }
-            }
+            } */
             /* for character in word.chars() {
                 for alphabet in Alphabet::iter() {
                     if alphabet.matches_char(character) {
@@ -867,46 +982,14 @@ impl LanguageDetector {
                 }
             } */
 
-            if word_language_counts.is_empty() {
-                self.increment_counter(&mut total_language_counts, None, 1);
-            } else if word_language_counts.len() == 1 {
-                let language = word_language_counts.keys().next().unwrap();
-                if languages.contains(language) {
-                    self.increment_counter(&mut total_language_counts, Some(*language), 1);
-                } else {
-                    self.increment_counter(&mut total_language_counts, None, 1);
-                }
-            } else if cfg!(feature = "chinese")
-                && cfg!(feature = "japanese")
-                && word_language_counts.contains_key(&Language::Chinese)
-                && word_language_counts.contains_key(&Language::Japanese)
-            {
-                self.increment_counter(&mut total_language_counts, Some(Language::Japanese), 1);
-            } else {
-                let sorted_word_language_counts = word_language_counts
-                    .into_iter()
-                    .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
-                    .collect_vec();
-                let (most_frequent_language, first_count) = &sorted_word_language_counts[0];
-                let (_, second_count) = &sorted_word_language_counts[1];
-
-                if first_count > second_count && languages.contains(most_frequent_language) {
-                    self.increment_counter(
-                        &mut total_language_counts,
-                        Some(*most_frequent_language),
-                        1,
-                    );
-                } else {
-                    self.increment_counter(&mut total_language_counts, None, 1);
-                }
-            }
+            let lang = Self::find_most_frequent(&word_language_counts, search_languages);
+            self.increment_counter(&mut total_language_counts, lang, 1);
         }
 
-        let half_word_count = (words.len() as f64) * 0.5;
-
-        (half_word_count, total_language_counts, detected_alphabets)
+        (total_language_counts, total_alphabet_counts)
     }
 
+    /// TODO replace with find_most_frequent
     fn detect_language_with_rules(
         &self,
         half_word_count: f64,
@@ -954,15 +1037,15 @@ impl LanguageDetector {
         words: &[String],
         languages: &HashSet<Language, S>,
         half_word_count: f64,
-        detected_alphabets: AHashMap<Alphabet, u32>,
+        total_alphabet_counts: AHashMap<Option<Alphabet>, u32>,
     ) -> AHashSet<Language> {
-        if detected_alphabets.is_empty() {
+        if total_alphabet_counts.is_empty() {
             return AHashSet::from_iter(languages.iter().cloned());
         }
 
-        if detected_alphabets.len() > 1 {
-            let mut distinct_alphabets = AHashSet::with_capacity(detected_alphabets.len());
-            for count in detected_alphabets.values() {
+        if total_alphabet_counts.len() > 1 {
+            let mut distinct_alphabets = AHashSet::with_capacity(total_alphabet_counts.len());
+            for count in total_alphabet_counts.values() {
                 distinct_alphabets.insert(count);
             }
             if distinct_alphabets.len() == 1 {
@@ -970,7 +1053,7 @@ impl LanguageDetector {
             }
         }
 
-        let most_frequent_alphabet = detected_alphabets
+        let most_frequent_alphabet = total_alphabet_counts
             .into_iter()
             .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
             .next()
@@ -1298,10 +1381,11 @@ fn collect_languages_with_unique_characters(languages: &AHashSet<Language>) -> A
 }
 
 fn collect_one_language_alphabets(languages: &AHashSet<Language>) -> AHashMap<Alphabet, Language> {
-    Alphabet::all_supporting_single_language()
-        .into_iter()
-        .filter(|(_, language)| languages.contains(language))
-        .collect()
+    /* Alphabet::all_supporting_single_language()
+    .into_iter()
+    .filter(|(_, language)| languages.contains(language))
+    .collect() */
+    ahashmap!()
 }
 
 fn confidence_values_comparator(first: &(Language, f64), second: &(Language, f64)) -> Ordering {
