@@ -254,10 +254,10 @@ const fn char_ranges_array_sorted() -> [((char, char), Alphabet); LEN] {
 }
 const CHAR_RANGES_SORTED: [((char, char), Alphabet); LEN] = char_ranges_array_sorted();
 
-#[test]
+/* #[test]
 fn testing() {
     panic!("{:?}", CHAR_RANGES_SORTED);
-}
+} */
 
 #[inline(always)]
 fn compare(c_low: char, c_high: char, ch: char) -> Ordering {

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-use core::slice::SlicePattern;
 use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
@@ -645,10 +644,10 @@ impl LanguageDetector {
 
         let (total_language_counts, total_alphabet_counts) =
             self.process_words(&words, search_languages);
-        let half_word_count = (words.len() as f64) * 0.5;
+        let words_count_half = (words.len() as f64) * 0.5;
 
         let language_detected_by_rules =
-            self.detect_language_with_rules(half_word_count, total_language_counts);
+            self.detect_language_with_rules(words_count_half, total_language_counts);
 
         if let Some(language) = language_detected_by_rules {
             update_confidence_values(&mut values, language, 1.0);
@@ -659,7 +658,7 @@ impl LanguageDetector {
         let filtered_languages = self.filter_languages_by_rules(
             &words,
             search_languages,
-            half_word_count,
+            words_count_half,
             total_alphabet_counts,
         );
 
@@ -902,9 +901,36 @@ impl LanguageDetector {
 
             let alphabet = Self::find_most_frequent(&word_alphabet_count, &search_alphabets);
             self.increment_counter(&mut total_alphabet_counts, alphabet, word.len());
-            drop(alphabet); // most frequent alphabet should not be used to detect langs, use all detected alphabets instead
+            drop(alphabet); // most frequent alphabet should not be used to detect langs, use word detected alphabets instead
 
             let mut word_language_counts = AHashMap::<Option<Language>, usize>::new();
+            for (alphabet, &len) in word_alphabet_count.iter() {
+                let Some(alphabet) = alphabet else {
+                    self.increment_counter(&mut word_language_counts, None, len);
+                    continue;
+                };
+                let Some(langs) = search_alphabets.get(alphabet) else {
+                    self.increment_counter(&mut word_language_counts, None, len);
+                    continue;
+                };
+                if langs.is_empty() {
+                    self.increment_counter(&mut word_language_counts, None, len);
+                    continue;
+                }
+                if langs.len() == 1 {
+                    self.increment_counter(&mut word_language_counts, Some(langs[0]), len);
+                }
+                'lang: for &lang in langs {
+                    if let Some(chars) = lang.unique_characters() {
+                        for ch in word.chars() {
+                            if chars.contains(ch) {
+                                self.increment_counter(&mut word_language_counts, Some(lang), len);
+                                continue 'lang;
+                            }
+                        }
+                    }
+                }
+            }
 
             /* 'ch: for character in word.chars() {
                 for (&alphabet, &language) in self.one_language_alphabets.iter() {
@@ -983,7 +1009,7 @@ impl LanguageDetector {
             } */
 
             let lang = Self::find_most_frequent(&word_language_counts, search_languages);
-            self.increment_counter(&mut total_language_counts, lang, 1);
+            self.increment_counter(&mut total_language_counts, lang, word.len());
         }
 
         (total_language_counts, total_alphabet_counts)
@@ -992,12 +1018,12 @@ impl LanguageDetector {
     /// TODO replace with find_most_frequent
     fn detect_language_with_rules(
         &self,
-        half_word_count: f64,
+        words_count_half: f64,
         mut total_language_counts: AHashMap<Option<Language>, usize>,
     ) -> Option<Language> {
         let unknown_language_count = *total_language_counts.get(&None).unwrap_or(&0) as f64;
 
-        if unknown_language_count < half_word_count {
+        if unknown_language_count < words_count_half {
             total_language_counts.remove(&None);
         }
 
@@ -1036,7 +1062,7 @@ impl LanguageDetector {
         &self,
         words: &[String],
         languages: &HashSet<Language, S>,
-        half_word_count: f64,
+        words_count_half: f64,
         total_alphabet_counts: AHashMap<Option<Alphabet>, usize>,
     ) -> AHashSet<Language> {
         if total_alphabet_counts.is_empty() {
@@ -1053,12 +1079,15 @@ impl LanguageDetector {
             }
         }
 
-        let most_frequent_alphabet = total_alphabet_counts
+        let Some(most_frequent_alphabet) = total_alphabet_counts
             .into_iter()
             .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
             .next()
             .unwrap()
-            .0;
+            .0
+        else {
+            return AHashSet::from_iter(languages.iter().cloned());
+        };
 
         let filtered_languages = languages
             .iter()
@@ -1087,7 +1116,7 @@ impl LanguageDetector {
 
         let languages_subset = language_counts
             .into_iter()
-            .filter(|(_, count)| (*count as f64) >= half_word_count)
+            .filter(|(_, count)| (*count as f64) >= words_count_half)
             .map(|(language, _)| language)
             .collect::<AHashSet<_>>();
 
@@ -2283,11 +2312,12 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let (half_word_count, total_language_counts, _) = detector_for_all_languages
+        let (total_language_counts, _) = detector_for_all_languages
             .process_words(&[word.to_owned()], &detector_for_all_languages.languages);
+        let words_count_half = 0.5;
 
         let detected_language = detector_for_all_languages
-            .detect_language_with_rules(half_word_count, total_language_counts);
+            .detect_language_with_rules(words_count_half, total_language_counts);
 
         assert_eq!(
             detected_language, expected_language,
@@ -2420,13 +2450,14 @@ mod tests {
     ) {
         let words = &[word.to_owned()];
 
-        let (half_word_count, _, detected_alphabets) =
+        let (_, detected_alphabets) =
             detector_for_all_languages.process_words(words, &detector_for_all_languages.languages);
 
+        let words_count_half = 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
             words,
             &detector_for_all_languages.languages,
-            half_word_count,
+            words_count_half,
             detected_alphabets,
         );
         assert_eq!(

@@ -281,6 +281,7 @@ impl Display for Language {
 }
 
 impl ExtraCheck for Language {
+    #[inline]
     fn check(lang_counts: &[(Option<Self>, usize)]) -> Option<Self> {
         if cfg!(feature = "chinese")
             && cfg!(feature = "japanese")
