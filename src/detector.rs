@@ -653,14 +653,14 @@ impl LanguageDetector {
             return values;
         }
 
-        let words_count_half = (words.len() as f64) * 0.5;
-        let filtered_languages = self.filter_languages_by_rules(
+        // let words_count_half = (words.len() as f64) * 0.5;
+        /* let filtered_languages = self.filter_languages_by_rules(
             &words,
             // search_languages,
             words_count_half,
             // total_alphabet_counts,
             filtered_languages,
-        );
+        ); */
 
         if filtered_languages.len() == 1 {
             let filtered_language = filtered_languages.into_iter().next().unwrap();
@@ -1107,7 +1107,39 @@ impl LanguageDetector {
             // self.increment_counter(&mut total_language_counts, lang, word.len());
         }
 
+        for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
+            // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
+            // let relevant_languages = search_languages.intersection(langs).collect::<Vec<_>>();
+
+            for lang in langs {
+                if search_languages.contains(lang) {
+                    for word in words {
+                        for character in word.chars() {
+                            if specifics.contains(character) {
+                                self.increment_counter(&mut detected_language_counts, *lang, 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         let lang = Self::find_most_frequent(&mut detected_language_counts);
+        #[cfg(any(debug_assertions, feature = "accuracy-reports"))]
+        if lang.is_none() && !detected_language_counts.is_empty() {
+            if let Some(alphabet) = Self::find_most_frequent(&mut total_alphabet_counts) {
+                let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
+                for detected_lang in detected_language_counts.keys() {
+                    if !alphabet_langs.contains(detected_lang) {
+                        panic!(
+                                "Possibly invalid input text. Found specific chars from these langs: {:?} not related for the most frequent alphabet: {:?}\nwords {:?}",
+                                detected_language_counts, alphabet, words
+                            );
+                    }
+                }
+            }
+        }
+
         if detected_language_counts.is_empty() {
             if let Some(alphabet) = Self::find_most_frequent(&mut total_alphabet_counts) {
                 (
@@ -1123,21 +1155,6 @@ impl LanguageDetector {
                 (lang, search_languages.iter().copied().collect())
             }
         } else {
-            #[cfg(any(debug_assertions, feature = "accuracy-reports"))]
-            if lang.is_none() {
-                if let Some(alphabet) = Self::find_most_frequent(&mut total_alphabet_counts) {
-                    let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
-                    for detected_lang in detected_language_counts.keys() {
-                        if !alphabet_langs.contains(detected_lang) {
-                            panic!(
-                                    "Possibly invalid input text. Found specific chars from these langs: {:?} not related for the most frequent alphabet: {:?}\nwords {:?}",
-                                    detected_language_counts, alphabet, words
-                                );
-                        }
-                    }
-                }
-            }
-
             (lang, detected_language_counts.keys().copied().collect())
         }
     }
@@ -1185,7 +1202,7 @@ impl LanguageDetector {
         most_frequent_language
     } */
 
-    fn filter_languages_by_rules(
+    /* fn filter_languages_by_rules(
         &self,
         words: &[String],
         // languages: &HashSet<Language, S>,
@@ -1250,7 +1267,7 @@ impl LanguageDetector {
         } else {
             filtered_languages
         }
-    }
+    } */
 
     fn get_language_models<R>(
         &self,
@@ -2666,14 +2683,14 @@ mod tests {
         let (_, filtered_languages) =
             detector_for_all_languages.process_words(words, &detector_for_all_languages.languages);
 
-        let words_count_half = 0.5;
+        /* let words_count_half = 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
             words,
             // &detector_for_all_languages.languages,
             words_count_half,
             // alps,
             filtered_languages,
-        );
+        ); */
         assert_eq!(
             filtered_languages, expected_languages,
             "expected {:?} for word '{}', got {:?}",
@@ -2694,14 +2711,14 @@ mod tests {
         let (_, filtered_languages) =
             detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
 
-        let words_count_half = (words.len() as f64) * 0.5;
+        /* let words_count_half = (words.len() as f64) * 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
             &words,
             // &detector_for_all_languages.languages,
             words_count_half,
             // alps,
             filtered_languages,
-        );
+        ); */
     }
 
     #[rstest(invalid_str, case(""), case(" \n  \t;"), case("3<856%)§"))]
