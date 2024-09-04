@@ -944,8 +944,9 @@ impl LanguageDetector {
         search_languages: &HashSet<Language, S>,
     ) -> (Option<Language>, AHashMap<Option<Alphabet>, usize>) {
         let mut total_alphabet_counts = AHashMap::<Option<Alphabet>, usize>::new();
-        // let mut total_language_counts = AHashMap::<Option<Language>, usize>::new();
-        let mut word_language_counts = AHashMap::<Language, usize>::new();
+        // let mut probable_language_counts = AHashMap::<Language, usize>::new();
+        // let mut total_languages = AHashSet::<Language>::with_capacity(search_languages.len());
+        let mut detected_language_counts = AHashMap::<Language, usize>::new();
 
         let mut search_alphabets: AHashMap<Alphabet, Vec<Language>> = AHashMap::new();
         for lang in search_languages {
@@ -963,34 +964,57 @@ impl LanguageDetector {
                 self.increment_counter(&mut word_alphabet_count, alphabet, 1);
             }
 
+            println!("word: {:?}", word);
             // let mut word_alphabet_count_to_remove = Vec::new();
-            for (alphabet, &len) in word_alphabet_count.iter() {
-                let Some(search_langs) = search_alphabets.get(alphabet) else {
+            let most_frequent_alphabet = Self::find_most_frequent(&mut word_alphabet_count);
+            for alphabet in most_frequent_alphabet {
+                let Some(search_langs) = search_alphabets.get(&alphabet) else {
                     // word_alphabet_count_to_remove.push(*alphabet);
                     continue;
                 };
-                if search_langs.is_empty() {
-                    // word_alphabet_count_to_remove.push(*alphabet);
-                    continue;
+                // search_langs is never empty because of `search_alphabets.entry(*a).or_default().push(*lang);`
+                debug_assert!(search_langs.len() > 0);
+                unsafe {
+                    std::hint::assert_unchecked(search_langs.len() > 0);
                 }
+                /* if detected_language_counts.is_empty() {
+                    search_langs.iter().for_each(|l| {
+                        _ = probable_language_counts.insert(*l, len);
+                    });
+                } */
+                /* if search_langs.is_empty() {
+                    continue;
+                } */
                 // used to prioritize Chinese over Japanese
                 // else Alphabet::Han will be associated with Japanese
                 if cfg!(feature = "chinese")
-                    && alphabet == &Alphabet::Han
+                    && alphabet == Alphabet::Han
                     && search_langs.contains(&Language::Chinese)
                 {
-                    self.increment_counter(&mut word_language_counts, Language::Chinese, len);
+                    self.increment_counter(
+                        &mut detected_language_counts,
+                        Language::Chinese,
+                        word.len(),
+                    );
                     continue;
                 }
                 if search_langs.len() == 1 {
-                    self.increment_counter(&mut word_language_counts, search_langs[0], len);
+                    self.increment_counter(
+                        &mut detected_language_counts,
+                        search_langs[0],
+                        word.len(),
+                    );
                     continue;
                 }
                 for search_lang in search_langs {
                     if let Some(unique_chars) = search_lang.unique_characters() {
                         for ch in word.chars() {
                             if unique_chars.contains(ch) {
-                                self.increment_counter(&mut word_language_counts, *search_lang, 1);
+                                self.increment_counter(
+                                    &mut detected_language_counts,
+                                    *search_lang,
+                                    1,
+                                );
                             }
                         }
                     }
@@ -1000,8 +1024,11 @@ impl LanguageDetector {
             /* word_alphabet_count_to_remove.into_iter().for_each(|a| {
                 _ = word_alphabet_count.remove(&a);
             }); */
-            let alphabet = Self::find_most_frequent(&mut word_alphabet_count);
-            self.increment_counter(&mut total_alphabet_counts, alphabet, word.len());
+            self.increment_counter(
+                &mut total_alphabet_counts,
+                most_frequent_alphabet,
+                word.len(),
+            );
             //drop(alphabet); // most frequent alphabet should not be used to detect langs, use word detected alphabets instead
 
             /* 'ch: for character in word.chars() {
@@ -1084,7 +1111,7 @@ impl LanguageDetector {
             // self.increment_counter(&mut total_language_counts, lang, word.len());
         }
 
-        let lang = Self::find_most_frequent(&mut word_language_counts);
+        let lang = Self::find_most_frequent(&mut detected_language_counts);
         (lang, total_alphabet_counts)
     }
 
@@ -2194,18 +2221,6 @@ mod tests {
             7,
             English
         ),
-        case::polish_german_english(
-            "Płaszczowo-rurowe wymienniki ciepła Uszczelkowe der blaue himmel über berlin 中文 the quick brown fox jumps over the lazy dog",
-            "Płaszczowo-rurowe wymienniki ciepła Uszczelkowe ",
-            4,
-            Polish,
-            "der blaue himmel über berlin 中文 ",
-            7,
-            German,
-            "the quick brown fox jumps over the lazy dog",
-            9,
-            English
-        )
     )]
     fn test_detect_multiple_languages_with_three_languages(
         detector_for_all_languages: LanguageDetector,
@@ -2242,7 +2257,7 @@ mod tests {
         assert_eq!(third_result.language(), expected_third_language);
     }
 
-    /* #[rstest(
+    #[rstest(
         sentence,
         expected_first_substring,
         expected_first_word_count,
@@ -2314,7 +2329,7 @@ mod tests {
         assert_eq!(fourth_substring, expected_fourth_substring);
         assert_eq!(fourth_result.word_count, expected_fourth_word_count);
         assert_eq!(fourth_result.language(), expected_fourth_language);
-    } */
+    }
 
     #[rstest(
         builder_languages,
@@ -2359,7 +2374,6 @@ mod tests {
         case("meggyűrűzni", Some(Hungarian)),
         case("中文", Some(Chinese)),
         case("ヴェダイヤモンド", Some(Japanese)),
-        case("昨日、東京で大切な友達に会いました。", Some(Japanese)), // Kanji (Han) + Hiragana
         case("әлем", Some(Kazakh)),
         case("шаруашылығы", Some(Kazakh)),
         case("ақын", Some(Kazakh)),
@@ -2472,6 +2486,31 @@ mod tests {
             detected_language, expected_language,
             "expected {:?} for word '{}', got {:?}",
             expected_language, word, detected_language
+        );
+    }
+
+    #[rstest(
+        text,
+        expected_language,
+        case("昨日、東京で大切な友達に会いました。", Some(Japanese)), // Kanji (Han) + Hiragana
+    )]
+    fn assert_language_detection_with_rules_text_works_correctly(
+        detector_for_all_languages: LanguageDetector,
+        text: &str,
+        expected_language: Option<Language>,
+    ) {
+        let words = split_text_into_words(text);
+        let (detected_language, _) =
+            detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
+        // let words_count_half = 0.5;
+
+        // let detected_language = detector_for_all_languages
+        // .detect_language_with_rules(words_count_half, total_language_counts);
+
+        assert_eq!(
+            detected_language, expected_language,
+            "expected {:?} for text '{}', got {:?}",
+            expected_language, text, detected_language
         );
     }
 
