@@ -1107,16 +1107,59 @@ impl LanguageDetector {
             // self.increment_counter(&mut total_language_counts, lang, word.len());
         }
 
+        // println!("words: {:?}", words);
+        // println!("total_alphabet_counts: {:?}", total_alphabet_counts);
+        // let mut detected_language_specifics_counts = AHashMap::<Language, usize>::new();
         for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
             // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
             // let relevant_languages = search_languages.intersection(langs).collect::<Vec<_>>();
 
-            for lang in langs {
-                if search_languages.contains(lang) {
-                    for word in words {
-                        for character in word.chars() {
-                            if specifics.contains(character) {
-                                self.increment_counter(&mut detected_language_counts, *lang, 1);
+            if detected_language_counts.is_empty() {
+                if let Some(alphabet) = Self::find_most_frequent(&mut total_alphabet_counts) {
+                    let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
+                    for lang in langs {
+                        if alphabet_langs.contains(lang) {
+                            for word in words {
+                                for character in word.chars() {
+                                    if specifics.contains(character) {
+                                        // println!("character1 {:?}", character);
+                                        self.increment_counter(
+                                            &mut detected_language_counts,
+                                            *lang,
+                                            1,
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    for lang in langs {
+                        if search_languages.contains(lang) {
+                            for word in words {
+                                for character in word.chars() {
+                                    if specifics.contains(character) {
+                                        // println!("character2 {:?}", character);
+                                        self.increment_counter(
+                                            &mut detected_language_counts,
+                                            *lang,
+                                            1,
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                for lang in langs {
+                    if detected_language_counts.contains(lang) {
+                        for word in words {
+                            for character in word.chars() {
+                                if specifics.contains(character) {
+                                    // println!("character3 {:?}", character);
+                                    self.increment_counter(&mut detected_language_counts, *lang, 1);
+                                }
                             }
                         }
                     }
@@ -1124,6 +1167,7 @@ impl LanguageDetector {
             }
         }
 
+        // println!("detected_language_counts {:?}", detected_language_counts);
         let lang = Self::find_most_frequent(&mut detected_language_counts);
         #[cfg(any(debug_assertions, feature = "accuracy-reports"))]
         if lang.is_none() && !detected_language_counts.is_empty() {
