@@ -886,12 +886,10 @@ impl LanguageDetector {
             return None;
         }
 
+        T::modif_opt(data_counts);
+
         if data_counts.len() == 1 {
             return data_counts.iter().next().and_then(|v| *v.0);
-        }
-
-        if let Some(res) = T::check_opt(data_counts) {
-            return Some(res);
         }
 
         // TODO: refactor
@@ -917,12 +915,10 @@ impl LanguageDetector {
             return None;
         }
 
+        T::modif(data_counts);
+
         if data_counts.len() == 1 {
             return data_counts.iter().next().map(|v| *v.0);
-        }
-
-        if let Some(res) = T::check(data_counts) {
-            return Some(res);
         }
 
         // TODO: refactor
@@ -974,6 +970,7 @@ impl LanguageDetector {
                     continue;
                 };
                 if search_langs.is_empty() {
+                    // word_alphabet_count_to_remove.push(*alphabet);
                     continue;
                 }
                 // used to prioritize Chinese over Japanese
@@ -2360,7 +2357,9 @@ mod tests {
         case("σχέδια", Some(Greek)),
         case("fekvő", Some(Hungarian)),
         case("meggyűrűzni", Some(Hungarian)),
+        case("中文", Some(Chinese)),
         case("ヴェダイヤモンド", Some(Japanese)),
+        case("昨日、東京で大切な友達に会いました。", Some(Japanese)), // Kanji (Han) + Hiragana
         case("әлем", Some(Kazakh)),
         case("шаруашылығы", Some(Kazakh)),
         case("ақын", Some(Kazakh)),

@@ -284,38 +284,46 @@ impl Display for Language {
 
 impl ExtraCheck for Language {
     #[inline]
-    fn check_opt<S: BuildHasher>(lang_counts: &HashMap<Option<Self>, usize, S>) -> Option<Self> {
-        if cfg!(feature = "chinese")
-            && cfg!(feature = "japanese")
-            && lang_counts.contains_key(&Some(Language::Chinese))
-                // .iter()
-                // .filter_map(|(l, _)| *l)
-                // .any(|l| l == Language::Chinese)
-            && lang_counts.contains_key(&Some(Language::Japanese))
+    fn modif_opt<S: BuildHasher>(lang_counts: &mut HashMap<Option<Self>, usize, S>) {
+        if cfg!(feature = "chinese") && cfg!(feature = "japanese")
+        // && lang_counts.contains_key(&Some(Language::Japanese))
         // .iter()
         // .filter_map(|(l, _)| *l)
         // .any(|l| l == Language::Japanese)
         {
-            return Some(Language::Japanese);
+            let Some(j) = lang_counts
+                .get_mut(&Some(Language::Japanese))
+                .map(|j| j as *mut usize)
+            else {
+                return;
+            };
+            if let Some(c) = lang_counts.remove(&Some(Language::Chinese)) {
+                unsafe {
+                    *j += c;
+                }
+            }
         }
-        None
     }
     #[inline]
-    fn check<S: BuildHasher>(lang_counts: &HashMap<Self, usize, S>) -> Option<Self> {
-        if cfg!(feature = "chinese")
-            && cfg!(feature = "japanese")
-            && lang_counts.contains_key(&Language::Chinese)
-                // .iter()
-                // .filter_map(|(l, _)| *l)
-                // .any(|l| l == Language::Chinese)
-            && lang_counts.contains_key(&Language::Japanese)
+    fn modif<S: BuildHasher>(lang_counts: &mut HashMap<Self, usize, S>) {
+        if cfg!(feature = "chinese") && cfg!(feature = "japanese")
+        // && lang_counts.contains_key(&Language::Japanese)
         // .iter()
         // .filter_map(|(l, _)| *l)
         // .any(|l| l == Language::Japanese)
         {
-            return Some(Language::Japanese);
+            let Some(j) = lang_counts
+                .get_mut(&Language::Japanese)
+                .map(|j| j as *mut usize)
+            else {
+                return;
+            };
+            if let Some(c) = lang_counts.remove(&Language::Chinese) {
+                unsafe {
+                    *j += c;
+                }
+            }
         }
-        None
     }
 }
 

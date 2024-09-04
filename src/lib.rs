@@ -455,12 +455,8 @@ mod script;
 mod writer;
 
 pub(crate) trait ExtraCheck<T: Sized = Self> {
-    fn check_opt<S: BuildHasher>(_: &HashMap<Option<T>, usize, S>) -> Option<T> {
-        None
-    }
-    fn check<S: BuildHasher>(_: &HashMap<T, usize, S>) -> Option<T> {
-        None
-    }
+    fn modif_opt<S: BuildHasher>(_: &mut HashMap<Option<T>, usize, S>) {}
+    fn modif<S: BuildHasher>(_: &mut HashMap<T, usize, S>) {}
 }
 
 #[cfg(feature = "python")]
