@@ -641,7 +641,7 @@ impl LanguageDetector {
             return values;
         }
 
-        let (language_detected_by_rules, filtered_languages) =
+        let (language_detected_by_rules, total_alphabet_counts, filtered_languages) =
             self.process_words(&words, search_languages);
 
         // let language_detected_by_rules =
@@ -656,9 +656,9 @@ impl LanguageDetector {
         let words_count_half = (words.len() as f64) * 0.5;
         let filtered_languages = self.filter_languages_by_rules(
             &words,
-            // search_languages,
+            search_languages,
             words_count_half,
-            // total_alphabet_counts,
+            total_alphabet_counts,
             filtered_languages,
         );
 
@@ -943,10 +943,14 @@ impl LanguageDetector {
         &self,
         words: &[String],
         search_languages: &HashSet<Language, S>,
-    ) -> (Option<Language>, AHashSet<Language>) {
-        // let mut total_alphabet_counts = AHashMap::<Alphabet, usize>::new();
+    ) -> (
+        Option<Language>,
+        AHashMap<Alphabet, usize>,
+        AHashSet<Language>,
+    ) {
+        let mut total_alphabet_counts = AHashMap::<Alphabet, usize>::new();
         // let mut probable_language_counts = AHashMap::<Language, usize>::new();
-        let mut probable_languages = AHashSet::<Language>::with_capacity(search_languages.len());
+        // let mut probable_languages = AHashSet::<Language>::with_capacity(search_languages.len());
         let mut detected_language_counts = AHashMap::<Language, usize>::new();
 
         let mut search_alphabets: AHashMap<Alphabet, Vec<Language>> = AHashMap::new();
@@ -971,16 +975,16 @@ impl LanguageDetector {
             else {
                 continue;
             };
-            /* self.increment_counter(
-                &mut total_alphabet_counts,
-                most_frequent_alphabet,
-                word.len(),
-            ); */
             // for alphabet in most_frequent_alphabet {
             let Some(search_langs) = search_alphabets.get(&word_most_frequent_alphabet) else {
                 // word_alphabet_count_to_remove.push(*alphabet);
                 continue;
             };
+            self.increment_counter(
+                &mut total_alphabet_counts,
+                word_most_frequent_alphabet,
+                word.len(),
+            );
             // search_langs is never empty because of `search_alphabets.entry(*a).or_default().push(*lang);`
             debug_assert!(search_langs.len() > 0);
             unsafe {
@@ -1015,11 +1019,11 @@ impl LanguageDetector {
                     }
                 }
             }
-            if detected_language_counts.is_empty() {
+            /* if detected_language_counts.is_empty() {
                 search_langs.iter().for_each(|l| {
                     _ = probable_languages.insert(*l);
                 });
-            }
+            } */
             // }
 
             /* word_alphabet_count_to_remove.into_iter().for_each(|a| {
@@ -1109,9 +1113,37 @@ impl LanguageDetector {
 
         let lang = Self::find_most_frequent(&mut detected_language_counts);
         if detected_language_counts.is_empty() {
-            (lang, probable_languages)
+            // println!("detected_language_counts is_empty!!!!!");
+            /* if detected_language_counts.is_empty() {
+                search_langs.iter().for_each(|l| {
+                    _ = probable_languages.insert(*l);
+                });
+            } */
+            if let Some(alphabet) = Self::find_most_frequent(&mut total_alphabet_counts) {
+                (
+                    lang,
+                    total_alphabet_counts,
+                    search_alphabets
+                        .get(&alphabet)
+                        .unwrap()
+                        .iter()
+                        .copied()
+                        .collect(),
+                )
+            } else {
+                (
+                    lang,
+                    total_alphabet_counts,
+                    search_languages.iter().copied().collect(),
+                )
+            }
         } else {
-            (lang, detected_language_counts.keys().copied().collect())
+            // println!("detected_language_counts");
+            (
+                lang,
+                total_alphabet_counts,
+                detected_language_counts.keys().copied().collect(),
+            )
         }
     }
 
@@ -1158,15 +1190,15 @@ impl LanguageDetector {
         most_frequent_language
     } */
 
-    fn filter_languages_by_rules(
+    fn filter_languages_by_rules<S: BuildHasher>(
         &self,
         words: &[String],
-        // languages: &HashSet<Language, S>,
+        languages: &HashSet<Language, S>,
         words_count_half: f64,
-        // total_alphabet_counts: AHashMap<Alphabet, usize>,
-        filtered_languages: AHashSet<Language>,
+        total_alphabet_counts: AHashMap<Alphabet, usize>,
+        filtered_languages_new: AHashSet<Language>,
     ) -> AHashSet<Language> {
-        /* if total_alphabet_counts.is_empty() {
+        if total_alphabet_counts.is_empty() {
             return AHashSet::from_iter(languages.iter().cloned());
         }
 
@@ -1191,13 +1223,23 @@ impl LanguageDetector {
             .iter()
             .cloned()
             .filter(|it| it.alphabets().contains(&most_frequent_alphabet))
-            .collect::<AHashSet<_>>();*/
+            .collect::<AHashSet<_>>();
+        let mut asd = false;
+        for diff in filtered_languages_new.difference(&filtered_languages) {
+            println!("{:?}", diff);
+            asd = true;
+        }
+        if asd {
+            panic!();
+        }
 
         let mut language_counts = AHashMap::<Language, usize>::new();
 
         for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
             // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
-            let relevant_languages = filtered_languages.intersection(langs).collect::<Vec<_>>();
+            let relevant_languages = filtered_languages_new
+                .intersection(langs)
+                .collect::<Vec<_>>();
 
             if !relevant_languages.is_empty() {
                 for word in words {
@@ -2473,7 +2515,7 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let (detected_language, _) = detector_for_all_languages
+        let (detected_language, _, _) = detector_for_all_languages
             .process_words(&[word.to_owned()], &detector_for_all_languages.languages);
         // let words_count_half = 0.5;
 
@@ -2498,7 +2540,7 @@ mod tests {
         expected_language: Option<Language>,
     ) {
         let words = split_text_into_words(text);
-        let (detected_language, _) =
+        let (detected_language, _, _) =
             detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
         // let words_count_half = 0.5;
 
@@ -2636,14 +2678,15 @@ mod tests {
     ) {
         let words = &[word.to_owned()];
 
-        let (_, filtered_languages) =
+        let (_, alps, filtered_languages) =
             detector_for_all_languages.process_words(words, &detector_for_all_languages.languages);
 
         let words_count_half = 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
             words,
-            // &detector_for_all_languages.languages,
+            &detector_for_all_languages.languages,
             words_count_half,
+            alps,
             filtered_languages,
         );
         assert_eq!(
