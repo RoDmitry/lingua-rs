@@ -607,10 +607,10 @@ impl LanguageDetector {
     ///             (Spanish, 0.01)
     ///         ],
     ///         vec![
-    ///             (German, 0.99),
-    ///             (Spanish, 0.01),
+    ///             (German, 1.0),
     ///             (English, 0.0),
-    ///             (French, 0.0)
+    ///             (French, 0.0),
+    ///             (Spanish, 0.0)
     ///         ]
     ///     ]
     /// );
@@ -641,12 +641,11 @@ impl LanguageDetector {
             return values;
         }
 
-        let (mut total_language_counts, total_alphabet_counts) =
+        let (language_detected_by_rules, total_alphabet_counts) =
             self.process_words(&words, search_languages);
-        let words_count_half = (words.len() as f64) * 0.5;
 
-        let language_detected_by_rules =
-            Self::find_most_frequent_opt(&mut total_language_counts);
+        // let language_detected_by_rules =
+        // Self::find_most_frequent_opt(&mut total_language_counts);
 
         if let Some(language) = language_detected_by_rules {
             update_confidence_values(&mut values, language, 1.0);
@@ -654,6 +653,7 @@ impl LanguageDetector {
             return values;
         }
 
+        let words_count_half = (words.len() as f64) * 0.5;
         let filtered_languages = self.filter_languages_by_rules(
             &words,
             search_languages,
@@ -946,12 +946,10 @@ impl LanguageDetector {
         &self,
         words: &[String],
         search_languages: &HashSet<Language, S>,
-    ) -> (
-        AHashMap<Option<Language>, usize>,
-        AHashMap<Option<Alphabet>, usize>,
-    ) {
+    ) -> (Option<Language>, AHashMap<Option<Alphabet>, usize>) {
         let mut total_alphabet_counts = AHashMap::<Option<Alphabet>, usize>::new();
-        let mut total_language_counts = AHashMap::<Option<Language>, usize>::new();
+        // let mut total_language_counts = AHashMap::<Option<Language>, usize>::new();
+        let mut word_language_counts = AHashMap::<Language, usize>::new();
 
         let mut search_alphabets: AHashMap<Alphabet, Vec<Language>> = AHashMap::new();
         for lang in search_languages {
@@ -970,7 +968,6 @@ impl LanguageDetector {
             }
 
             // let mut word_alphabet_count_to_remove = Vec::new();
-            let mut word_language_counts = AHashMap::<Language, usize>::new();
             for (alphabet, &len) in word_alphabet_count.iter() {
                 let Some(search_langs) = search_alphabets.get(alphabet) else {
                     // word_alphabet_count_to_remove.push(*alphabet);
@@ -1086,15 +1083,16 @@ impl LanguageDetector {
                 }
             } */
 
-            let lang = Self::find_most_frequent(&mut word_language_counts);
-            self.increment_counter(&mut total_language_counts, lang, word.len());
+            // let lang = Self::find_most_frequent(&mut word_language_counts);
+            // self.increment_counter(&mut total_language_counts, lang, word.len());
         }
 
-        (total_language_counts, total_alphabet_counts)
+        let lang = Self::find_most_frequent(&mut word_language_counts);
+        (lang, total_alphabet_counts)
     }
 
     // replaced by find_most_frequent_opt
-    fn detect_language_with_rules(
+    /* fn detect_language_with_rules(
         &self,
         words_count_half: f64,
         mut total_language_counts: AHashMap<Option<Language>, usize>,
@@ -1134,7 +1132,7 @@ impl LanguageDetector {
         }
 
         most_frequent_language
-    }
+    } */
 
     fn filter_languages_by_rules<S: BuildHasher>(
         &self,
@@ -2226,7 +2224,7 @@ mod tests {
         expected_third_language: Language,
     ) {
         let results = detector_for_all_languages.detect_multiple_languages_of(sentence);
-        assert_eq!(results.len(), 3);
+        assert_eq!(results.len(), 3, "{:?}", results);
 
         let first_result = &results[0];
         let first_substring = &sentence[first_result.start_index()..first_result.end_index()];
@@ -2246,6 +2244,80 @@ mod tests {
         assert_eq!(third_result.word_count, expected_third_word_count);
         assert_eq!(third_result.language(), expected_third_language);
     }
+
+    /* #[rstest(
+        sentence,
+        expected_first_substring,
+        expected_first_word_count,
+        expected_first_language,
+        expected_second_substring,
+        expected_second_word_count,
+        expected_second_language,
+        expected_third_substring,
+        expected_third_word_count,
+        expected_third_language,
+        expected_fourth_substring,
+        expected_fourth_word_count,
+        expected_fourth_language,
+        case::polish_german_chinese_english(
+            "Płaszczowo-rurowe wymienniki ciepła Uszczelkowe der blaue himmel über berlin 中文 the quick brown fox jumps over the lazy dog",
+            "Płaszczowo-rurowe wymienniki ciepła Uszczelkowe ",
+            4,
+            Polish,
+            "der blaue himmel über berlin ",
+            5,
+            German,
+            "中文 ",
+            2,
+            Chinese,
+            "the quick brown fox jumps over the lazy dog",
+            9,
+            English
+        )
+    )]
+    fn test_detect_multiple_languages_with_four_languages(
+        detector_for_all_languages: LanguageDetector,
+        sentence: &str,
+        expected_first_substring: &str,
+        expected_first_word_count: usize,
+        expected_first_language: Language,
+        expected_second_substring: &str,
+        expected_second_word_count: usize,
+        expected_second_language: Language,
+        expected_third_substring: &str,
+        expected_third_word_count: usize,
+        expected_third_language: Language,
+        expected_fourth_substring: &str,
+        expected_fourth_word_count: usize,
+        expected_fourth_language: Language,
+    ) {
+        let results = detector_for_all_languages.detect_multiple_languages_of(sentence);
+        assert_eq!(results.len(), 4, "{:?}", results);
+
+        let first_result = &results[0];
+        let first_substring = &sentence[first_result.start_index()..first_result.end_index()];
+        assert_eq!(first_substring, expected_first_substring);
+        assert_eq!(first_result.word_count, expected_first_word_count);
+        assert_eq!(first_result.language(), expected_first_language);
+
+        let second_result = &results[1];
+        let second_substring = &sentence[second_result.start_index()..second_result.end_index()];
+        assert_eq!(second_substring, expected_second_substring);
+        assert_eq!(second_result.word_count, expected_second_word_count);
+        assert_eq!(second_result.language(), expected_second_language);
+
+        let third_result = &results[2];
+        let third_substring = &sentence[third_result.start_index()..third_result.end_index()];
+        assert_eq!(third_substring, expected_third_substring);
+        assert_eq!(third_result.word_count, expected_third_word_count);
+        assert_eq!(third_result.language(), expected_third_language);
+
+        let fourth_result = &results[3];
+        let fourth_substring = &sentence[fourth_result.start_index()..fourth_result.end_index()];
+        assert_eq!(fourth_substring, expected_fourth_substring);
+        assert_eq!(fourth_result.word_count, expected_fourth_word_count);
+        assert_eq!(fourth_result.language(), expected_fourth_language);
+    } */
 
     #[rstest(
         builder_languages,
@@ -2390,12 +2462,12 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let (total_language_counts, _) = detector_for_all_languages
+        let (detected_language, _) = detector_for_all_languages
             .process_words(&[word.to_owned()], &detector_for_all_languages.languages);
-        let words_count_half = 0.5;
+        // let words_count_half = 0.5;
 
-        let detected_language = detector_for_all_languages
-            .detect_language_with_rules(words_count_half, total_language_counts);
+        // let detected_language = detector_for_all_languages
+        // .detect_language_with_rules(words_count_half, total_language_counts);
 
         assert_eq!(
             detected_language, expected_language,
