@@ -12,5 +12,5 @@ Erroneously classified as Azerbaijani: 3%, Swedish: 0.6%, Spanish: 0.4%, Basque:
 
 >> Detection of 1000 sentences (average length: 119 chars)
 Accuracy: 99.5%
-Erroneously classified as Basque: 0.1%, Malay: 0.1%, Nynorsk: 0.1%, Sotho: 0.1%, Tagalog: 0.1%
+Erroneously classified as Estonian: 0.1%, Malay: 0.1%, Nynorsk: 0.1%, Sotho: 0.1%, Tagalog: 0.1%
 

@@ -7,10 +7,10 @@ Accuracy: 65.7%
 Erroneously classified as Bulgarian: 12.7%, Serbian: 11%, Russian: 5.7%, Mongolian: 2%, Ukrainian: 2%, Belarusian: 0.6%, Kazakh: 0.3%
 
 >> Detection of 1000 word pairs (average length: 16 chars)
-Accuracy: 86.3%
-Erroneously classified as Bulgarian: 6%, Serbian: 5.3%, Russian: 1.9%, Mongolian: 0.3%, Kazakh: 0.1%, Ukrainian: 0.1%
+Accuracy: 86.6%
+Erroneously classified as Bulgarian: 6%, Serbian: 5.3%, Russian: 1.8%, Kazakh: 0.1%, Mongolian: 0.1%, Ukrainian: 0.1%
 
 >> Detection of 1000 sentences (average length: 120 chars)
-Accuracy: 98.7%
-Erroneously classified as Bulgarian: 0.5%, Serbian: 0.3%, English: 0.2%, Russian: 0.2%, Dutch: 0.1%
+Accuracy: 98.4%
+Erroneously classified as Bulgarian: 0.5%, Serbian: 0.4%, Greek: 0.3%, Russian: 0.2%, Chinese: 0.1%, Ukrainian: 0.1%
 
