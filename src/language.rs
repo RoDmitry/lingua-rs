@@ -284,13 +284,8 @@ impl Display for Language {
 
 impl ExtraCheck for Language {
     #[inline]
-    fn modif_opt<S: BuildHasher>(lang_counts: &mut HashMap<Option<Self>, usize, S>) {
-        if cfg!(feature = "chinese") && cfg!(feature = "japanese")
-        // && lang_counts.contains_key(&Some(Language::Japanese))
-        // .iter()
-        // .filter_map(|(l, _)| *l)
-        // .any(|l| l == Language::Japanese)
-        {
+    fn modif_opt<S: BuildHasher>(_lang_counts: &mut HashMap<Option<Self>, usize, S>) {
+        /* if cfg!(feature = "chinese") && cfg!(feature = "japanese") {
             let Some(j) = lang_counts
                 .get_mut(&Some(Language::Japanese))
                 .map(|j| j as *mut usize)
@@ -302,16 +297,11 @@ impl ExtraCheck for Language {
                     *j += c;
                 }
             }
-        }
+        } */
     }
     #[inline]
-    fn modif<S: BuildHasher>(lang_counts: &mut HashMap<Self, usize, S>) {
-        if cfg!(feature = "chinese") && cfg!(feature = "japanese")
-        // && lang_counts.contains_key(&Language::Japanese)
-        // .iter()
-        // .filter_map(|(l, _)| *l)
-        // .any(|l| l == Language::Japanese)
-        {
+    fn modif<S: BuildHasher>(_lang_counts: &mut HashMap<Self, usize, S>) {
+        /* if cfg!(feature = "chinese") && cfg!(feature = "japanese") {
             let Some(j) = lang_counts
                 .get_mut(&Language::Japanese)
                 .map(|j| j as *mut usize)
@@ -323,7 +313,7 @@ impl ExtraCheck for Language {
                     *j += c;
                 }
             }
-        }
+        } */
     }
 }
 
