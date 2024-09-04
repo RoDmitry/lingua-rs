@@ -641,7 +641,7 @@ impl LanguageDetector {
             return values;
         }
 
-        let (language_detected_by_rules, total_alphabet_counts, filtered_languages) =
+        let (language_detected_by_rules, filtered_languages) =
             self.process_words(&words, search_languages);
 
         // let language_detected_by_rules =
@@ -656,9 +656,9 @@ impl LanguageDetector {
         let words_count_half = (words.len() as f64) * 0.5;
         let filtered_languages = self.filter_languages_by_rules(
             &words,
-            search_languages,
+            // search_languages,
             words_count_half,
-            total_alphabet_counts,
+            // total_alphabet_counts,
             filtered_languages,
         );
 
@@ -943,11 +943,7 @@ impl LanguageDetector {
         &self,
         words: &[String],
         search_languages: &HashSet<Language, S>,
-    ) -> (
-        Option<Language>,
-        AHashMap<Alphabet, usize>,
-        AHashSet<Language>,
-    ) {
+    ) -> (Option<Language>, AHashSet<Language>) {
         let mut total_alphabet_counts = AHashMap::<Alphabet, usize>::new();
         // let mut probable_language_counts = AHashMap::<Language, usize>::new();
         // let mut probable_languages = AHashSet::<Language>::with_capacity(search_languages.len());
@@ -1113,16 +1109,9 @@ impl LanguageDetector {
 
         let lang = Self::find_most_frequent(&mut detected_language_counts);
         if detected_language_counts.is_empty() {
-            // println!("detected_language_counts is_empty!!!!!");
-            /* if detected_language_counts.is_empty() {
-                search_langs.iter().for_each(|l| {
-                    _ = probable_languages.insert(*l);
-                });
-            } */
             if let Some(alphabet) = Self::find_most_frequent(&mut total_alphabet_counts) {
                 (
                     lang,
-                    total_alphabet_counts,
                     search_alphabets
                         .get(&alphabet)
                         .unwrap()
@@ -1131,19 +1120,25 @@ impl LanguageDetector {
                         .collect(),
                 )
             } else {
-                (
-                    lang,
-                    total_alphabet_counts,
-                    search_languages.iter().copied().collect(),
-                )
+                (lang, search_languages.iter().copied().collect())
             }
         } else {
-            // println!("detected_language_counts");
-            (
-                lang,
-                total_alphabet_counts,
-                detected_language_counts.keys().copied().collect(),
-            )
+            #[cfg(any(debug_assertions, feature = "accuracy-reports"))]
+            if lang.is_none() {
+                if let Some(alphabet) = Self::find_most_frequent(&mut total_alphabet_counts) {
+                    let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
+                    for detected_lang in detected_language_counts.keys() {
+                        if !alphabet_langs.contains(detected_lang) {
+                            panic!(
+                                    "Possibly invalid input text. Found specific chars from these langs: {:?} not related for the most frequent alphabet: {:?}\nwords {:?}",
+                                    detected_language_counts, alphabet, words
+                                );
+                        }
+                    }
+                }
+            }
+
+            (lang, detected_language_counts.keys().copied().collect())
         }
     }
 
@@ -1190,15 +1185,15 @@ impl LanguageDetector {
         most_frequent_language
     } */
 
-    fn filter_languages_by_rules<S: BuildHasher>(
+    fn filter_languages_by_rules(
         &self,
         words: &[String],
-        languages: &HashSet<Language, S>,
+        // languages: &HashSet<Language, S>,
         words_count_half: f64,
-        total_alphabet_counts: AHashMap<Alphabet, usize>,
-        filtered_languages_new: AHashSet<Language>,
+        // total_alphabet_counts: AHashMap<Alphabet, usize>,
+        filtered_languages: AHashSet<Language>,
     ) -> AHashSet<Language> {
-        if total_alphabet_counts.is_empty() {
+        /* if total_alphabet_counts.is_empty() {
             return AHashSet::from_iter(languages.iter().cloned());
         }
 
@@ -1213,7 +1208,7 @@ impl LanguageDetector {
         }
 
         let most_frequent_alphabet = total_alphabet_counts
-            .into_iter()
+            .iter()
             .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
             .next()
             .unwrap()
@@ -1223,23 +1218,13 @@ impl LanguageDetector {
             .iter()
             .cloned()
             .filter(|it| it.alphabets().contains(&most_frequent_alphabet))
-            .collect::<AHashSet<_>>();
-        let mut asd = false;
-        for diff in filtered_languages_new.difference(&filtered_languages) {
-            println!("{:?}", diff);
-            asd = true;
-        }
-        if asd {
-            panic!();
-        }
+            .collect::<AHashSet<_>>(); */
 
         let mut language_counts = AHashMap::<Language, usize>::new();
 
         for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
             // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
-            let relevant_languages = filtered_languages_new
-                .intersection(langs)
-                .collect::<Vec<_>>();
+            let relevant_languages = filtered_languages.intersection(langs).collect::<Vec<_>>();
 
             if !relevant_languages.is_empty() {
                 for word in words {
@@ -2515,7 +2500,7 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let (detected_language, _, _) = detector_for_all_languages
+        let (detected_language, _) = detector_for_all_languages
             .process_words(&[word.to_owned()], &detector_for_all_languages.languages);
         // let words_count_half = 0.5;
 
@@ -2540,7 +2525,7 @@ mod tests {
         expected_language: Option<Language>,
     ) {
         let words = split_text_into_words(text);
-        let (detected_language, _, _) =
+        let (detected_language, _) =
             detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
         // let words_count_half = 0.5;
 
@@ -2678,21 +2663,44 @@ mod tests {
     ) {
         let words = &[word.to_owned()];
 
-        let (_, alps, filtered_languages) =
+        let (_, filtered_languages) =
             detector_for_all_languages.process_words(words, &detector_for_all_languages.languages);
 
         let words_count_half = 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
             words,
-            &detector_for_all_languages.languages,
+            // &detector_for_all_languages.languages,
             words_count_half,
-            alps,
+            // alps,
             filtered_languages,
         );
         assert_eq!(
             filtered_languages, expected_languages,
             "expected {:?} for word '{}', got {:?}",
             expected_languages, word, filtered_languages
+        );
+    }
+
+    #[should_panic]
+    #[rstest(text,
+        case("kejurnas iii пїѕ aa boxer cup iii пїѕ bertempat di bandung jumlah peserta petarung dari daerah provinsi jawa barat dki jakarta jawa timur sumatera utara sumatera barat nusa tenggara barat bali kalimantan barat"),
+    )]
+    fn assert_language_filtering_with_rules_text_panics(
+        detector_for_all_languages: LanguageDetector,
+        text: &str,
+    ) {
+        let words = split_text_into_words(text);
+
+        let (_, filtered_languages) =
+            detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
+
+        let words_count_half = (words.len() as f64) * 0.5;
+        let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
+            &words,
+            // &detector_for_all_languages.languages,
+            words_count_half,
+            // alps,
+            filtered_languages,
         );
     }
 
