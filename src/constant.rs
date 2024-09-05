@@ -144,6 +144,19 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
             });
         }
 
+        if cfg!(feature = "azerbaijani") || cfg!(feature = "kazakh") {
+            mapping.insert("Әә", {
+                let mut languages = AHashSet::new();
+                if cfg!(feature = "azerbaijani") {
+                    languages.insert(Language::Azerbaijani);
+                }
+                if cfg!(feature = "kazakh") {
+                    languages.insert(Language::Kazakh);
+                }
+                languages
+            });
+        }
+
         if cfg!(feature = "macedonian") || cfg!(feature = "serbian") {
             mapping.insert("ЈјЉљЊњ", {
                 let mut languages = AHashSet::new();

@@ -1090,7 +1090,7 @@ impl Language {
             Language::Hungarian => Some("ŐőŰű"),
 
             #[cfg(feature = "kazakh")]
-            Language::Kazakh => Some("ӘәҒғҚқҢңҰұ"),
+            Language::Kazakh => Some("ҒғҚқҢңҰұ"),
 
             #[cfg(feature = "latvian")]
             Language::Latvian => Some("ĢģĶķĻļŅņ"),

@@ -641,17 +641,17 @@ impl LanguageDetector {
             return values;
         }
 
-        let (language_detected_by_rules, filtered_languages) =
+        let /* (language_detected_by_rules, */ filtered_languages =
             self.process_words(&words, search_languages);
 
         // let language_detected_by_rules =
         // Self::find_most_frequent_opt(&mut total_language_counts);
 
-        if let Some(language) = language_detected_by_rules {
+        /* if let Some(language) = language_detected_by_rules {
             update_confidence_values(&mut values, language, 1.0);
             values.sort_by(confidence_values_comparator);
             return values;
-        }
+        } */
 
         // let words_count_half = (words.len() as f64) * 0.5;
         /* let filtered_languages = self.filter_languages_by_rules(
@@ -681,6 +681,9 @@ impl LanguageDetector {
         } else {
             1..6usize
         };
+
+        // TODO: remove this conversion
+        let filtered_languages = filtered_languages.into_iter().collect();
 
         #[allow(clippy::type_complexity)]
         let all_probabilities_and_unigram_counts: Vec<(
@@ -911,31 +914,37 @@ impl LanguageDetector {
 
     fn find_most_frequent<T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>>(
         data_counts: &mut AHashMap<T, usize>,
-    ) -> Option<T> {
+    ) -> Vec<(T, usize)> {
         if data_counts.is_empty() {
-            return None;
+            return vec![];
         }
 
         T::modif(data_counts);
 
         if data_counts.len() == 1 {
-            return data_counts.iter().next().map(|v| *v.0);
+            return data_counts.iter().map(|(l, c)| (*l, *c)).collect();
         }
 
-        // TODO: refactor
+        // TODO refactor
         let mut data_counts_iter = data_counts
             .into_iter()
-            .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+            .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
+            .peekable();
+        let max = *data_counts_iter.peek().unwrap().1;
+        let data_counts = data_counts_iter
+            .filter(|v| *v.1 == max)
+            .map(|(l, c)| (*l, *c))
+            .collect();
         // data_counts.sort_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
         // safe because we checked `word_data_counts.is_empty()`
-        let (most_frequent, most_frequent_count) = data_counts_iter.next().unwrap();
+        /* let (most_frequent, most_frequent_count) = data_counts_iter.next().unwrap();
         // safe because we checked `word_data_counts.len() == 1`, so len is > 1
         let (_, second_count) = data_counts_iter.next().unwrap();
         if most_frequent_count > second_count {
             return Some(*most_frequent);
-        }
+        } */
 
-        None
+        data_counts
     }
 
     #[inline]
@@ -943,7 +952,7 @@ impl LanguageDetector {
         &self,
         words: &[String],
         search_languages: &HashSet<Language, S>,
-    ) -> (Option<Language>, AHashSet<Language>) {
+    ) -> Vec<Language> {
         let mut total_alphabet_counts = AHashMap::<Alphabet, usize>::new();
         // let mut probable_language_counts = AHashMap::<Language, usize>::new();
         // let mut probable_languages = AHashSet::<Language>::with_capacity(search_languages.len());
@@ -966,207 +975,193 @@ impl LanguageDetector {
             }
 
             // let mut word_alphabet_count_to_remove = Vec::new();
-            let Some(word_most_frequent_alphabet) =
-                Self::find_most_frequent(&mut word_alphabet_count)
-            else {
-                continue;
-            };
-            // for alphabet in most_frequent_alphabet {
-            let Some(search_langs) = search_alphabets.get(&word_most_frequent_alphabet) else {
-                // word_alphabet_count_to_remove.push(*alphabet);
-                continue;
-            };
-            self.increment_counter(
-                &mut total_alphabet_counts,
-                word_most_frequent_alphabet,
-                word.len(),
-            );
-            // search_langs is never empty because of `search_alphabets.entry(*a).or_default().push(*lang);`
-            debug_assert!(search_langs.len() > 0);
-            unsafe {
-                std::hint::assert_unchecked(search_langs.len() > 0);
+            for word_most_frequent_alphabet in Self::find_most_frequent(&mut word_alphabet_count) {
+                self.increment_counter(
+                    &mut total_alphabet_counts,
+                    word_most_frequent_alphabet.0,
+                    word.len(),
+                );
             }
-            /* if search_langs.is_empty() {
-                continue;
-            } */
-            if word_most_frequent_alphabet == Alphabet::Han {
-                if cfg!(feature = "chinese") && search_langs.contains(&Language::Chinese) {
-                    self.increment_counter(&mut detected_language_counts, Language::Chinese, 1);
-                }
-                if cfg!(feature = "japanese") && search_langs.contains(&Language::Japanese) {
-                    self.increment_counter(&mut detected_language_counts, Language::Japanese, 1);
-                }
-                continue;
-            }
-            if search_langs.len() == 1 {
-                self.increment_counter(&mut detected_language_counts, search_langs[0], word.len());
-                continue;
-            }
-            for search_lang in search_langs {
-                if let Some(unique_chars) = search_lang.unique_characters() {
-                    for ch in word.chars() {
-                        if unique_chars.contains(ch) {
-                            self.increment_counter(&mut detected_language_counts, *search_lang, 1);
-                        }
-                    }
-                }
-            }
-            /* if detected_language_counts.is_empty() {
-                search_langs.iter().for_each(|l| {
-                    _ = probable_languages.insert(*l);
-                });
-            } */
-            // }
-
-            /* word_alphabet_count_to_remove.into_iter().for_each(|a| {
-                _ = word_alphabet_count.remove(&a);
-            }); */
-            //drop(alphabet); // most frequent alphabet should not be used to detect langs, use word detected alphabets instead
-
-            /* 'ch: for character in word.chars() {
-                for (&alphabet, &language) in self.one_language_alphabets.iter() {
-                    if alphabet.matches_char(character) {
-                        self.increment_counter(&mut word_language_counts, language, 1);
-                        continue 'ch;
-                    }
-                }
-
-                if cfg!(feature = "chinese") && Alphabet::Han.matches_char(character) {
-                    self.increment_counter(&mut word_language_counts, Language::Chinese, 1);
-                } else if cfg!(feature = "japanese")
-                    && JAPANESE_CHARACTER_SET.is_char_match(character)
-                {
-                    self.increment_counter(&mut word_language_counts, Language::Japanese, 1);
-                } else if Alphabet::Latin.matches_char(character)
-                    || Alphabet::Cyrillic.matches_char(character)
-                    || Alphabet::Devanagari.matches_char(character)
-                {
-                    self.languages_with_unique_characters
-                        .iter()
-                        .filter(|it| it.unique_characters().unwrap().contains(character))
-                        .for_each(|it| self.increment_counter(&mut word_language_counts, *it, 1));
-                }
-            }
-            'ch: for character in word.chars() {
-                for alphabet in Alphabet::iter() {
-                    if alphabet.matches_char(character) {
-                        self.increment_counter(
-                            &mut detected_alphabets,
-                            alphabet,
-                            word.chars().count() as u32,
-                        );
-                        break 'ch;
-                    }
-                }
-            } */
-            /* for character in word.chars() {
-                for alphabet in Alphabet::iter() {
-                    if alphabet.matches_char(character) {
-                        self.increment_counter(&mut detected_alphabets, alphabet, 1);
-
-                        let language =
-                            self.one_language_alphabets
-                                .get(&alphabet)
-                                .copied()
-                                .or_else(|| match alphabet {
-                                    #[cfg(feature = "chinese")]
-                                    Alphabet::Han => Some(Language::Chinese),
-                                    #[cfg(feature = "japanese")]
-                                    #[allow(unreachable_patterns)]
-                                    Alphabet::Han | Alphabet::Hiragana | Alphabet::Katakana => {
-                                        Some(Language::Japanese)
-                                    }
-                                    Alphabet::Latin | Alphabet::Cyrillic | Alphabet::Devanagari => {
-                                        word.chars()
-                                            .filter_map(|c| {
-                                                self.languages_with_unique_characters
-                                                    .iter()
-                                                    .find(|it| {
-                                                        it.unique_characters().unwrap().contains(c)
-                                                    })
-                                                    .copied()
-                                            })
-                                            .next()
-                                    }
-                                    _ => None,
-                                });
-
-                        if let Some(lang) = language {
-                            self.increment_counter(&mut word_language_counts, lang, 1);
-                        }
-                        break;
-                    }
-                }
-            } */
-
-            // let lang = Self::find_most_frequent(&mut word_language_counts);
-            // self.increment_counter(&mut total_language_counts, lang, word.len());
         }
 
-        // println!("words: {:?}", words);
-        // println!("total_alphabet_counts: {:?}", total_alphabet_counts);
-        // let mut detected_language_specifics_counts = AHashMap::<Language, usize>::new();
-        let most_frequent_alphabet = Self::find_most_frequent(&mut total_alphabet_counts);
-        for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
-            // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
-            // let relevant_languages = search_languages.intersection(langs).collect::<Vec<_>>();
-
-            // if detected_language_counts.is_empty() {
-            if let Some(alphabet) = most_frequent_alphabet {
-                let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
-                for lang in langs {
-                    if alphabet_langs.contains(lang) {
-                        for word in words {
-                            for character in word.chars() {
-                                if specifics.contains(character) {
-                                    // println!("character1 {:?}", character);
-                                    self.increment_counter(&mut detected_language_counts, *lang, 1);
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
+        Self::filter_data(&mut total_alphabet_counts, &search_alphabets);
+        if total_alphabet_counts.is_empty() {
+            // println!("most_frequent_alphabets.is_empty()");
+            return vec![];
+        }
+        /* if most_frequent_alphabets.is_empty() {
+            for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
                 for lang in langs {
                     if search_languages.contains(lang) {
                         for word in words {
                             for character in word.chars() {
                                 if specifics.contains(character) {
                                     // println!("character2 {:?}", character);
-                                    self.increment_counter(&mut detected_language_counts, *lang, 1);
+                                    self.increment_counter(
+                                        &mut detected_language_counts,
+                                        *lang,
+                                        1,
+                                    );
                                 }
                             }
                         }
                     }
                 }
             }
-            /* } else {
+        } */
+        // println!("total_alphabet_counts {:?}", total_alphabet_counts);
+        for (alphabet, alphabet_count) in total_alphabet_counts.clone() {
+            // for alphabet in most_frequent_alphabet {
+            let Some(search_langs) = search_alphabets.get(&alphabet) else {
+                // word_alphabet_count_to_remove.push(*alphabet);
+                unreachable!(); // todo refactor to unwrap
+            };
+            // search_langs is never empty because of `search_alphabets.entry(*a).or_default().push(*lang);`
+            /* debug_assert!(search_langs.len() > 0);
+            unsafe {
+                std::hint::assert_unchecked(search_langs.len() > 0);
+            } */
+            /* if search_langs.is_empty() {
+                continue;
+            } */
+            // println!("search_langs {:?}", search_langs);
+            if alphabet == Alphabet::Han {
+                if cfg!(feature = "chinese") && search_langs.contains(&Language::Chinese) {
+                    self.increment_counter(
+                        &mut detected_language_counts,
+                        Language::Chinese,
+                        alphabet_count,
+                    );
+                }
+                if cfg!(feature = "japanese") && search_langs.contains(&Language::Japanese) {
+                    self.increment_counter(
+                        &mut detected_language_counts,
+                        Language::Japanese,
+                        alphabet_count,
+                    );
+                }
+                continue;
+            }
+            if search_langs.len() == 1 {
+                self.increment_counter(
+                    &mut detected_language_counts,
+                    search_langs[0],
+                    alphabet_count,
+                );
+                continue;
+            }
+            for search_lang in search_langs {
+                if let Some(unique_chars) = search_lang.unique_characters() {
+                    for word in words {
+                        for ch in word.chars() {
+                            if unique_chars.contains(ch) {
+                                // println!("search_lang {:?}", search_lang);
+                                // println!("unique_char {:?}", ch);
+                                self.increment_counter(
+                                    &mut detected_language_counts,
+                                    *search_lang,
+                                    1,
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
+                // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
+                // let relevant_languages = search_languages.intersection(langs).collect::<Vec<_>>();
+
+                // if detected_language_counts.is_empty() {
+                // if let Some(alphabet) = most_frequent_alphabet {
+                let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
                 for lang in langs {
-                    if detected_language_counts.contains(lang) {
+                    if alphabet_langs.contains(lang) {
                         for word in words {
                             for character in word.chars() {
                                 if specifics.contains(character) {
-                                    // println!("character3 {:?}", character);
+                                    // println!("lang {:?}", lang);
+                                    // println!("specific character {:?}", character);
                                     self.increment_counter(&mut detected_language_counts, *lang, 1);
                                 }
                             }
                         }
                     }
                 }
-            } */
+                /* } else {
+                    for lang in langs {
+                        if search_languages.contains(lang) {
+                            for word in words {
+                                for character in word.chars() {
+                                    if specifics.contains(character) {
+                                        // println!("character2 {:?}", character);
+                                        self.increment_counter(
+                                            &mut detected_language_counts,
+                                            *lang,
+                                            1,
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } */
+                /* } else {
+                    for lang in langs {
+                        if detected_language_counts.contains(lang) {
+                            for word in words {
+                                for character in word.chars() {
+                                    if specifics.contains(character) {
+                                        // println!("character3 {:?}", character);
+                                        self.increment_counter(&mut detected_language_counts, *lang, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } */
+            }
+            // println!("detected_language_counts9 {:?}", detected_language_counts);
+        }
+        /* if detected_language_counts.is_empty() {
+            search_langs.iter().for_each(|l| {
+                _ = probable_languages.insert(*l);
+            });
+        } */
+        // }
+
+        /* word_alphabet_count_to_remove.into_iter().for_each(|a| {
+            _ = word_alphabet_count.remove(&a);
+        }); */
+        //drop(alphabet); // most frequent alphabet should not be used to detect langs, use word detected alphabets instead
+
+        // let lang = Self::find_most_frequent(&mut word_language_counts);
+        // self.increment_counter(&mut total_language_counts, lang, word.len());
+
+        // println!("detected_language_counts {:?}", detected_language_counts);
+        let detected_languages = Self::find_most_frequent(&mut detected_language_counts);
+        if detected_languages.is_empty() {
+            let most_frequent = Self::find_most_frequent(&mut total_alphabet_counts)
+                .iter()
+                .map(|(l, _)| search_alphabets.get(l).unwrap())
+                .flatten()
+                .copied()
+                .collect();
+            return most_frequent;
         }
 
-        let lang = Self::find_most_frequent(&mut detected_language_counts);
-
-        #[cfg(any(debug_assertions, feature = "accuracy-reports"))]
-        if lang.is_none() && !detected_language_counts.is_empty() {
-            if let Some(alphabet) = most_frequent_alphabet {
+        /* #[cfg(any(debug_assertions, feature = "accuracy-reports"))]
+        if detected_languages.len() > 0 {
+            let most_frequent_alphabets = Self::find_most_frequent(&mut total_alphabet_counts);
+            for (alphabet, _) in most_frequent_alphabets {
                 let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
                 let langs: Vec<_> = detected_language_counts
                     .keys()
                     .filter(|l| !alphabet_langs.contains(l))
                     // todo: remove Chinese
                     .filter(|l| **l != Language::Chinese)
+                    .filter(|l| **l != Language::Greek)
+                    .filter(|l| **l != Language::Vietnamese)
                     .filter(|l| !cfg!(feature = "japanese") || **l != Language::Japanese)
                     .collect();
                 if !langs.is_empty() {
@@ -1176,12 +1171,13 @@ impl LanguageDetector {
                     );
                 }
             }
-        }
+        } */
 
-        if detected_language_counts.is_empty() {
+        detected_languages.into_iter().map(|(l, _)| l).collect()
+        /* if detected_language_counts.is_empty() {
             if let Some(alphabet) = most_frequent_alphabet {
                 (
-                    lang,
+                    detected_languages,
                     search_alphabets
                         .get(&alphabet)
                         .unwrap()
@@ -1190,11 +1186,17 @@ impl LanguageDetector {
                         .collect(),
                 )
             } else {
-                (lang, search_languages.iter().copied().collect())
+                (
+                    detected_languages,
+                    search_languages.iter().copied().collect(),
+                )
             }
         } else {
-            (lang, detected_language_counts.keys().copied().collect())
-        }
+            (
+                detected_languages,
+                detected_language_counts.keys().copied().collect(),
+            )
+        } */
     }
 
     // replaced by find_most_frequent_opt
@@ -2569,9 +2571,15 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let (detected_language, _) = detector_for_all_languages
+        let detected_languages = detector_for_all_languages
             .process_words(&[word.to_owned()], &detector_for_all_languages.languages);
         // let words_count_half = 0.5;
+
+        let detected_language = if detected_languages.len() > 1 {
+            None
+        } else {
+            detected_languages.into_iter().next()
+        };
 
         // let detected_language = detector_for_all_languages
         // .detect_language_with_rules(words_count_half, total_language_counts);
@@ -2586,7 +2594,7 @@ mod tests {
     #[rstest(
         text,
         expected_language,
-        case("昨日、東京で大切な友達に会いました。", Some(Japanese)), // Kanji (Han) + Hiragana
+        case::kanji("昨日、東京で大切な友達に会いました。", Some(Japanese)), // Kanji (Han) + Hiragana
     )]
     fn assert_language_detection_with_rules_text_works_correctly(
         detector_for_all_languages: LanguageDetector,
@@ -2594,9 +2602,14 @@ mod tests {
         expected_language: Option<Language>,
     ) {
         let words = split_text_into_words(text);
-        let (detected_language, _) =
+        let detected_languages =
             detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
         // let words_count_half = 0.5;
+        let detected_language = if detected_languages.len() > 1 {
+            None
+        } else {
+            detected_languages.into_iter().next()
+        };
 
         // let detected_language = detector_for_all_languages
         // .detect_language_with_rules(words_count_half, total_language_counts);
@@ -2622,7 +2635,7 @@ mod tests {
         case("плаваща", ahashset!(Bulgarian, Kazakh, Mongolian, Russian)),
         case("довършат", ahashset!(Bulgarian, Kazakh, Mongolian, Russian)),
         case("павінен", ahashset!(Belarusian, Kazakh, Ukrainian)),
-        case("үндсэн", ahashset!(Belarusian, Mongolian, Russian, Kazakh)),
+        case("үндсэн", ahashset!(Kazakh, Mongolian)),
         case("дөхөж", ahashset!(Kazakh, Mongolian)),
         case("затоплување", ahashset!(Macedonian, Serbian)),
         case("ректасцензија", ahashset!(Macedonian, Serbian)),
@@ -2732,8 +2745,10 @@ mod tests {
     ) {
         let words = &[word.to_owned()];
 
-        let (_, filtered_languages) =
+        let filtered_languages =
             detector_for_all_languages.process_words(words, &detector_for_all_languages.languages);
+
+        let filtered_languages: AHashSet<_> = filtered_languages.into_iter().collect();
 
         /* let words_count_half = 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
@@ -2760,7 +2775,7 @@ mod tests {
     ) {
         let words = split_text_into_words(text);
 
-        let (_, filtered_languages) =
+        let filtered_languages =
             detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
 
         /* let words_count_half = (words.len() as f64) * 0.5;
