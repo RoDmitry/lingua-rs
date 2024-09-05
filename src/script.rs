@@ -11,7 +11,7 @@
 use crate::alphabet::Script;
 
 pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
-    (Script::Arabic, ARABIC),
+    /* (Script::Arabic, ARABIC),
     (Script::Armenian, ARMENIAN),
     (Script::Bengali, BENGALI),
     (Script::Cyrillic, CYRILLIC),
@@ -28,8 +28,8 @@ pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
     (Script::Latin, LATIN),
     (Script::Tamil, TAMIL),
     (Script::Telugu, TELUGU),
-    (Script::Thai, THAI),
-    /* (Script::Adlam, ADLAM),
+    (Script::Thai, THAI), */
+    (Script::Adlam, ADLAM),
     (Script::Ahom, AHOM),
     (Script::Anatolian_Hieroglyphs, ANATOLIAN_HIEROGLYPHS),
     (Script::Arabic, ARABIC),
@@ -38,15 +38,15 @@ pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
     (Script::Balinese, BALINESE),
     (Script::Bamum, BAMUM),
     (Script::Bassa_Vah, BASSA_VAH),
-    (Script::Batak, BATAK),
+    // (Script::Batak, BATAK),
     (Script::Bengali, BENGALI),
     (Script::Bhaiksuki, BHAIKSUKI),
     (Script::Bopomofo, BOPOMOFO),
     (Script::Brahmi, BRAHMI),
-    (Script::Braille, BRAILLE),
+    // (Script::Braille, BRAILLE),
     (Script::Buginese, BUGINESE),
     (Script::Buhid, BUHID),
-    (Script::Canadian_Aboriginal, CANADIAN_ABORIGINAL),
+    // (Script::Canadian_Aboriginal, CANADIAN_ABORIGINAL),
     (Script::Carian, CARIAN),
     (Script::Caucasian_Albanian, CAUCASIAN_ALBANIAN),
     (Script::Chakma, CHAKMA),
@@ -57,13 +57,13 @@ pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
     (Script::Coptic, COPTIC),
     (Script::Cuneiform, CUNEIFORM),
     (Script::Cypriot, CYPRIOT),
-    (Script::Cypro_Minoan, CYPRO_MINOAN),
+    // (Script::Cypro_Minoan, CYPRO_MINOAN),
     (Script::Cyrillic, CYRILLIC),
     (Script::Deseret, DESERET),
     (Script::Devanagari, DEVANAGARI),
     (Script::Dives_Akuru, DIVES_AKURU),
     (Script::Dogra, DOGRA),
-    (Script::Duployan, DUPLOYAN),
+    // (Script::Duployan, DUPLOYAN),
     (Script::Egyptian_Hieroglyphs, EGYPTIAN_HIEROGLYPHS),
     (Script::Elbasan, ELBASAN),
     (Script::Elymaic, ELYMAIC),
@@ -105,7 +105,7 @@ pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
     (Script::Latin, LATIN),
     (Script::Lepcha, LEPCHA),
     (Script::Limbu, LIMBU),
-    (Script::Linear_A, LINEAR_A),
+    // (Script::Linear_A, LINEAR_A),
     (Script::Linear_B, LINEAR_B),
     (Script::Lisu, LISU),
     (Script::Lycian, LYCIAN),
@@ -198,7 +198,7 @@ pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
     (Script::Warang_Citi, WARANG_CITI),
     (Script::Yezidi, YEZIDI),
     (Script::Yi, YI),
-    (Script::Zanabazar_Square, ZANABAZAR_SQUARE), */
+    (Script::Zanabazar_Square, ZANABAZAR_SQUARE),
 ];
 
 pub const ADLAM: &'static [(char, char)] = &[('𞤀', '𞥋'), ('𞥐', '𞥙'), ('𞥞', '𞥟')];
