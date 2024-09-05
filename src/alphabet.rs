@@ -222,6 +222,21 @@ const RANGE_ALPHABET_DEFAULT: RangeAlphabet = RangeAlphabet {
     range_end: char::MAX,
     alphabet: Alphabet::Latin,
 };
+
+/* #[const_trait]
+trait ConstDefault {
+    fn default<const RUNTIME: bool>() -> Self;
+}
+impl const ConstDefault for RangeAlphabet {
+    fn default() -> Self {
+        RangeAlphabet {
+            range_start: char::MAX,
+            range_end: char::MAX,
+            alphabet: Alphabet::Latin,
+        }
+    }
+} */
+
 const fn char_ranges_array_sorted() -> [RangeAlphabet; LEN] {
     let mut res: [RangeAlphabet; LEN] = [RANGE_ALPHABET_DEFAULT; LEN];
 
