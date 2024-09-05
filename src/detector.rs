@@ -2799,6 +2799,22 @@ mod tests {
         );
     }
 
+    /* #[rstest(
+        text,
+        expected_language,
+        case("I know you әлем", Some(English)),
+    )]
+    fn assert_language_detection_correct(
+        detector_for_all_languages: LanguageDetector,
+        text: &str,
+        expected_language: Option<Language>,
+    ) {
+        assert_eq!(
+            detector_for_all_languages.detect_language_of(text),
+            expected_language
+        );
+    } */
+
     #[rstest(text, languages,
         case(
             "ام وی با نیکی میناج تیزر داشت؟؟؟؟؟؟ i vote for bts ( _ ) as the _ via ( _ )",

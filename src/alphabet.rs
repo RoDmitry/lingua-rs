@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use strum_macros::EnumIter;
 
-use crate::ExtraCheck;
+use crate::{ExtraCheck, Language};
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
@@ -210,24 +210,40 @@ const fn char_ranges_count() -> usize {
     cnt
 }
 const LEN: usize = char_ranges_count();
-const fn char_ranges_array_sorted() -> [((char, char), Alphabet); LEN] {
-    let mut res: [((char, char), Alphabet); LEN] = [((char::MAX, char::MAX), Alphabet::Latin); LEN];
+
+#[derive(Clone, Copy, Debug)]
+struct RangeAlphabet {
+    range_start: char,
+    range_end: char,
+    alphabet: Alphabet,
+}
+const RANGE_ALPHABET_DEFAULT: RangeAlphabet = RangeAlphabet {
+    range_start: char::MAX,
+    range_end: char::MAX,
+    alphabet: Alphabet::Latin,
+};
+const fn char_ranges_array_sorted() -> [RangeAlphabet; LEN] {
+    let mut res: [RangeAlphabet; LEN] = [RANGE_ALPHABET_DEFAULT; LEN];
 
     // foreach BY_ALPHABET
     let mut i = 0;
     while i < crate::script::BY_ALPHABET.len() {
-        let (a, cs) = crate::script::BY_ALPHABET[i];
+        let (alphabet, ranges) = crate::script::BY_ALPHABET[i];
         // foreach charset in BY_ALPHABET
         let mut j = 0;
-        while j < cs.len() {
-            let c = cs[j];
+        while j < ranges.len() {
+            let range = ranges[j];
             // looking for insertion
             let mut ins = 0;
             while ins < LEN {
                 let mut prev = res[ins];
-                if c.0 < prev.0 .0 {
-                    res[ins] = (c, a);
-                    if prev.0 .0 == char::MAX {
+                if range.0 < prev.range_start {
+                    res[ins] = RangeAlphabet {
+                        range_start: range.0,
+                        range_end: range.1,
+                        alphabet,
+                    };
+                    if prev.range_start == char::MAX {
                         break;
                     }
                     // shifts all elements right
@@ -235,7 +251,7 @@ const fn char_ranges_array_sorted() -> [((char, char), Alphabet); LEN] {
                     while next_ins < LEN {
                         let next = res[next_ins];
                         res[next_ins] = prev;
-                        if next.0 .0 == char::MAX {
+                        if next.range_start == char::MAX {
                             break;
                         }
                         prev = next;
@@ -252,7 +268,7 @@ const fn char_ranges_array_sorted() -> [((char, char), Alphabet); LEN] {
 
     res
 }
-const CHAR_RANGES_SORTED: [((char, char), Alphabet); LEN] = char_ranges_array_sorted();
+const CHAR_RANGES_SORTED: [RangeAlphabet; LEN] = char_ranges_array_sorted();
 
 /* #[test]
 fn testing() {
@@ -260,10 +276,10 @@ fn testing() {
 } */
 
 #[inline(always)]
-fn compare(c_low: char, c_high: char, ch: char) -> Ordering {
-    if ch < c_low {
+fn compare(ra: &RangeAlphabet, ch: char) -> Ordering {
+    if ch < ra.range_start {
         Ordering::Greater
-    } else if ch > c_high {
+    } else if ch > ra.range_end {
         Ordering::Less
     } else {
         Ordering::Equal
@@ -272,9 +288,9 @@ fn compare(c_low: char, c_high: char, ch: char) -> Ordering {
 
 pub(crate) fn find_alphabet(ch: char) -> Option<Alphabet> {
     CHAR_RANGES_SORTED
-        .binary_search_by(|((c_low, c_high), _)| compare(*c_low, *c_high, ch))
+        .binary_search_by(|ra| compare(ra, ch))
         .ok()
-        .map(|i| unsafe { CHAR_RANGES_SORTED.get(i).unwrap() }.1) // todo: unchecked
+        .map(|i| unsafe { CHAR_RANGES_SORTED.get(i).unwrap() }.alphabet) // todo: unchecked
 }
 
 /* pub(crate) fn find_alphabet(ch: char) -> Option<Alphabet> {
@@ -304,3 +320,33 @@ pub(crate) fn alphabet_same(alphabet: Alphabet, ch: char) -> bool {
 
     arr
 } */
+
+const ALPHABET_LANGS: &[(Alphabet, &[(Language, &[char])])] = &[
+    (
+        Alphabet::Cyrillic,
+        &[
+            (
+                Language::Ukrainian,
+                &[
+                    'А', 'Б', 'В', 'Г', 'Ґ', 'Д', 'Е', 'Є', 'Ж', 'З', 'И', 'І', 'Ї', 'Й', 'К', 'Л',
+                    'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ь', 'Ю',
+                    'Я', 'а', 'б', 'в', 'г', 'ґ', 'д', 'е', 'є', 'ж', 'з', 'и', 'і', 'ї', 'й', 'к',
+                    'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ь',
+                    'ю', 'я',
+                ],
+            ),
+            (
+                Language::Kazakh,
+                &[
+                    'А', 'Ә', 'Б', 'В', 'Г', 'Ғ', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Қ', 'Л',
+                    'М', 'Н', 'Ң', 'О', 'Ө', 'П', 'Р', 'С', 'Т', 'У', 'Ұ', 'Ү', 'Ф', 'Х', 'Һ', 'Ц',
+                    'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'І', 'Ь', 'Э', 'Ю', 'Я', 'а', 'ә', 'б', 'в', 'г', 'ғ',
+                    'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'қ', 'л', 'м', 'н', 'ң', 'о', 'ө', 'п',
+                    'р', 'с', 'т', 'у', 'ұ', 'ү', 'ф', 'х', 'һ', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'і',
+                    'ь', 'э', 'ю', 'я',
+                ],
+            ),
+        ],
+    ),
+    (Alphabet::Han, &[(Language::Chinese, &[])]),
+];
