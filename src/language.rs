@@ -49,229 +49,226 @@ use crate::ExtraCheck;
     pyo3::prelude::pyclass(eq, eq_int, frozen, hash, ord, rename_all = "UPPERCASE")
 )]
 pub enum Language {
-    #[cfg(feature = "afrikaans")]
     Afrikaans,
-
-    #[cfg(feature = "albanian")]
+    Ahom,
+    Akkadian,
     Albanian,
-
-    #[cfg(feature = "arabic")]
+    AlbanianHistorical,
+    Amharic,
+    AncientGreek,
     Arabic,
-
-    #[cfg(feature = "armenian")]
+    Aramaic,
     Armenian,
-
-    #[cfg(feature = "azerbaijani")]
+    Assamese,
+    Avestan,
     Azerbaijani,
-
-    #[cfg(feature = "basque")]
+    Balinese,
+    Bamum,
     Basque,
-
-    #[cfg(feature = "belarusian")]
+    Bassa,
     Belarusian,
-
-    #[cfg(feature = "bengali")]
     Bengali,
-
-    #[cfg(feature = "bokmal")]
+    Berber,
+    Bhaiksuki,
+    Bhojpuri,
+    BishnupriyaManipuri,
     Bokmal,
-
-    #[cfg(feature = "bosnian")]
     Bosnian,
-
-    #[cfg(feature = "bulgarian")]
+    Buginese,
+    Buhid,
     Bulgarian,
-
-    #[cfg(feature = "catalan")]
+    Burmese,
+    Carian,
     Catalan,
-
-    #[cfg(feature = "chinese")]
+    CaucasianAlbanian,
+    Chakma,
+    Cham,
+    Cherokee,
     Chinese,
-
-    #[cfg(feature = "croatian")]
+    Chorasmian,
+    Coptic,
     Croatian,
-
-    #[cfg(feature = "czech")]
     Czech,
-
-    #[cfg(feature = "danish")]
     Danish,
-
-    #[cfg(feature = "dutch")]
+    Dogri,
     Dutch,
-
-    #[cfg(feature = "english")]
+    EgyptianAncient,
+    Elymaic,
     English,
-
-    #[cfg(feature = "esperanto")]
+    EnglishMormon,
+    EnglishPhonetic,
     Esperanto,
-
-    #[cfg(feature = "estonian")]
     Estonian,
-
-    #[cfg(feature = "finnish")]
+    Etruscan,
     Finnish,
-
-    #[cfg(feature = "french")]
     French,
-
-    #[cfg(feature = "ganda")]
+    Fulani,
     Ganda,
-
-    #[cfg(feature = "georgian")]
+    Gandhari,
+    Geez,
     Georgian,
-
-    #[cfg(feature = "german")]
     German,
-
-    #[cfg(feature = "greek")]
+    Gondi,
+    Gothic,
     Greek,
-
-    #[cfg(feature = "gujarati")]
     Gujarati,
-
-    #[cfg(feature = "hebrew")]
+    Gurung,
+    Hanunoo,
+    HatranAramaic,
     Hebrew,
-
-    #[cfg(feature = "hindi")]
     Hindi,
-
-    #[cfg(feature = "hungarian")]
+    Hittite,
+    Hmong,
+    HmongMiao,
+    Ho,
     Hungarian,
-
-    #[cfg(feature = "icelandic")]
+    HungarianOld,
     Icelandic,
-
-    #[cfg(feature = "indonesian")]
     Indonesian,
-
-    #[cfg(feature = "irish")]
     Irish,
-
-    #[cfg(feature = "italian")]
     Italian,
-
-    #[cfg(feature = "japanese")]
     Japanese,
-
-    #[cfg(feature = "kazakh")]
+    JapaneseKanji,
+    Javanese,
+    Kannada,
+    Kashmiri,
+    KayahLi,
     Kazakh,
-
-    #[cfg(feature = "korean")]
+    Khitan,
+    Khmer,
+    Khoja,
+    KiratRai,
+    Komi,
     Korean,
-
-    #[cfg(feature = "latin")]
+    KoreanHanja,
+    Kurdish,
+    KurdishYazidi,
+    Lao,
     Latin,
-
-    #[cfg(feature = "latvian")]
     Latvian,
-
-    #[cfg(feature = "lithuanian")]
+    Lepcha,
+    Limbu,
+    Lisu,
     Lithuanian,
-
-    #[cfg(feature = "macedonian")]
+    Luwian,
+    Lycian,
+    Lydian,
     Macedonian,
-
-    #[cfg(feature = "malay")]
+    Magahi,
+    Maithili,
+    Makasar,
+    Makassarese,
     Malay,
-
-    #[cfg(feature = "maori")]
+    Malayalam,
+    MaldivianDhivehi,
+    Mandaic,
+    MandarinChinese,
+    ManipuriMeetei,
     Maori,
-
-    #[cfg(feature = "marathi")]
     Marathi,
-
-    #[cfg(feature = "mongolian")]
+    MarchenBuddhist,
+    Marwari,
+    Medefaidrin,
+    Mende,
+    Meroitic,
+    MiddlePersian,
     Mongolian,
-
-    #[cfg(feature = "nynorsk")]
+    Mro,
+    Mundari,
+    MycenaeanGreek,
+    NabataeanAramaic,
+    Nepali,
+    Newari,
+    NKoMandé,
+    NorthernThai,
+    NushuChina,
     Nynorsk,
-
-    #[cfg(feature = "persian")]
+    OldChurchSlavonic,
+    OldEnglish,
+    OldIrish,
+    OldJavanese,
+    OldNorse,
+    OldNorthArabian,
+    OldPersian,
+    OldSouthArabian,
+    OldTurkic,
+    OldUyghur,
+    OriyaOdia,
+    Oromo,
+    Osage,
+    Oscan,
+    PalmyreneAramaic,
+    Parthian,
+    Pashto,
+    PauCinHauChin,
     Persian,
-
-    #[cfg(feature = "polish")]
+    Phoenician,
     Polish,
-
-    #[cfg(feature = "portuguese")]
     Portuguese,
-
-    #[cfg(feature = "punjabi")]
+    Prakrit,
+    Pular,
     Punjabi,
-
-    #[cfg(feature = "romanian")]
+    Rejang,
+    Rohingya,
     Romanian,
-
-    #[cfg(feature = "russian")]
     Russian,
-
-    #[cfg(feature = "serbian")]
+    SamaritanHebrew,
+    Sanskrit,
+    Santali,
+    Saraiki,
+    Saurashtra,
     Serbian,
-
-    #[cfg(feature = "shona")]
+    Shan,
     Shona,
-
-    #[cfg(feature = "slovak")]
+    Signlanguages,
+    Sindhi,
+    Sinhala,
     Slovak,
-
-    #[cfg(feature = "slovene")]
     Slovene,
-
-    #[cfg(feature = "somali")]
+    Sogdian,
     Somali,
-
-    #[cfg(feature = "sotho")]
+    Sora,
     Sotho,
-
-    #[cfg(feature = "spanish")]
     Spanish,
-
-    #[cfg(feature = "swahili")]
+    Sumerian,
+    Sundanese,
+    Sunuwar,
     Swahili,
-
-    #[cfg(feature = "swedish")]
     Swedish,
-
-    #[cfg(feature = "tagalog")]
+    Sylheti,
+    Syriac,
     Tagalog,
-
-    #[cfg(feature = "tamil")]
+    Tagbanwa,
+    TaiDam,
+    TaiDón,
+    TaiLe,
+    TaiLue,
     Tamil,
-
-    #[cfg(feature = "telugu")]
+    Tangsa,
+    Tangut,
     Telugu,
-
-    #[cfg(feature = "thai")]
     Thai,
-
-    #[cfg(feature = "tsonga")]
+    Tibetan,
+    Tigrinya,
+    Toto,
     Tsonga,
-
-    #[cfg(feature = "tswana")]
     Tswana,
-
-    #[cfg(feature = "turkish")]
+    Tulu,
     Turkish,
-
-    #[cfg(feature = "ukrainian")]
+    Ugaritic,
     Ukrainian,
-
-    #[cfg(feature = "urdu")]
+    Umbrian,
     Urdu,
-
-    #[cfg(feature = "vietnamese")]
+    Uyghur,
+    Vai,
     Vietnamese,
-
-    #[cfg(feature = "welsh")]
+    Wancho,
     Welsh,
-
-    #[cfg(feature = "xhosa")]
+    Wolof,
     Xhosa,
-
-    #[cfg(feature = "yoruba")]
+    Yi,
+    Yiddish,
     Yoruba,
-
-    #[cfg(feature = "zulu")]
     Zulu,
 }
 
@@ -607,6 +604,8 @@ impl Language {
 
             #[cfg(feature = "zulu")]
             Language::Zulu => IsoCode639_1::ZU,
+
+            _ => todo!(),
         }
     }
 
@@ -837,6 +836,8 @@ impl Language {
 
             #[cfg(feature = "zulu")]
             Language::Zulu => IsoCode639_3::ZUL,
+
+            _ => todo!(),
         }
     }
 
@@ -1066,6 +1067,8 @@ impl Language {
 
             #[cfg(feature = "thai")]
             Language::Thai => &[Alphabet::Thai],
+
+            _ => todo!(),
         }
     }
 
