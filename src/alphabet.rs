@@ -6,7 +6,7 @@ use crate::{ExtraCheck, Language};
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
-pub enum Alphabet {
+pub enum Script {
     Adlam,
     Ahom,
     Anatolian_Hieroglyphs,
@@ -197,13 +197,13 @@ pub enum Alphabet {
     Thai, */
 }
 
-impl ExtraCheck for Alphabet {}
+impl ExtraCheck for Script {}
 
 const fn char_ranges_count() -> usize {
     let mut i = 0;
     let mut cnt = 0;
-    while i < crate::script::BY_ALPHABET.len() {
-        cnt += crate::script::BY_ALPHABET[i].1.len();
+    while i < crate::script::BY_NAME.len() {
+        cnt += crate::script::BY_NAME[i].1.len();
         i += 1;
     }
 
@@ -212,39 +212,39 @@ const fn char_ranges_count() -> usize {
 const LEN: usize = char_ranges_count();
 
 #[derive(Clone, Copy, Debug)]
-struct RangeAlphabet {
+struct RangeScript {
     range_start: char,
     range_end: char,
-    alphabet: Alphabet,
+    script: Script,
 }
-const RANGE_ALPHABET_DEFAULT: RangeAlphabet = RangeAlphabet {
+const RANGE_SCRIPT_DEFAULT: RangeScript = RangeScript {
     range_start: char::MAX,
     range_end: char::MAX,
-    alphabet: Alphabet::Latin,
+    script: Script::Latin,
 };
 
 /* #[const_trait]
 trait ConstDefault {
     fn default<const RUNTIME: bool>() -> Self;
 }
-impl const ConstDefault for RangeAlphabet {
+impl const ConstDefault for RangeScript {
     fn default() -> Self {
-        RangeAlphabet {
+        RangeScript {
             range_start: char::MAX,
             range_end: char::MAX,
-            alphabet: Alphabet::Latin,
+            script: Script::Latin,
         }
     }
 } */
 
-const fn char_ranges_array_sorted() -> [RangeAlphabet; LEN] {
-    let mut res: [RangeAlphabet; LEN] = [RANGE_ALPHABET_DEFAULT; LEN];
+const fn char_ranges_array_sorted() -> [RangeScript; LEN] {
+    let mut res: [RangeScript; LEN] = [RANGE_SCRIPT_DEFAULT; LEN];
 
-    // foreach BY_ALPHABET
+    // foreach BY_NAME
     let mut i = 0;
-    while i < crate::script::BY_ALPHABET.len() {
-        let (alphabet, ranges) = crate::script::BY_ALPHABET[i];
-        // foreach charset in BY_ALPHABET
+    while i < crate::script::BY_NAME.len() {
+        let (script, ranges) = crate::script::BY_NAME[i];
+        // foreach charset
         let mut j = 0;
         while j < ranges.len() {
             let range = ranges[j];
@@ -253,10 +253,10 @@ const fn char_ranges_array_sorted() -> [RangeAlphabet; LEN] {
             while ins < LEN {
                 let mut prev = res[ins];
                 if range.0 < prev.range_start {
-                    res[ins] = RangeAlphabet {
+                    res[ins] = RangeScript {
                         range_start: range.0,
                         range_end: range.1,
-                        alphabet,
+                        script,
                     };
                     if prev.range_start == char::MAX {
                         break;
@@ -283,7 +283,7 @@ const fn char_ranges_array_sorted() -> [RangeAlphabet; LEN] {
 
     res
 }
-const CHAR_RANGES_SORTED: [RangeAlphabet; LEN] = char_ranges_array_sorted();
+const CHAR_RANGES_SORTED: [RangeScript; LEN] = char_ranges_array_sorted();
 
 /* #[test]
 fn testing() {
@@ -291,7 +291,7 @@ fn testing() {
 } */
 
 #[inline(always)]
-fn compare(ra: &RangeAlphabet, ch: char) -> Ordering {
+fn compare(ra: &RangeScript, ch: char) -> Ordering {
     if ch < ra.range_start {
         Ordering::Greater
     } else if ch > ra.range_end {
@@ -301,24 +301,24 @@ fn compare(ra: &RangeAlphabet, ch: char) -> Ordering {
     }
 }
 
-pub(crate) fn find_alphabet(ch: char) -> Option<Alphabet> {
+pub(crate) fn find_script(ch: char) -> Option<Script> {
     CHAR_RANGES_SORTED
         .binary_search_by(|ra| compare(ra, ch))
         .ok()
-        .map(|i| unsafe { CHAR_RANGES_SORTED.get(i).unwrap() }.alphabet) // todo: unchecked
+        .map(|i| unsafe { CHAR_RANGES_SORTED.get(i).unwrap() }.script) // todo: unchecked
 }
 
-/* pub(crate) fn find_alphabet(ch: char) -> Option<Alphabet> {
-    crate::script::BY_ALPHABET
+/* pub(crate) fn find_script(ch: char) -> Option<Script> {
+    crate::script::BY_SCRIPT
         .iter()
         .find(|(_, chars)| chars.iter().any(|cs| ch > cs.0 || ch <= cs.1))
         .map(|v| v.0)
 }
 
-pub(crate) fn alphabet_same(alphabet: Alphabet, ch: char) -> bool {
-    crate::script::BY_ALPHABET
+pub(crate) fn script_same(script: Script, ch: char) -> bool {
+    crate::script::BY_SCRIPT
         .iter()
-        .find(|(a, _)| a == &alphabet)
+        .find(|(a, _)| a == &script)
         .map(|(_, chars)| chars.iter().any(|cs| ch > cs.0 || ch <= cs.1))
         .unwrap_or_default()
 } */
@@ -336,12 +336,12 @@ pub(crate) fn alphabet_same(alphabet: Alphabet, ch: char) -> bool {
     arr
 } */
 
-fn script_langs_alphabet(a: Alphabet) -> &'static [(Language, &'static [char])] {
+fn script_langs_alphabet(a: Script) -> &'static [(Language, &'static [char])] {
     match a {
-        Alphabet::Adlam => &[(Language::Fulani, &[]), (Language::Pular, &[])],
-        Alphabet::Ahom => &[(Language::Ahom, &[])],
-        Alphabet::Anatolian_Hieroglyphs => &[(Language::Luwian, &[])],
-        Alphabet::Arabic => &[
+        Script::Adlam => &[(Language::Fulani, &[]), (Language::Pular, &[])],
+        Script::Ahom => &[(Language::Ahom, &[])],
+        Script::Anatolian_Hieroglyphs => &[(Language::Luwian, &[])],
+        Script::Arabic => &[
             (Language::Arabic, &[]),
             (Language::Kurdish, &[]),
             (Language::Pashto, &[]),
@@ -350,39 +350,39 @@ fn script_langs_alphabet(a: Alphabet) -> &'static [(Language, &'static [char])] 
             (Language::Urdu, &[]),
             (Language::Uyghur, &[]),
         ],
-        Alphabet::Armenian => &[(Language::Armenian, &[])],
-        Alphabet::Avestan => &[(Language::Avestan, &[])],
-        Alphabet::Balinese => &[(Language::Balinese, &[])],
-        Alphabet::Bamum => &[(Language::Bamum, &[])],
-        Alphabet::Bassa_Vah => &[(Language::Bassa, &[])],
-        // Alphabet::Batak => &[Language::Batak Toba, Language::Batak Karo, Language::Batak Mandailing, Language::Batak Pakpak, Language::Batak Simalungun, Language::Batak Angkola],
-        Alphabet::Bengali => &[
+        Script::Armenian => &[(Language::Armenian, &[])],
+        Script::Avestan => &[(Language::Avestan, &[])],
+        Script::Balinese => &[(Language::Balinese, &[])],
+        Script::Bamum => &[(Language::Bamum, &[])],
+        Script::Bassa_Vah => &[(Language::Bassa, &[])],
+        // Script::Batak => &[Language::Batak Toba, Language::Batak Karo, Language::Batak Mandailing, Language::Batak Pakpak, Language::Batak Simalungun, Language::Batak Angkola],
+        Script::Bengali => &[
             (Language::Assamese, &[]),
             (Language::Bengali, &[]),
             (Language::BishnupriyaManipuri, &[]),
         ],
-        Alphabet::Bhaiksuki => &[(Language::Bhaiksuki, &[])],
-        Alphabet::Bopomofo => &[(Language::MandarinChinese, &[])],
-        Alphabet::Brahmi => &[(Language::Sanskrit, &[]), (Language::Prakrit, &[])],
-        // Alphabet::Braille => &[(Language::Any language adapted to Braille,&[])],
-        Alphabet::Buginese => &[(Language::Buginese, &[]), (Language::Makassarese, &[])],
-        Alphabet::Buhid => &[(Language::Buhid, &[])],
-        // Alphabet::Canadian_Aboriginal => &[(Language::Cree,&[]),(Language::Inuktitut,&[]),(Language::Ojibwe,&[])],
-        Alphabet::Carian => &[(Language::Carian, &[])],
-        Alphabet::Caucasian_Albanian => &[(Language::CaucasianAlbanian, &[])],
-        Alphabet::Chakma => &[(Language::Chakma, &[])],
-        Alphabet::Cham => &[(Language::Cham, &[])],
-        Alphabet::Cherokee => &[(Language::Cherokee, &[])],
-        Alphabet::Chorasmian => &[(Language::Chorasmian, &[])],
-        Alphabet::Coptic => &[(Language::Coptic, &[])],
-        Alphabet::Cuneiform => &[
+        Script::Bhaiksuki => &[(Language::Bhaiksuki, &[])],
+        Script::Bopomofo => &[(Language::MandarinChinese, &[])],
+        Script::Brahmi => &[(Language::Sanskrit, &[]), (Language::Prakrit, &[])],
+        // Script::Braille => &[(Language::Any language adapted to Braille,&[])],
+        Script::Buginese => &[(Language::Buginese, &[]), (Language::Makassarese, &[])],
+        Script::Buhid => &[(Language::Buhid, &[])],
+        // Script::Canadian_Aboriginal => &[(Language::Cree,&[]),(Language::Inuktitut,&[]),(Language::Ojibwe,&[])],
+        Script::Carian => &[(Language::Carian, &[])],
+        Script::Caucasian_Albanian => &[(Language::CaucasianAlbanian, &[])],
+        Script::Chakma => &[(Language::Chakma, &[])],
+        Script::Cham => &[(Language::Cham, &[])],
+        Script::Cherokee => &[(Language::Cherokee, &[])],
+        Script::Chorasmian => &[(Language::Chorasmian, &[])],
+        Script::Coptic => &[(Language::Coptic, &[])],
+        Script::Cuneiform => &[
             (Language::Akkadian, &[]),
             (Language::Hittite, &[]),
             (Language::Sumerian, &[]),
         ],
-        Alphabet::Cypriot => &[(Language::AncientGreek, &[])],
-        // Alphabet::Cypro_Minoan => &[(Language::Unknown (used in ancient Cyprus),&[])],
-        Alphabet::Cyrillic => &[
+        Script::Cypriot => &[(Language::AncientGreek, &[])],
+        // Script::Cypro_Minoan => &[(Language::Unknown (used in ancient Cyprus),&[])],
+        Script::Cyrillic => &[
             (Language::Belarusian, &[]),
             (Language::Bulgarian, &[]),
             (
@@ -411,67 +411,67 @@ fn script_langs_alphabet(a: Alphabet) -> &'static [(Language, &'static [char])] 
                 ],
             ),
         ],
-        Alphabet::Deseret => &[(Language::EnglishMormon, &[])],
-        Alphabet::Devanagari => &[
+        Script::Deseret => &[(Language::EnglishMormon, &[])],
+        Script::Devanagari => &[
             (Language::Hindi, &[]),
             (Language::Marathi, &[]),
             (Language::Nepali, &[]),
             (Language::Sanskrit, &[]),
         ],
-        Alphabet::Dives_Akuru => &[(Language::MaldivianDhivehi, &[])],
-        Alphabet::Dogra => &[(Language::Dogri, &[])],
-        // Alphabet::Duployan => &[Language::Shorthand systems for English, Language::French],
-        Alphabet::Egyptian_Hieroglyphs => &[(Language::EgyptianAncient, &[])],
-        Alphabet::Elbasan => &[(Language::AlbanianHistorical, &[])],
-        Alphabet::Elymaic => &[(Language::Elymaic, &[])],
-        Alphabet::Ethiopic => &[
+        Script::Dives_Akuru => &[(Language::MaldivianDhivehi, &[])],
+        Script::Dogra => &[(Language::Dogri, &[])],
+        // Script::Duployan => &[Language::Shorthand systems for English, Language::French],
+        Script::Egyptian_Hieroglyphs => &[(Language::EgyptianAncient, &[])],
+        Script::Elbasan => &[(Language::AlbanianHistorical, &[])],
+        Script::Elymaic => &[(Language::Elymaic, &[])],
+        Script::Ethiopic => &[
             (Language::Amharic, &[]),
             (Language::Geez, &[]),
             (Language::Oromo, &[]),
             (Language::Tigrinya, &[]),
         ],
-        Alphabet::Garay => &[(Language::Wolof, &[])],
-        Alphabet::Georgian => &[(Language::Georgian, &[])],
-        Alphabet::Glagolitic => &[(Language::OldChurchSlavonic, &[])],
-        Alphabet::Gothic => &[(Language::Gothic, &[])],
-        Alphabet::Grantha => &[(Language::Sanskrit, &[]), (Language::Tamil, &[])],
-        Alphabet::Greek => &[(Language::Greek, &[])],
-        Alphabet::Gujarati => &[(Language::Gujarati, &[])],
-        Alphabet::Gunjala_Gondi => &[(Language::Gondi, &[])],
-        Alphabet::Gurmukhi => &[(Language::Punjabi, &[])],
-        Alphabet::Gurung_Khema => &[(Language::Gurung, &[])],
-        Alphabet::Han => &[
+        Script::Garay => &[(Language::Wolof, &[])],
+        Script::Georgian => &[(Language::Georgian, &[])],
+        Script::Glagolitic => &[(Language::OldChurchSlavonic, &[])],
+        Script::Gothic => &[(Language::Gothic, &[])],
+        Script::Grantha => &[(Language::Sanskrit, &[]), (Language::Tamil, &[])],
+        Script::Greek => &[(Language::Greek, &[])],
+        Script::Gujarati => &[(Language::Gujarati, &[])],
+        Script::Gunjala_Gondi => &[(Language::Gondi, &[])],
+        Script::Gurmukhi => &[(Language::Punjabi, &[])],
+        Script::Gurung_Khema => &[(Language::Gurung, &[])],
+        Script::Han => &[
             (Language::Chinese, &[]),
             (Language::JapaneseKanji, &[]), //???????????
             (Language::KoreanHanja, &[]),
         ],
-        Alphabet::Hangul => &[(Language::Korean, &[])],
-        Alphabet::Hanifi_Rohingya => &[(Language::Rohingya, &[])],
-        Alphabet::Hanunoo => &[(Language::Hanunoo, &[])],
-        Alphabet::Hatran => &[(Language::HatranAramaic, &[])],
-        Alphabet::Hebrew => &[(Language::Hebrew, &[]), (Language::Yiddish, &[])],
-        Alphabet::Hiragana => &[(Language::Japanese, &[])],
-        Alphabet::Imperial_Aramaic => &[(Language::Aramaic, &[])],
-        Alphabet::Inscriptional_Pahlavi => &[(Language::MiddlePersian, &[])],
-        Alphabet::Inscriptional_Parthian => &[(Language::Parthian, &[])],
-        Alphabet::Javanese => &[(Language::Javanese, &[])],
-        Alphabet::Kaithi => &[
+        Script::Hangul => &[(Language::Korean, &[])],
+        Script::Hanifi_Rohingya => &[(Language::Rohingya, &[])],
+        Script::Hanunoo => &[(Language::Hanunoo, &[])],
+        Script::Hatran => &[(Language::HatranAramaic, &[])],
+        Script::Hebrew => &[(Language::Hebrew, &[]), (Language::Yiddish, &[])],
+        Script::Hiragana => &[(Language::Japanese, &[])],
+        Script::Imperial_Aramaic => &[(Language::Aramaic, &[])],
+        Script::Inscriptional_Pahlavi => &[(Language::MiddlePersian, &[])],
+        Script::Inscriptional_Parthian => &[(Language::Parthian, &[])],
+        Script::Javanese => &[(Language::Javanese, &[])],
+        Script::Kaithi => &[
             (Language::Bhojpuri, &[]),
             (Language::Magahi, &[]),
             (Language::Maithili, &[]),
         ],
-        Alphabet::Kannada => &[(Language::Kannada, &[])],
-        Alphabet::Katakana => &[(Language::Japanese, &[])],
-        Alphabet::Kawi => &[(Language::OldJavanese, &[]), (Language::Sanskrit, &[])],
-        Alphabet::Kayah_Li => &[(Language::KayahLi, &[])],
-        Alphabet::Kharoshthi => &[(Language::Gandhari, &[])],
-        Alphabet::Khitan_Small_Script => &[(Language::Khitan, &[])],
-        Alphabet::Khmer => &[(Language::Khmer, &[])],
-        Alphabet::Khojki => &[(Language::Sindhi, &[]), (Language::Khoja, &[])],
-        Alphabet::Khudawadi => &[(Language::Sindhi, &[])],
-        Alphabet::Kirat_Rai => &[(Language::KiratRai, &[])],
-        Alphabet::Lao => &[(Language::Lao, &[])],
-        Alphabet::Latin => &[
+        Script::Kannada => &[(Language::Kannada, &[])],
+        Script::Katakana => &[(Language::Japanese, &[])],
+        Script::Kawi => &[(Language::OldJavanese, &[]), (Language::Sanskrit, &[])],
+        Script::Kayah_Li => &[(Language::KayahLi, &[])],
+        Script::Kharoshthi => &[(Language::Gandhari, &[])],
+        Script::Khitan_Small_Script => &[(Language::Khitan, &[])],
+        Script::Khmer => &[(Language::Khmer, &[])],
+        Script::Khojki => &[(Language::Sindhi, &[]), (Language::Khoja, &[])],
+        Script::Khudawadi => &[(Language::Sindhi, &[])],
+        Script::Kirat_Rai => &[(Language::KiratRai, &[])],
+        Script::Lao => &[(Language::Lao, &[])],
+        Script::Latin => &[
             (Language::Afrikaans, &[]),
             (Language::Albanian, &[]),
             (Language::Azerbaijani, &[]),
@@ -522,118 +522,118 @@ fn script_langs_alphabet(a: Alphabet) -> &'static [(Language, &'static [char])] 
             (Language::Yoruba, &[]),
             (Language::Zulu, &[]),
         ],
-        Alphabet::Lepcha => &[(Language::Lepcha, &[])],
-        Alphabet::Limbu => &[(Language::Limbu, &[])],
-        // Alphabet::Linear_A => &[(Language::Unknown (Minoan civilization),&[])],
-        Alphabet::Linear_B => &[(Language::MycenaeanGreek, &[])],
-        Alphabet::Lisu => &[(Language::Lisu, &[])],
-        Alphabet::Lycian => &[(Language::Lycian, &[])],
-        Alphabet::Lydian => &[(Language::Lydian, &[])],
-        Alphabet::Mahajani => &[
+        Script::Lepcha => &[(Language::Lepcha, &[])],
+        Script::Limbu => &[(Language::Limbu, &[])],
+        // Script::Linear_A => &[(Language::Unknown (Minoan civilization),&[])],
+        Script::Linear_B => &[(Language::MycenaeanGreek, &[])],
+        Script::Lisu => &[(Language::Lisu, &[])],
+        Script::Lycian => &[(Language::Lycian, &[])],
+        Script::Lydian => &[(Language::Lydian, &[])],
+        Script::Mahajani => &[
             (Language::Hindi, &[]),
             (Language::Marwari, &[]),
             (Language::Punjabi, &[]),
         ],
-        Alphabet::Makasar => &[(Language::Makasar, &[])],
-        Alphabet::Malayalam => &[(Language::Malayalam, &[])],
-        Alphabet::Mandaic => &[(Language::Mandaic, &[]), (Language::Aramaic, &[])],
-        Alphabet::Manichaean => &[(Language::MiddlePersian, &[]), (Language::Sogdian, &[])],
-        Alphabet::Marchen => &[(Language::MarchenBuddhist, &[])],
-        Alphabet::Masaram_Gondi => &[(Language::Gondi, &[])],
-        Alphabet::Medefaidrin => &[(Language::Medefaidrin, &[])],
-        Alphabet::Meetei_Mayek => &[(Language::ManipuriMeetei, &[])],
-        Alphabet::Mende_Kikakui => &[(Language::Mende, &[])],
-        Alphabet::Meroitic_Cursive => &[(Language::Meroitic, &[])],
-        Alphabet::Meroitic_Hieroglyphs => &[(Language::Meroitic, &[])],
-        Alphabet::Miao => &[(Language::HmongMiao, &[])],
-        Alphabet::Modi => &[(Language::Marathi, &[])],
-        Alphabet::Mongolian => &[(Language::Mongolian, &[])],
-        Alphabet::Mro => &[(Language::Mro, &[])],
-        Alphabet::Multani => &[(Language::Saraiki, &[])],
-        Alphabet::Myanmar => &[(Language::Burmese, &[]), (Language::Shan, &[])],
-        Alphabet::Nabataean => &[(Language::NabataeanAramaic, &[])],
-        Alphabet::Nag_Mundari => &[(Language::Mundari, &[])],
-        Alphabet::Nandinagari => &[(Language::Sanskrit, &[])],
-        Alphabet::New_Tai_Lue => &[(Language::TaiLue, &[])],
-        Alphabet::Newa => &[(Language::Newari, &[])],
-        Alphabet::Nko => &[(Language::NKoMandé, &[])],
-        Alphabet::Nushu => &[(Language::NushuChina, &[])],
-        Alphabet::Nyiakeng_Puachue_Hmong => &[(Language::Hmong, &[])],
-        Alphabet::Ogham => &[(Language::OldIrish, &[])],
-        Alphabet::Ol_Chiki => &[(Language::Santali, &[])],
-        Alphabet::Ol_Onal => &[(Language::Ho, &[])],
-        Alphabet::Old_Hungarian => &[(Language::HungarianOld, &[])],
-        Alphabet::Old_Italic => &[
+        Script::Makasar => &[(Language::Makasar, &[])],
+        Script::Malayalam => &[(Language::Malayalam, &[])],
+        Script::Mandaic => &[(Language::Mandaic, &[]), (Language::Aramaic, &[])],
+        Script::Manichaean => &[(Language::MiddlePersian, &[]), (Language::Sogdian, &[])],
+        Script::Marchen => &[(Language::MarchenBuddhist, &[])],
+        Script::Masaram_Gondi => &[(Language::Gondi, &[])],
+        Script::Medefaidrin => &[(Language::Medefaidrin, &[])],
+        Script::Meetei_Mayek => &[(Language::ManipuriMeetei, &[])],
+        Script::Mende_Kikakui => &[(Language::Mende, &[])],
+        Script::Meroitic_Cursive => &[(Language::Meroitic, &[])],
+        Script::Meroitic_Hieroglyphs => &[(Language::Meroitic, &[])],
+        Script::Miao => &[(Language::HmongMiao, &[])],
+        Script::Modi => &[(Language::Marathi, &[])],
+        Script::Mongolian => &[(Language::Mongolian, &[])],
+        Script::Mro => &[(Language::Mro, &[])],
+        Script::Multani => &[(Language::Saraiki, &[])],
+        Script::Myanmar => &[(Language::Burmese, &[]), (Language::Shan, &[])],
+        Script::Nabataean => &[(Language::NabataeanAramaic, &[])],
+        Script::Nag_Mundari => &[(Language::Mundari, &[])],
+        Script::Nandinagari => &[(Language::Sanskrit, &[])],
+        Script::New_Tai_Lue => &[(Language::TaiLue, &[])],
+        Script::Newa => &[(Language::Newari, &[])],
+        Script::Nko => &[(Language::NKoMandé, &[])],
+        Script::Nushu => &[(Language::NushuChina, &[])],
+        Script::Nyiakeng_Puachue_Hmong => &[(Language::Hmong, &[])],
+        Script::Ogham => &[(Language::OldIrish, &[])],
+        Script::Ol_Chiki => &[(Language::Santali, &[])],
+        Script::Ol_Onal => &[(Language::Ho, &[])],
+        Script::Old_Hungarian => &[(Language::HungarianOld, &[])],
+        Script::Old_Italic => &[
             (Language::Etruscan, &[]),
             (Language::Oscan, &[]),
             (Language::Umbrian, &[]),
         ],
-        Alphabet::Old_North_Arabian => &[(Language::OldNorthArabian, &[])],
-        Alphabet::Old_Permic => &[(Language::Komi, &[])],
-        Alphabet::Old_Persian => &[(Language::OldPersian, &[])],
-        Alphabet::Old_Sogdian => &[(Language::Sogdian, &[])],
-        Alphabet::Old_South_Arabian => &[(Language::OldSouthArabian, &[])],
-        Alphabet::Old_Turkic => &[(Language::OldTurkic, &[])],
-        Alphabet::Old_Uyghur => &[(Language::OldUyghur, &[])],
-        Alphabet::Oriya => &[(Language::OriyaOdia, &[])],
-        Alphabet::Osage => &[(Language::Osage, &[])],
-        Alphabet::Osmanya => &[(Language::Somali, &[])],
-        Alphabet::Pahawh_Hmong => &[(Language::Hmong, &[])],
-        Alphabet::Palmyrene => &[(Language::PalmyreneAramaic, &[])],
-        Alphabet::Pau_Cin_Hau => &[(Language::PauCinHauChin, &[])],
-        Alphabet::Phags_Pa => &[(Language::Mongolian, &[]), (Language::Tibetan, &[])],
-        Alphabet::Phoenician => &[(Language::Phoenician, &[])],
-        Alphabet::Psalter_Pahlavi => &[(Language::MiddlePersian, &[])],
-        Alphabet::Rejang => &[(Language::Rejang, &[])],
-        Alphabet::Runic => &[(Language::OldNorse, &[]), (Language::OldEnglish, &[])],
-        Alphabet::Samaritan => &[(Language::SamaritanHebrew, &[])],
-        Alphabet::Saurashtra => &[(Language::Saurashtra, &[])],
-        Alphabet::Sharada => &[(Language::Sanskrit, &[]), (Language::Kashmiri, &[])],
-        Alphabet::Shavian => &[(Language::EnglishPhonetic, &[])],
-        Alphabet::Siddham => &[(Language::Sanskrit, &[])],
-        Alphabet::SignWriting => &[(Language::Signlanguages, &[])],
-        Alphabet::Sinhala => &[(Language::Sinhala, &[])],
-        Alphabet::Sogdian => &[(Language::Sogdian, &[])],
-        Alphabet::Sora_Sompeng => &[(Language::Sora, &[])],
-        Alphabet::Soyombo => &[
+        Script::Old_North_Arabian => &[(Language::OldNorthArabian, &[])],
+        Script::Old_Permic => &[(Language::Komi, &[])],
+        Script::Old_Persian => &[(Language::OldPersian, &[])],
+        Script::Old_Sogdian => &[(Language::Sogdian, &[])],
+        Script::Old_South_Arabian => &[(Language::OldSouthArabian, &[])],
+        Script::Old_Turkic => &[(Language::OldTurkic, &[])],
+        Script::Old_Uyghur => &[(Language::OldUyghur, &[])],
+        Script::Oriya => &[(Language::OriyaOdia, &[])],
+        Script::Osage => &[(Language::Osage, &[])],
+        Script::Osmanya => &[(Language::Somali, &[])],
+        Script::Pahawh_Hmong => &[(Language::Hmong, &[])],
+        Script::Palmyrene => &[(Language::PalmyreneAramaic, &[])],
+        Script::Pau_Cin_Hau => &[(Language::PauCinHauChin, &[])],
+        Script::Phags_Pa => &[(Language::Mongolian, &[]), (Language::Tibetan, &[])],
+        Script::Phoenician => &[(Language::Phoenician, &[])],
+        Script::Psalter_Pahlavi => &[(Language::MiddlePersian, &[])],
+        Script::Rejang => &[(Language::Rejang, &[])],
+        Script::Runic => &[(Language::OldNorse, &[]), (Language::OldEnglish, &[])],
+        Script::Samaritan => &[(Language::SamaritanHebrew, &[])],
+        Script::Saurashtra => &[(Language::Saurashtra, &[])],
+        Script::Sharada => &[(Language::Sanskrit, &[]), (Language::Kashmiri, &[])],
+        Script::Shavian => &[(Language::EnglishPhonetic, &[])],
+        Script::Siddham => &[(Language::Sanskrit, &[])],
+        Script::SignWriting => &[(Language::Signlanguages, &[])],
+        Script::Sinhala => &[(Language::Sinhala, &[])],
+        Script::Sogdian => &[(Language::Sogdian, &[])],
+        Script::Sora_Sompeng => &[(Language::Sora, &[])],
+        Script::Soyombo => &[
             (Language::Mongolian, &[]),
             (Language::Sanskrit, &[]),
             (Language::Tibetan, &[]),
         ],
-        Alphabet::Sundanese => &[(Language::Sundanese, &[])],
-        Alphabet::Sunuwar => &[(Language::Sunuwar, &[])],
-        Alphabet::Syloti_Nagri => &[(Language::Sylheti, &[])],
-        Alphabet::Syriac => &[(Language::Syriac, &[]), (Language::Aramaic, &[])],
-        Alphabet::Tagalog => &[(Language::Tagalog, &[])],
-        Alphabet::Tagbanwa => &[(Language::Tagbanwa, &[])],
-        Alphabet::Tai_Le => &[(Language::TaiLe, &[])],
-        Alphabet::Tai_Tham => &[
+        Script::Sundanese => &[(Language::Sundanese, &[])],
+        Script::Sunuwar => &[(Language::Sunuwar, &[])],
+        Script::Syloti_Nagri => &[(Language::Sylheti, &[])],
+        Script::Syriac => &[(Language::Syriac, &[]), (Language::Aramaic, &[])],
+        Script::Tagalog => &[(Language::Tagalog, &[])],
+        Script::Tagbanwa => &[(Language::Tagbanwa, &[])],
+        Script::Tai_Le => &[(Language::TaiLe, &[])],
+        Script::Tai_Tham => &[
             (Language::Lao, &[]),
             (Language::NorthernThai, &[]),
             (Language::TaiLue, &[]),
         ],
-        Alphabet::Tai_Viet => &[(Language::TaiDam, &[]), (Language::TaiDón, &[])],
-        Alphabet::Takri => &[(Language::Dogri, &[]), (Language::Kashmiri, &[])],
-        Alphabet::Tamil => &[(Language::Tamil, &[])],
-        Alphabet::Tangsa => &[(Language::Tangsa, &[])],
-        Alphabet::Tangut => &[(Language::Tangut, &[])],
-        Alphabet::Telugu => &[(Language::Telugu, &[])],
-        Alphabet::Thaana => &[(Language::MaldivianDhivehi, &[])],
-        Alphabet::Thai => &[(Language::Thai, &[])],
-        Alphabet::Tibetan => &[(Language::Tibetan, &[])],
-        Alphabet::Tifinagh => &[(Language::Berber, &[])],
-        Alphabet::Tirhuta => &[(Language::Maithili, &[])],
-        Alphabet::Todhri => &[(Language::AlbanianHistorical, &[])],
-        Alphabet::Toto => &[(Language::Toto, &[])],
-        Alphabet::Tulu_Tigalari => &[(Language::Sanskrit, &[]), (Language::Tulu, &[])],
-        Alphabet::Ugaritic => &[(Language::Ugaritic, &[])],
-        Alphabet::Vai => &[(Language::Vai, &[])],
-        Alphabet::Vithkuqi => &[(Language::Albanian, &[])],
-        Alphabet::Wancho => &[(Language::Wancho, &[])],
-        Alphabet::Warang_Citi => &[(Language::Ho, &[])],
-        Alphabet::Yezidi => &[(Language::KurdishYazidi, &[])],
-        Alphabet::Yi => &[(Language::Yi, &[])],
-        Alphabet::Zanabazar_Square => &[
+        Script::Tai_Viet => &[(Language::TaiDam, &[]), (Language::TaiDón, &[])],
+        Script::Takri => &[(Language::Dogri, &[]), (Language::Kashmiri, &[])],
+        Script::Tamil => &[(Language::Tamil, &[])],
+        Script::Tangsa => &[(Language::Tangsa, &[])],
+        Script::Tangut => &[(Language::Tangut, &[])],
+        Script::Telugu => &[(Language::Telugu, &[])],
+        Script::Thaana => &[(Language::MaldivianDhivehi, &[])],
+        Script::Thai => &[(Language::Thai, &[])],
+        Script::Tibetan => &[(Language::Tibetan, &[])],
+        Script::Tifinagh => &[(Language::Berber, &[])],
+        Script::Tirhuta => &[(Language::Maithili, &[])],
+        Script::Todhri => &[(Language::AlbanianHistorical, &[])],
+        Script::Toto => &[(Language::Toto, &[])],
+        Script::Tulu_Tigalari => &[(Language::Sanskrit, &[]), (Language::Tulu, &[])],
+        Script::Ugaritic => &[(Language::Ugaritic, &[])],
+        Script::Vai => &[(Language::Vai, &[])],
+        Script::Vithkuqi => &[(Language::Albanian, &[])],
+        Script::Wancho => &[(Language::Wancho, &[])],
+        Script::Warang_Citi => &[(Language::Ho, &[])],
+        Script::Yezidi => &[(Language::KurdishYazidi, &[])],
+        Script::Yi => &[(Language::Yi, &[])],
+        Script::Zanabazar_Square => &[
             (Language::Mongolian, &[]),
             (Language::Sanskrit, &[]),
             (Language::Tibetan, &[]),

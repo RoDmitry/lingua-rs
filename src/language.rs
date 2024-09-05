@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, EnumString};
 
-use crate::alphabet::Alphabet;
+use crate::alphabet::Script;
 use crate::isocode::{IsoCode639_1, IsoCode639_3};
 use crate::ExtraCheck;
 
@@ -336,28 +336,28 @@ impl Language {
     /// Returns a set of all languages supporting the Arabic script.
     pub fn all_with_arabic_script() -> AHashSet<Language> {
         Language::iter()
-            .filter(|it| it.alphabets().contains(&Alphabet::Arabic))
+            .filter(|it| it.scripts().contains(&Script::Arabic))
             .collect()
     }
 
     /// Returns a set of all languages supporting the Cyrillic script.
     pub fn all_with_cyrillic_script() -> AHashSet<Language> {
         Language::iter()
-            .filter(|it| it.alphabets().contains(&Alphabet::Cyrillic))
+            .filter(|it| it.scripts().contains(&Script::Cyrillic))
             .collect()
     }
 
     /// Returns a set of all languages supporting the Devanagari script.
     pub fn all_with_devanagari_script() -> AHashSet<Language> {
         Language::iter()
-            .filter(|it| it.alphabets().contains(&Alphabet::Devanagari))
+            .filter(|it| it.scripts().contains(&Script::Devanagari))
             .collect()
     }
 
     /// Returns a set of all languages supporting the Latin script.
     pub fn all_with_latin_script() -> AHashSet<Language> {
         Language::iter()
-            .filter(|it| it.alphabets().contains(&Alphabet::Latin))
+            .filter(|it| it.scripts().contains(&Script::Latin))
             .collect()
     }
 
@@ -841,232 +841,233 @@ impl Language {
         }
     }
 
-    pub(crate) fn alphabets(&self) -> &[Alphabet] {
+    pub(crate) fn scripts(&self) -> &[Script] {
+        unreachable!();
         match self {
             #[cfg(feature = "afrikaans")]
-            Language::Afrikaans => &[Alphabet::Latin],
+            Language::Afrikaans => &[Script::Latin],
 
             #[cfg(feature = "albanian")]
-            Language::Albanian => &[Alphabet::Latin],
+            Language::Albanian => &[Script::Latin],
 
             #[cfg(feature = "azerbaijani")]
-            Language::Azerbaijani => &[Alphabet::Latin],
+            Language::Azerbaijani => &[Script::Latin],
 
             #[cfg(feature = "basque")]
-            Language::Basque => &[Alphabet::Latin],
+            Language::Basque => &[Script::Latin],
 
             #[cfg(feature = "bokmal")]
-            Language::Bokmal => &[Alphabet::Latin],
+            Language::Bokmal => &[Script::Latin],
 
             #[cfg(feature = "bosnian")]
-            Language::Bosnian => &[Alphabet::Latin],
+            Language::Bosnian => &[Script::Latin],
 
             #[cfg(feature = "catalan")]
-            Language::Catalan => &[Alphabet::Latin],
+            Language::Catalan => &[Script::Latin],
 
             #[cfg(feature = "croatian")]
-            Language::Croatian => &[Alphabet::Latin],
+            Language::Croatian => &[Script::Latin],
 
             #[cfg(feature = "czech")]
-            Language::Czech => &[Alphabet::Latin],
+            Language::Czech => &[Script::Latin],
 
             #[cfg(feature = "danish")]
-            Language::Danish => &[Alphabet::Latin],
+            Language::Danish => &[Script::Latin],
 
             #[cfg(feature = "dutch")]
-            Language::Dutch => &[Alphabet::Latin],
+            Language::Dutch => &[Script::Latin],
 
             #[cfg(feature = "english")]
-            Language::English => &[Alphabet::Latin],
+            Language::English => &[Script::Latin],
 
             #[cfg(feature = "esperanto")]
-            Language::Esperanto => &[Alphabet::Latin],
+            Language::Esperanto => &[Script::Latin],
 
             #[cfg(feature = "estonian")]
-            Language::Estonian => &[Alphabet::Latin],
+            Language::Estonian => &[Script::Latin],
 
             #[cfg(feature = "finnish")]
-            Language::Finnish => &[Alphabet::Latin],
+            Language::Finnish => &[Script::Latin],
 
             #[cfg(feature = "french")]
-            Language::French => &[Alphabet::Latin],
+            Language::French => &[Script::Latin],
 
             #[cfg(feature = "ganda")]
-            Language::Ganda => &[Alphabet::Latin],
+            Language::Ganda => &[Script::Latin],
 
             #[cfg(feature = "german")]
-            Language::German => &[Alphabet::Latin],
+            Language::German => &[Script::Latin],
 
             #[cfg(feature = "hungarian")]
-            Language::Hungarian => &[Alphabet::Latin],
+            Language::Hungarian => &[Script::Latin],
 
             #[cfg(feature = "icelandic")]
-            Language::Icelandic => &[Alphabet::Latin],
+            Language::Icelandic => &[Script::Latin],
 
             #[cfg(feature = "indonesian")]
-            Language::Indonesian => &[Alphabet::Latin],
+            Language::Indonesian => &[Script::Latin],
 
             #[cfg(feature = "irish")]
-            Language::Irish => &[Alphabet::Latin],
+            Language::Irish => &[Script::Latin],
 
             #[cfg(feature = "italian")]
-            Language::Italian => &[Alphabet::Latin],
+            Language::Italian => &[Script::Latin],
 
             #[cfg(feature = "latin")]
-            Language::Latin => &[Alphabet::Latin],
+            Language::Latin => &[Script::Latin],
 
             #[cfg(feature = "latvian")]
-            Language::Latvian => &[Alphabet::Latin],
+            Language::Latvian => &[Script::Latin],
 
             #[cfg(feature = "lithuanian")]
-            Language::Lithuanian => &[Alphabet::Latin],
+            Language::Lithuanian => &[Script::Latin],
 
             #[cfg(feature = "malay")]
-            Language::Malay => &[Alphabet::Latin],
+            Language::Malay => &[Script::Latin],
 
             #[cfg(feature = "maori")]
-            Language::Maori => &[Alphabet::Latin],
+            Language::Maori => &[Script::Latin],
 
             #[cfg(feature = "nynorsk")]
-            Language::Nynorsk => &[Alphabet::Latin],
+            Language::Nynorsk => &[Script::Latin],
 
             #[cfg(feature = "polish")]
-            Language::Polish => &[Alphabet::Latin],
+            Language::Polish => &[Script::Latin],
 
             #[cfg(feature = "portuguese")]
-            Language::Portuguese => &[Alphabet::Latin],
+            Language::Portuguese => &[Script::Latin],
 
             #[cfg(feature = "romanian")]
-            Language::Romanian => &[Alphabet::Latin],
+            Language::Romanian => &[Script::Latin],
 
             #[cfg(feature = "shona")]
-            Language::Shona => &[Alphabet::Latin],
+            Language::Shona => &[Script::Latin],
 
             #[cfg(feature = "slovak")]
-            Language::Slovak => &[Alphabet::Latin],
+            Language::Slovak => &[Script::Latin],
 
             #[cfg(feature = "slovene")]
-            Language::Slovene => &[Alphabet::Latin],
+            Language::Slovene => &[Script::Latin],
 
             #[cfg(feature = "somali")]
-            Language::Somali => &[Alphabet::Latin],
+            Language::Somali => &[Script::Latin],
 
             #[cfg(feature = "sotho")]
-            Language::Sotho => &[Alphabet::Latin],
+            Language::Sotho => &[Script::Latin],
 
             #[cfg(feature = "spanish")]
-            Language::Spanish => &[Alphabet::Latin],
+            Language::Spanish => &[Script::Latin],
 
             #[cfg(feature = "swahili")]
-            Language::Swahili => &[Alphabet::Latin],
+            Language::Swahili => &[Script::Latin],
 
             #[cfg(feature = "swedish")]
-            Language::Swedish => &[Alphabet::Latin],
+            Language::Swedish => &[Script::Latin],
 
             #[cfg(feature = "tagalog")]
-            Language::Tagalog => &[Alphabet::Latin],
+            Language::Tagalog => &[Script::Latin],
 
             #[cfg(feature = "tsonga")]
-            Language::Tsonga => &[Alphabet::Latin],
+            Language::Tsonga => &[Script::Latin],
 
             #[cfg(feature = "tswana")]
-            Language::Tswana => &[Alphabet::Latin],
+            Language::Tswana => &[Script::Latin],
 
             #[cfg(feature = "turkish")]
-            Language::Turkish => &[Alphabet::Latin],
+            Language::Turkish => &[Script::Latin],
 
             #[cfg(feature = "vietnamese")]
-            Language::Vietnamese => &[Alphabet::Latin],
+            Language::Vietnamese => &[Script::Latin],
 
             #[cfg(feature = "welsh")]
-            Language::Welsh => &[Alphabet::Latin],
+            Language::Welsh => &[Script::Latin],
 
             #[cfg(feature = "xhosa")]
-            Language::Xhosa => &[Alphabet::Latin],
+            Language::Xhosa => &[Script::Latin],
 
             #[cfg(feature = "yoruba")]
-            Language::Yoruba => &[Alphabet::Latin],
+            Language::Yoruba => &[Script::Latin],
 
             #[cfg(feature = "zulu")]
-            Language::Zulu => &[Alphabet::Latin],
+            Language::Zulu => &[Script::Latin],
 
             #[cfg(feature = "belarusian")]
-            Language::Belarusian => &[Alphabet::Cyrillic],
+            Language::Belarusian => &[Script::Cyrillic],
 
             #[cfg(feature = "bulgarian")]
-            Language::Bulgarian => &[Alphabet::Cyrillic],
+            Language::Bulgarian => &[Script::Cyrillic],
 
             #[cfg(feature = "kazakh")]
-            Language::Kazakh => &[Alphabet::Cyrillic],
+            Language::Kazakh => &[Script::Cyrillic],
 
             #[cfg(feature = "macedonian")]
-            Language::Macedonian => &[Alphabet::Cyrillic],
+            Language::Macedonian => &[Script::Cyrillic],
 
             #[cfg(feature = "mongolian")]
-            Language::Mongolian => &[Alphabet::Cyrillic],
+            Language::Mongolian => &[Script::Cyrillic],
 
             #[cfg(feature = "russian")]
-            Language::Russian => &[Alphabet::Cyrillic],
+            Language::Russian => &[Script::Cyrillic],
 
             #[cfg(feature = "serbian")]
-            Language::Serbian => &[Alphabet::Cyrillic],
+            Language::Serbian => &[Script::Cyrillic],
 
             #[cfg(feature = "ukrainian")]
-            Language::Ukrainian => &[Alphabet::Cyrillic],
+            Language::Ukrainian => &[Script::Cyrillic],
 
             #[cfg(feature = "arabic")]
-            Language::Arabic => &[Alphabet::Arabic],
+            Language::Arabic => &[Script::Arabic],
 
             #[cfg(feature = "persian")]
-            Language::Persian => &[Alphabet::Arabic],
+            Language::Persian => &[Script::Arabic],
 
             #[cfg(feature = "urdu")]
-            Language::Urdu => &[Alphabet::Arabic],
+            Language::Urdu => &[Script::Arabic],
 
             #[cfg(feature = "hindi")]
-            Language::Hindi => &[Alphabet::Devanagari],
+            Language::Hindi => &[Script::Devanagari],
 
             #[cfg(feature = "marathi")]
-            Language::Marathi => &[Alphabet::Devanagari],
+            Language::Marathi => &[Script::Devanagari],
 
             #[cfg(feature = "armenian")]
-            Language::Armenian => &[Alphabet::Armenian],
+            Language::Armenian => &[Script::Armenian],
 
             #[cfg(feature = "bengali")]
-            Language::Bengali => &[Alphabet::Bengali],
+            Language::Bengali => &[Script::Bengali],
 
             #[cfg(feature = "chinese")]
-            Language::Chinese => &[Alphabet::Han],
+            Language::Chinese => &[Script::Han],
 
             #[cfg(feature = "georgian")]
-            Language::Georgian => &[Alphabet::Georgian],
+            Language::Georgian => &[Script::Georgian],
 
             #[cfg(feature = "greek")]
-            Language::Greek => &[Alphabet::Greek],
+            Language::Greek => &[Script::Greek],
 
             #[cfg(feature = "gujarati")]
-            Language::Gujarati => &[Alphabet::Gujarati],
+            Language::Gujarati => &[Script::Gujarati],
 
             #[cfg(feature = "hebrew")]
-            Language::Hebrew => &[Alphabet::Hebrew],
+            Language::Hebrew => &[Script::Hebrew],
 
             #[cfg(feature = "japanese")]
-            Language::Japanese => &[Alphabet::Hiragana, Alphabet::Katakana, Alphabet::Han],
+            Language::Japanese => &[Script::Hiragana, Script::Katakana, Script::Han],
 
             #[cfg(feature = "korean")]
-            Language::Korean => &[Alphabet::Hangul],
+            Language::Korean => &[Script::Hangul],
 
             #[cfg(feature = "punjabi")]
-            Language::Punjabi => &[Alphabet::Gurmukhi],
+            Language::Punjabi => &[Script::Gurmukhi],
 
             #[cfg(feature = "tamil")]
-            Language::Tamil => &[Alphabet::Tamil],
+            Language::Tamil => &[Script::Tamil],
 
             #[cfg(feature = "telugu")]
-            Language::Telugu => &[Alphabet::Telugu],
+            Language::Telugu => &[Script::Telugu],
 
             #[cfg(feature = "thai")]
-            Language::Thai => &[Alphabet::Thai],
+            Language::Thai => &[Script::Thai],
 
             _ => todo!(),
         }

@@ -3730,7 +3730,7 @@ results in much more accurate prediction of the correct language.
 
 A second important difference is that *Lingua* does not only use such a
 statistical model, but also a rule-based engine. This engine first determines
-the alphabet of the input text and searches for characters which are unique
+the script of the input text and searches for characters which are unique
 in one or more languages. If exactly one language can be reliably chosen this
 way, the statistical model is not necessary anymore. In any case, the
 rule-based engine filters out languages that do not satisfy the conditions of

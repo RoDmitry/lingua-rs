@@ -2687,7 +2687,7 @@ available. The probabilities estimated from such few n-grams are not reliable. T
 of n-grams of sizes 1 up to 5 which results in much more accurate prediction of the correct language.
 
 A second important difference is that *Lingua* does not only use such a statistical model, but also a rule-based
-engine. This engine first determines the alphabet of the input text and searches for characters which are unique
+engine. This engine first determines the script of the input text and searches for characters which are unique
 in one or more languages. If exactly one language can be reliably chosen this way, the statistical model is not
 necessary anymore. In any case, the rule-based engine filters out languages that do not satisfy the conditions
 of the input text. Only then, in a second step, the probabilistic n-gram model is taken into consideration.

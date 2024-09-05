@@ -218,7 +218,7 @@ def test_languages_support_arabic_script():
     )
 
 
-def test_languages_support_cyrillic_alphabet():
+def test_languages_support_cyrillic_script():
     assert Language.all_with_cyrillic_script() == frozenset(
         [
             Language.BELARUSIAN,

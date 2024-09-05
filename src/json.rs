@@ -411,6 +411,8 @@ fn get_language_models_directory(language: Language) -> Dir<'static> {
 
         #[cfg(feature = "zulu")]
         Language::Zulu => ZULU_MODELS_DIRECTORY,
+
+        _ => todo!(),
     }
 }
 

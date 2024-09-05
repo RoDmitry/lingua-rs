@@ -28,7 +28,7 @@ use once_cell::sync::Lazy;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
 
-use crate::alphabet::{find_alphabet, Alphabet};
+use crate::alphabet::{find_script, Script};
 use crate::constant::{
     CHARS_TO_LANGUAGES_MAPPING, LETTERS, TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE,
 };
@@ -92,7 +92,7 @@ pub struct LanguageDetector {
     minimum_relative_distance: f64,
     is_low_accuracy_mode_enabled: bool,
     languages_with_unique_characters: AHashSet<Language>,
-    one_language_alphabets: AHashMap<Alphabet, Language>,
+    one_language_scripts: AHashMap<Script, Language>,
     unigram_language_models: StaticLanguageModelMap,
     bigram_language_models: StaticLanguageModelMap,
     trigram_language_models: StaticLanguageModelMap,
@@ -112,7 +112,7 @@ impl LanguageDetector {
             minimum_relative_distance,
             is_low_accuracy_mode_enabled,
             languages_with_unique_characters: collect_languages_with_unique_characters(&languages),
-            one_language_alphabets: collect_one_language_alphabets(&languages),
+            one_language_scripts: collect_one_language_scripts(&languages),
             unigram_language_models: &UNIGRAM_MODELS,
             bigram_language_models: &BIGRAM_MODELS,
             trigram_language_models: &TRIGRAM_MODELS,
@@ -658,7 +658,7 @@ impl LanguageDetector {
             &words,
             // search_languages,
             words_count_half,
-            // total_alphabet_counts,
+            // total_script_counts,
             filtered_languages,
         ); */
 
@@ -953,43 +953,43 @@ impl LanguageDetector {
         words: &[String],
         search_languages: &HashSet<Language, S>,
     ) -> Vec<Language> {
-        let mut total_alphabet_counts = AHashMap::<Alphabet, usize>::new();
+        let mut total_script_counts = AHashMap::<Script, usize>::new();
         // let mut probable_language_counts = AHashMap::<Language, usize>::new();
         // let mut probable_languages = AHashSet::<Language>::with_capacity(search_languages.len());
         let mut detected_language_counts = AHashMap::<Language, usize>::new();
 
-        let mut search_alphabets: AHashMap<Alphabet, Vec<Language>> = AHashMap::new();
+        let mut search_scripts: AHashMap<Script, Vec<Language>> = AHashMap::new();
         for lang in search_languages {
-            for a in lang.alphabets() {
-                search_alphabets.entry(*a).or_default().push(*lang);
+            for a in lang.scripts() {
+                search_scripts.entry(*a).or_default().push(*lang);
             }
         }
 
         for word in words {
-            let mut word_alphabet_count = AHashMap::<Alphabet, usize>::new();
+            let mut word_script_count = AHashMap::<Script, usize>::new();
             for ch in word.chars() {
-                let Some(alphabet) = find_alphabet(ch) else {
+                let Some(script) = find_script(ch) else {
                     continue;
                 };
-                self.increment_counter(&mut word_alphabet_count, alphabet, 1);
+                self.increment_counter(&mut word_script_count, script, 1);
             }
 
-            // let mut word_alphabet_count_to_remove = Vec::new();
-            for word_most_frequent_alphabet in Self::find_most_frequent(&mut word_alphabet_count) {
+            // let mut word_script_count_to_remove = Vec::new();
+            for word_most_frequent_script in Self::find_most_frequent(&mut word_script_count) {
                 self.increment_counter(
-                    &mut total_alphabet_counts,
-                    word_most_frequent_alphabet.0,
+                    &mut total_script_counts,
+                    word_most_frequent_script.0,
                     word.len(),
                 );
             }
         }
 
-        Self::filter_data(&mut total_alphabet_counts, &search_alphabets);
-        if total_alphabet_counts.is_empty() {
-            // println!("most_frequent_alphabets.is_empty()");
+        Self::filter_data(&mut total_script_counts, &search_scripts);
+        if total_script_counts.is_empty() {
+            // println!("most_frequent_scripts.is_empty()");
             return vec![];
         }
-        /* if most_frequent_alphabets.is_empty() {
+        /* if most_frequent_scripts.is_empty() {
             for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
                 for lang in langs {
                     if search_languages.contains(lang) {
@@ -1009,14 +1009,14 @@ impl LanguageDetector {
                 }
             }
         } */
-        // println!("total_alphabet_counts {:?}", total_alphabet_counts);
-        for (alphabet, alphabet_count) in total_alphabet_counts.clone() {
-            // for alphabet in most_frequent_alphabet {
-            let Some(search_langs) = search_alphabets.get(&alphabet) else {
-                // word_alphabet_count_to_remove.push(*alphabet);
+        // println!("total_script_counts {:?}", total_script_counts);
+        for (script, script_count) in total_script_counts.clone() {
+            // for script in most_frequent_script {
+            let Some(search_langs) = search_scripts.get(&script) else {
+                // word_script_count_to_remove.push(*script);
                 unreachable!(); // todo refactor to unwrap
             };
-            // search_langs is never empty because of `search_alphabets.entry(*a).or_default().push(*lang);`
+            // search_langs is never empty because of `search_scripts.entry(*a).or_default().push(*lang);`
             /* debug_assert!(search_langs.len() > 0);
             unsafe {
                 std::hint::assert_unchecked(search_langs.len() > 0);
@@ -1025,19 +1025,19 @@ impl LanguageDetector {
                 continue;
             } */
             // println!("search_langs {:?}", search_langs);
-            if alphabet == Alphabet::Han {
+            if script == Script::Han {
                 if cfg!(feature = "chinese") && search_langs.contains(&Language::Chinese) {
                     self.increment_counter(
                         &mut detected_language_counts,
                         Language::Chinese,
-                        alphabet_count,
+                        script_count,
                     );
                 }
                 if cfg!(feature = "japanese") && search_langs.contains(&Language::Japanese) {
                     self.increment_counter(
                         &mut detected_language_counts,
                         Language::Japanese,
-                        alphabet_count,
+                        script_count,
                     );
                 }
                 continue;
@@ -1046,7 +1046,7 @@ impl LanguageDetector {
                 self.increment_counter(
                     &mut detected_language_counts,
                     search_langs[0],
-                    alphabet_count,
+                    script_count,
                 );
                 continue;
             }
@@ -1073,10 +1073,10 @@ impl LanguageDetector {
                 // let relevant_languages = search_languages.intersection(langs).collect::<Vec<_>>();
 
                 // if detected_language_counts.is_empty() {
-                // if let Some(alphabet) = most_frequent_alphabet {
-                let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
+                // if let Some(script) = most_frequent_script {
+                let script_langs = search_scripts.get(&script).unwrap();
                 for lang in langs {
-                    if alphabet_langs.contains(lang) {
+                    if script_langs.contains(lang) {
                         for word in words {
                             for character in word.chars() {
                                 if specifics.contains(character) {
@@ -1130,10 +1130,10 @@ impl LanguageDetector {
         } */
         // }
 
-        /* word_alphabet_count_to_remove.into_iter().for_each(|a| {
-            _ = word_alphabet_count.remove(&a);
+        /* word_script_count_to_remove.into_iter().for_each(|a| {
+            _ = word_script_count.remove(&a);
         }); */
-        //drop(alphabet); // most frequent alphabet should not be used to detect langs, use word detected alphabets instead
+        //drop(script); // most frequent script should not be used to detect langs, use word detected scripts instead
 
         // let lang = Self::find_most_frequent(&mut word_language_counts);
         // self.increment_counter(&mut total_language_counts, lang, word.len());
@@ -1141,9 +1141,9 @@ impl LanguageDetector {
         // println!("detected_language_counts {:?}", detected_language_counts);
         let detected_languages = Self::find_most_frequent(&mut detected_language_counts);
         if detected_languages.is_empty() {
-            let most_frequent = Self::find_most_frequent(&mut total_alphabet_counts)
+            let most_frequent = Self::find_most_frequent(&mut total_script_counts)
                 .iter()
-                .map(|(l, _)| search_alphabets.get(l).unwrap())
+                .map(|(l, _)| search_scripts.get(l).unwrap())
                 .flatten()
                 .copied()
                 .collect();
@@ -1152,12 +1152,12 @@ impl LanguageDetector {
 
         /* #[cfg(any(debug_assertions, feature = "accuracy-reports"))]
         if detected_languages.len() > 0 {
-            let most_frequent_alphabets = Self::find_most_frequent(&mut total_alphabet_counts);
-            for (alphabet, _) in most_frequent_alphabets {
-                let alphabet_langs = search_alphabets.get(&alphabet).unwrap();
+            let most_frequent_scripts = Self::find_most_frequent(&mut total_script_counts);
+            for (script, _) in most_frequent_scripts {
+                let script_langs = search_scripts.get(&script).unwrap();
                 let langs: Vec<_> = detected_language_counts
                     .keys()
-                    .filter(|l| !alphabet_langs.contains(l))
+                    .filter(|l| !script_langs.contains(l))
                     // todo: remove Chinese
                     .filter(|l| **l != Language::Chinese)
                     .filter(|l| **l != Language::Greek)
@@ -1166,8 +1166,8 @@ impl LanguageDetector {
                     .collect();
                 if !langs.is_empty() {
                     panic!(
-                        "Possibly invalid input text. Found specific chars from these langs: {:?} not related for the most frequent alphabet: {:?}\nwords {:?}",
-                        langs, alphabet, words
+                        "Possibly invalid input text. Found specific chars from these langs: {:?} not related for the most frequent script: {:?}\nwords {:?}",
+                        langs, script, words
                     );
                 }
             }
@@ -1175,11 +1175,11 @@ impl LanguageDetector {
 
         detected_languages.into_iter().map(|(l, _)| l).collect()
         /* if detected_language_counts.is_empty() {
-            if let Some(alphabet) = most_frequent_alphabet {
+            if let Some(script) = most_frequent_script {
                 (
                     detected_languages,
-                    search_alphabets
-                        .get(&alphabet)
+                    search_scripts
+                        .get(&script)
                         .unwrap()
                         .iter()
                         .copied()
@@ -1247,24 +1247,24 @@ impl LanguageDetector {
         words: &[String],
         // languages: &HashSet<Language, S>,
         words_count_half: f64,
-        // total_alphabet_counts: AHashMap<Alphabet, usize>,
+        // total_script_counts: AHashMap<Script, usize>,
         filtered_languages: AHashSet<Language>,
     ) -> AHashSet<Language> {
-        /* if total_alphabet_counts.is_empty() {
+        /* if total_script_counts.is_empty() {
             return AHashSet::from_iter(languages.iter().cloned());
         }
 
-        if total_alphabet_counts.len() > 1 {
-            let mut distinct_alphabets = AHashSet::with_capacity(total_alphabet_counts.len());
-            for count in total_alphabet_counts.values() {
-                distinct_alphabets.insert(count);
+        if total_script_counts.len() > 1 {
+            let mut distinct_scripts = AHashSet::with_capacity(total_script_counts.len());
+            for count in total_script_counts.values() {
+                distinct_scripts.insert(count);
             }
-            if distinct_alphabets.len() == 1 {
+            if distinct_scripts.len() == 1 {
                 return AHashSet::from_iter(languages.iter().cloned());
             }
         }
 
-        let most_frequent_alphabet = total_alphabet_counts
+        let most_frequent_script = total_script_counts
             .iter()
             .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
             .next()
@@ -1274,7 +1274,7 @@ impl LanguageDetector {
         let filtered_languages = languages
             .iter()
             .cloned()
-            .filter(|it| it.alphabets().contains(&most_frequent_alphabet))
+            .filter(|it| it.scripts().contains(&most_frequent_script))
             .collect::<AHashSet<_>>(); */
 
         let mut language_counts = AHashMap::<Language, usize>::new();
@@ -1591,8 +1591,8 @@ fn collect_languages_with_unique_characters(languages: &AHashSet<Language>) -> A
         .collect()
 }
 
-fn collect_one_language_alphabets(languages: &AHashSet<Language>) -> AHashMap<Alphabet, Language> {
-    /* Alphabet::all_supporting_single_language()
+fn collect_one_language_scripts(languages: &AHashSet<Language>) -> AHashMap<Script, Language> {
+    /* Script::all_supporting_single_language()
     .into_iter()
     .filter(|(_, language)| languages.contains(language))
     .collect() */
@@ -1921,14 +1921,14 @@ mod tests {
     ) -> LanguageDetector {
         let languages = ahashset!(English, German);
         let languages_with_unique_characters = collect_languages_with_unique_characters(&languages);
-        let one_language_alphabets = collect_one_language_alphabets(&languages);
+        let one_language_scripts = collect_one_language_scripts(&languages);
 
         LanguageDetector {
             languages,
             minimum_relative_distance: 0.0,
             is_low_accuracy_mode_enabled: false,
             languages_with_unique_characters,
-            one_language_alphabets,
+            one_language_scripts,
             unigram_language_models,
             bigram_language_models,
             trigram_language_models,
@@ -2552,7 +2552,7 @@ mod tests {
         case("сопротивление", None),
         case("house", None),
 
-        // words with unique alphabet
+        // words with unique script
         case("ունենա", Some(Armenian)),
         case("জানাতে", Some(Bengali)),
         case("გარეუბან", Some(Georgian)),
