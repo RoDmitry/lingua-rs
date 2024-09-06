@@ -44,6 +44,18 @@ pub(crate) fn script_lang_alphabets(a: Script, ch: char) -> &'static [Language] 
         Script::Cham => alphabet_match!([(Language::Cham, [])]),
         Script::Cherokee => alphabet_match!([(Language::Cherokee, [])]),
         Script::Chorasmian => alphabet_match!([(Language::Chorasmian, [])]),
+        // if you want to add something here, validate that char's range is active in `ucd.rs`
+        // during parsing these considered as connectors, not chars of the word
+        // example1: `can't` for english is one word, for other lang it is two words: `can, t`
+        //   because if Languages of all 3 chars do not intersect, it will be two words
+        // example2: `word1' word2` for all langs will be parsed as two words without `'`,
+        //   because next char after `'` is space, which is not a char of any language
+        Script::Common => match ch {
+            '\'' => &[Language::Belarusian, Language::English],
+            '¡' => &[Language::Spanish],
+            '¿' => &[Language::Spanish],
+            _ => &[], // must be always empty
+        },
         Script::Coptic => alphabet_match!([(Language::Coptic, [])]),
         Script::Cuneiform => alphabet_match!([
             (Language::Akkadian, []),
@@ -60,7 +72,6 @@ pub(crate) fn script_lang_alphabets(a: Script, ch: char) -> &'static [Language] 
                     'З', 'з', 'І', 'і', 'Й', 'й', 'К', 'к', 'Л', 'л', 'М', 'м', 'Н', 'н', 'О', 'о',
                     'П', 'п', 'Р', 'р', 'С', 'с', 'Т', 'т', 'У', 'у', 'Ў', 'ў', 'Ф', 'ф', 'Х', 'х',
                     'Ц', 'ц', 'Ч', 'ч', 'Ш', 'ш', 'Ы', 'ы', 'Ь', 'ь', 'Э', 'э', 'Ю', 'ю', 'Я', 'я',
-                    '\'',
                 ]
             ),
             (
@@ -314,7 +325,7 @@ pub(crate) fn script_lang_alphabets(a: Script, ch: char) -> &'static [Language] 
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
                     'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
-                    'Y', 'y', 'Z', 'z', '\''
+                    'Y', 'y', 'Z', 'z'
                 ]
             ),
             (
@@ -549,7 +560,7 @@ pub(crate) fn script_lang_alphabets(a: Script, ch: char) -> &'static [Language] 
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
                     'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w',
-                    'X', 'x', 'Y', 'y', 'Z', 'z', '¿', '¡'
+                    'X', 'x', 'Y', 'y', 'Z', 'z'
                 ]
             ),
             (

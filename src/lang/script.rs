@@ -29,7 +29,7 @@ pub enum Script {
     Cham,
     Cherokee,
     Chorasmian,
-    // Common,
+    Common,
     Coptic,
     Cuneiform,
     Cypriot,

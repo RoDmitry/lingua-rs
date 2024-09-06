@@ -53,7 +53,7 @@ pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
     (Script::Cham, CHAM),
     (Script::Cherokee, CHEROKEE),
     (Script::Chorasmian, CHORASMIAN),
-    // (Script::Common, COMMON),
+    (Script::Common, COMMON),
     (Script::Coptic, COPTIC),
     (Script::Cuneiform, CUNEIFORM),
     (Script::Cypriot, CYPRIOT),
@@ -331,10 +331,10 @@ pub const CHORASMIAN: &'static [(char, char)] = &[('𐾰', '𐿋')];
 
 pub const COMMON: &'static [(char, char)] = &[
     ('\0', '@'),
-    ('[', '`'),
+    // ('[', '`'),
     ('{', '©'),
     ('«', '¹'),
-    ('»', '¿'),
+    /* ('»', '¿'),
     ('×', '×'),
     ('÷', '÷'),
     ('ʹ', '˟'),
@@ -503,7 +503,7 @@ pub const COMMON: &'static [(char, char)] = &[
     ('🬀', '🮒'),
     ('🮔', '🯹'),
     ('\u{e0001}', '\u{e0001}'),
-    ('\u{e0020}', '\u{e007f}'),
+    ('\u{e0020}', '\u{e007f}'), */
 ];
 
 pub const COPTIC: &'static [(char, char)] = &[('Ϣ', 'ϯ'), ('Ⲁ', 'ⳳ'), ('⳹', '⳿')];
