@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
+use crate::lang::Language;
 use ahash::{AHashMap, AHashSet};
 use once_cell::sync::Lazy;
 use regex::Regex;
-
-use crate::language::Language;
 
 /* pub(crate) static JAPANESE_CHARACTER_SET: Lazy<CharSet> =
 Lazy::new(|| CharSet::from_char_classes(&["Hiragana", "Katakana", "Han"])); */

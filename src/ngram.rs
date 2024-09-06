@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-use std::fmt;
-use std::fmt::Display;
-
+use ::std::fmt::{self, Display};
 use serde::de::{Error, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 

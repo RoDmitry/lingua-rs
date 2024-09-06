@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-use std::fs::{remove_file, File};
-use std::io;
-use std::io::{BufRead, BufReader, LineWriter, Write};
-use std::path::Path;
-
-use ahash::AHashMap;
-use brotli::CompressorWriter;
-use itertools::Itertools;
-use regex::Regex;
-
 use crate::constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION};
 use crate::model::TrainingDataLanguageModel;
 use crate::ngram::Ngram;
 use crate::Language;
+use ::std::fs::{remove_file, File};
+use ::std::io::{self, BufRead, BufReader, LineWriter, Write};
+use ::std::path::Path;
+use ahash::AHashMap;
+use brotli::CompressorWriter;
+use itertools::Itertools;
+use regex::Regex;
 
 /// This struct creates language model files and writes them to a directory.
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
@@ -375,13 +372,11 @@ fn check_output_directory_path(output_directory_path: &Path) {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read_dir;
-    use std::io::Read;
-    use std::path::PathBuf;
-
-    use tempfile::{tempdir, NamedTempFile};
-
     use super::*;
+    use ::std::fs::read_dir;
+    use ::std::io::Read;
+    use ::std::path::PathBuf;
+    use tempfile::{tempdir, NamedTempFile};
 
     fn create_temp_input_file(content: &str) -> NamedTempFile {
         let mut input_file = NamedTempFile::new().unwrap();

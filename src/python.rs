@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-use std::any::Any;
-use std::io;
-use std::panic;
-use std::path::PathBuf;
-
-use ahash::AHashSet;
-use pyo3::exceptions::{PyException, PyValueError};
-use pyo3::prelude::*;
-use pyo3::types::{PyTuple, PyType};
-
 use crate::builder::{
     LanguageDetectorBuilder, MINIMUM_RELATIVE_DISTANCE_MESSAGE, MISSING_LANGUAGE_MESSAGE,
 };
@@ -33,6 +23,14 @@ use crate::isocode::{IsoCode639_1, IsoCode639_3};
 use crate::language::Language;
 use crate::result::DetectionResult;
 use crate::writer::{LanguageModelFilesWriter, TestDataFilesWriter};
+use ::std::any::Any;
+use ::std::io;
+use ::std::panic;
+use ::std::path::PathBuf;
+use ahash::AHashSet;
+use pyo3::exceptions::{PyException, PyValueError};
+use pyo3::prelude::*;
+use pyo3::types::{PyTuple, PyType};
 
 #[pymodule]
 fn lingua(m: &Bound<'_, PyModule>) -> PyResult<()> {

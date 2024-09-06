@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-use std::collections::BTreeMap;
-
+use crate::fraction::Fraction;
+use crate::ngram::{Ngram, NgramRef};
+use crate::Language;
+use ::std::collections::BTreeMap;
 use ahash::AHashMap;
 use compact_str::CompactString;
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-
-use crate::fraction::Fraction;
-use crate::language::Language;
-use crate::ngram::{Ngram, NgramRef};
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct JsonLanguageModel {

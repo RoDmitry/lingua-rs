@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-use ahash::AHashSet;
-
 use crate::detector::LanguageDetector;
 use crate::isocode::{IsoCode639_1, IsoCode639_3};
-use crate::language::Language;
+use crate::Language;
+use ahash::AHashSet;
 
 pub(crate) const MISSING_LANGUAGE_MESSAGE: &str =
     "LanguageDetector needs at least 2 languages to choose from";

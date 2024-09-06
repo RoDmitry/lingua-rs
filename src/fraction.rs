@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-use std::fmt;
-use std::fmt::{Debug, Display};
-
+use ::std::fmt::{self, Debug, Display};
 use fraction::GenericFraction;
 use itertools::Itertools;
 use serde::de::{Error, Visitor};

@@ -16,18 +16,15 @@
 
 #![allow(non_snake_case)]
 
-use std::str::FromStr;
-
-use itertools::Itertools;
-use serde::{Deserialize, Serialize};
-
-use wasm_bindgen::prelude::*;
-
 use crate::builder::{MINIMUM_RELATIVE_DISTANCE_MESSAGE, MISSING_LANGUAGE_MESSAGE};
 use crate::{
     convert_byte_indices_to_char_indices, IsoCode639_1, IsoCode639_3, Language,
     LanguageDetector as Detector, LanguageDetectorBuilder as Builder,
 };
+use ::std::str::FromStr;
+use itertools::Itertools;
+use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
 
 /// This class configures and creates an instance of `LanguageDetector`.
 #[wasm_bindgen]

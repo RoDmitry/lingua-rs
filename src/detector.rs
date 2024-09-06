@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-use std::borrow::Borrow;
-use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet};
-use std::hash::{BuildHasher, Hash};
-use std::sync::RwLock;
-
+use crate::constant::{
+    CHARS_TO_LANGUAGES_MAPPING, LETTERS, TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE,
+};
+use crate::json::load_json;
+use crate::model::{TestDataLanguageModel, TrainingDataLanguageModel};
+use crate::result::DetectionResult;
+use crate::{ExtraCheck, Language, Script};
+use ::std::borrow::Borrow;
+use ::std::cmp::Ordering;
+use ::std::collections::{HashMap, HashSet};
+use ::std::hash::{BuildHasher, Hash};
+use ::std::sync::RwLock;
 use ahash::{AHashMap, AHashSet};
 use compact_str::CompactString;
 use fraction::Zero;
@@ -27,16 +33,6 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
-
-use crate::alphabet::{find_script, Script};
-use crate::constant::{
-    CHARS_TO_LANGUAGES_MAPPING, LETTERS, TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE,
-};
-use crate::json::load_json;
-use crate::language::Language;
-use crate::model::{TestDataLanguageModel, TrainingDataLanguageModel};
-use crate::result::DetectionResult;
-use crate::ExtraCheck;
 
 type LazyLanguageModelMap = Lazy<RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>>;
 type StaticLanguageModelMap = &'static RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>;
@@ -968,7 +964,7 @@ impl LanguageDetector {
         for word in words {
             let mut word_script_count = AHashMap::<Script, usize>::new();
             for ch in word.chars() {
-                let Some(script) = find_script(ch) else {
+                let Some(script) = Script::find(ch) else {
                     continue;
                 };
                 self.increment_counter(&mut word_script_count, script, 1);

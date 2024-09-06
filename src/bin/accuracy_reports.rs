@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-use std::collections::HashMap;
-use std::fs;
-use std::io::Write;
-use std::path::{Path, PathBuf};
-use std::time::Instant;
-
+use ::std::collections::HashMap;
+use ::std::fs;
+use ::std::io::Write;
+use ::std::path::{Path, PathBuf};
+use ::std::time::Instant;
 use cld2::{detect_language as cld2_detect_language, Format, Lang as CLD2Language};
 use fraction::{Decimal, Zero};
 use include_dir::Dir;
 use indoc::formatdoc;
 use itertools::Itertools;
-use once_cell::sync::Lazy;
-use strum::IntoEnumIterator;
-use titlecase::titlecase;
-use whatlang::{Detector, Lang as WhatlangLanguage};
-use whichlang::{detect_language as whichlang_detect_language, Lang as WhichlangLanguage};
-
 use lingua::{Language, LanguageDetector, LanguageDetectorBuilder};
 use lingua_afrikaans_language_model::AFRIKAANS_TESTDATA_DIRECTORY;
 use lingua_albanian_language_model::ALBANIAN_TESTDATA_DIRECTORY;
@@ -107,6 +100,11 @@ use lingua_welsh_language_model::WELSH_TESTDATA_DIRECTORY;
 use lingua_xhosa_language_model::XHOSA_TESTDATA_DIRECTORY;
 use lingua_yoruba_language_model::YORUBA_TESTDATA_DIRECTORY;
 use lingua_zulu_language_model::ZULU_TESTDATA_DIRECTORY;
+use once_cell::sync::Lazy;
+use strum::IntoEnumIterator;
+use titlecase::titlecase;
+use whatlang::{Detector, Lang as WhatlangLanguage};
+use whichlang::{detect_language as whichlang_detect_language, Lang as WhichlangLanguage};
 
 struct DetectorStatistics {
     single_word_statistic: Statistic,

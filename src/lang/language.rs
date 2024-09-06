@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-use std::collections::HashMap;
-use std::fmt::{Debug, Display, Formatter, Result};
-use std::hash::BuildHasher;
-
+use super::Script;
+use crate::isocode::{IsoCode639_1, IsoCode639_3};
+use crate::ExtraCheck;
+use ::std::collections::HashMap;
+use ::std::fmt::{Debug, Display, Formatter, Result};
+use ::std::hash::BuildHasher;
 use ahash::AHashSet;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, EnumString};
-
-use crate::alphabet::Script;
-use crate::isocode::{IsoCode639_1, IsoCode639_3};
-use crate::ExtraCheck;
 
 /// This enum specifies the so far 75 supported languages which can be detected by *Lingua*.
 #[derive(

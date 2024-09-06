@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-use std::fmt::{Debug, Display, Formatter, Result};
-
+use ::std::fmt::{Debug, Display, Formatter, Result};
 use serde::{Deserialize, Serialize};
 use strum_macros::{EnumIter, EnumString};
 
@@ -685,9 +684,8 @@ impl Display for IsoCode639_3 {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use super::*;
+    use ::std::str::FromStr;
 
     #[test]
     fn assert_iso_code_639_1_string_representation_is_correct() {

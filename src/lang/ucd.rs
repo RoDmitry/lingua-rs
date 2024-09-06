@@ -8,7 +8,7 @@
 #![allow(dead_code)]
 #![allow(clippy::redundant_static_lifetimes)]
 
-use crate::alphabet::Script;
+use super::Script;
 
 pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
     /* (Script::Arabic, ARABIC),

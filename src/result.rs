@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use crate::language::Language;
+use crate::Language;
 
 /// This struct describes a contiguous single-language
 /// text section within a possibly mixed-language text.

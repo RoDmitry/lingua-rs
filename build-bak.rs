@@ -1,7 +1,7 @@
 // #[cfg(debug_assertions)]
 extern crate build_const;
 
-use std::path::Path;
+use ::std::path::Path;
 
 fn create_constants() {
     let path = Path::new("/app").join("lingua-rs").join("src").join("consts.rs");

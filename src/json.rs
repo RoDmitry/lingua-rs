@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-use std::io::{Cursor, ErrorKind, Read};
-
+use crate::ngram::Ngram;
+use crate::Language;
+use ::std::io::{Cursor, ErrorKind, Read};
 use brotli::Decompressor;
 use include_dir::Dir;
-
 #[cfg(feature = "afrikaans")]
 use lingua_afrikaans_language_model::AFRIKAANS_MODELS_DIRECTORY;
 #[cfg(feature = "albanian")]
@@ -169,9 +169,6 @@ use lingua_xhosa_language_model::XHOSA_MODELS_DIRECTORY;
 use lingua_yoruba_language_model::YORUBA_MODELS_DIRECTORY;
 #[cfg(feature = "zulu")]
 use lingua_zulu_language_model::ZULU_MODELS_DIRECTORY;
-
-use crate::ngram::Ngram;
-use crate::Language;
 
 pub(crate) fn load_json(language: Language, ngram_length: usize) -> std::io::Result<String> {
     let ngram_name = Ngram::find_ngram_name_by_length(ngram_length);

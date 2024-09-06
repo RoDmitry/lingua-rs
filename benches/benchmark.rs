@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-use std::hint::black_box;
-
+use ::std::hint::black_box;
 use cld2::{detect_language as cld2_detect_language, Format};
 use criterion::{criterion_group, criterion_main, Criterion};
+use lingua::{Language, LanguageDetectorBuilder};
 use rayon::prelude::*;
 use whatlang::{Detector, Lang};
 use whichlang::detect_language as whichlang_detect_language;
-
-use lingua::{Language, LanguageDetectorBuilder};
 
 // This is the common subset of languages that is supported by all
 // language detection libraries in this benchmark.
