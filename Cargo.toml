@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [workspace]
-members = ["language-models/*"]
+members = ["language-models/*", "alphabet_matcher_macro"]
 
 [package]
 name = "lingua"
@@ -52,6 +52,7 @@ harness = false
 required-features = ["benchmark"]
 
 [dependencies]
+alphabet_matcher_macro = { path = "alphabet_matcher_macro" }
 brotli = "6.0.0"
 compact_str = "0.8.0"
 fraction = "0.15.3"
