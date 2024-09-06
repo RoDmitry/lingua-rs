@@ -1552,7 +1552,7 @@ impl LanguageDetector {
             drop(models);
             let mut models = language_models.write().unwrap();
             let json = load_json(*language, ngram_length);
-            if let Ok(json_content) = json {
+            if let Ok(Some(json_content)) = json {
                 models.insert(
                     *language,
                     TrainingDataLanguageModel::from_json(&json_content),
@@ -1650,15 +1650,13 @@ fn merge_adjacent_results(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::builder::LanguageDetectorBuilder;
+    use crate::ngram::NgramRef;
+    use crate::Language::*;
     use float_cmp::approx_eq;
     use once_cell::sync::OnceCell;
     use rstest::*;
-
-    use crate::builder::LanguageDetectorBuilder;
-    use crate::language::Language::*;
-    use crate::ngram::NgramRef;
-
-    use super::*;
 
     // ##############################
     // INPUT STRINGS

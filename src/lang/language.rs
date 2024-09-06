@@ -840,7 +840,6 @@ impl Language {
     }
 
     pub(crate) fn scripts(&self) -> &[Script] {
-        unreachable!();
         match self {
             #[cfg(feature = "afrikaans")]
             Language::Afrikaans => &[Script::Latin],
@@ -1067,7 +1066,7 @@ impl Language {
             #[cfg(feature = "thai")]
             Language::Thai => &[Script::Thai],
 
-            _ => todo!(),
+            _ => &[],
         }
     }
 
@@ -1137,11 +1136,9 @@ impl Language {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
-    use crate::language::Language::*;
-
     use super::*;
+    use crate::Language::*;
+    use ::std::str::FromStr;
 
     #[test]
     fn assert_language_string_representation_is_correct() {
