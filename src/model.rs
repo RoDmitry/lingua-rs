@@ -18,7 +18,7 @@ use crate::fraction::Fraction;
 use crate::ngram::{Ngram, NgramRef};
 use crate::Language;
 use ::std::collections::BTreeMap;
-use ahash::AHashMap;
+use ahash::{AHashMap, AHashSet};
 use compact_str::CompactString;
 use itertools::Itertools;
 use regex::Regex;
@@ -157,11 +157,12 @@ pub(crate) struct TestDataLanguageModel<'a> {
 
 impl<'a> TestDataLanguageModel<'a> {
     pub(crate) fn from(words: &'a [String], ngram_length: usize) -> Self {
-        if !(1..6).contains(&ngram_length) {
-            panic!("ngram length {ngram_length} is not in range 1..6");
-        }
+        debug_assert!(
+            (1..6).contains(&ngram_length),
+            "ngram length {ngram_length} is not in range 1..6"
+        );
 
-        let mut ngrams = hashset!();
+        let mut ngrams = AHashSet::new();
 
         for word in words.iter() {
             let chars_count = word.chars().count();

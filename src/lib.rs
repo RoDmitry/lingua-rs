@@ -405,7 +405,7 @@ macro_rules! ahashmap {
         }
     };
 }
-#[cfg(test)]
+#[allow(unused_macros)]
 macro_rules! ahashset {
     (@single $($x:tt)*) => (());
     (@count $($rest:expr),*) => (<[()]>::len(&[$(ahashset!(@single $rest)),*]));

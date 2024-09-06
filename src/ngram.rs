@@ -34,6 +34,7 @@ impl Ngram {
         }
     }
 
+    /// TODO: refactor
     pub(crate) fn find_ngram_name_by_length(ngram_length: usize) -> &'static str {
         match ngram_length {
             1 => "unigram",
