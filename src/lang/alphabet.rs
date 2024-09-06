@@ -1,5 +1,5 @@
 use super::{Language, Script};
-use alphabet_matcher_macro::alphabet_match;
+use alphabet_match_macro::alphabet_match;
 
 /// add all the leters of all the alphabets in the script group
 /// or not all, only if it does not require to exclude letters
@@ -314,7 +314,7 @@ pub(crate) fn script_lang_alphabets(a: Script, ch: char) -> &'static [Language] 
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
                     'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
-                    'Y', 'y', 'Z', 'z'
+                    'Y', 'y', 'Z', 'z', '\''
                 ]
             ),
             (
@@ -770,6 +770,5 @@ pub(crate) fn script_lang_alphabets(a: Script, ch: char) -> &'static [Language] 
             (Language::Sanskrit, []),
             (Language::Tibetan, []),
         ]),
-        _ => &[Language::English],
     }
 }

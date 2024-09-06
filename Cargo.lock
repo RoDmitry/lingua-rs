@@ -56,7 +56,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c6cb57a04249c6480766f7f7cef5467412af1490f8d1e243141daddada3264f"
 
 [[package]]
-name = "alphabet_matcher_macro"
+name = "alphabet_match_macro"
 version = "0.1.0"
 dependencies = [
  "ahash",
@@ -632,7 +632,7 @@ name = "lingua"
 version = "1.6.2"
 dependencies = [
  "ahash",
- "alphabet_matcher_macro",
+ "alphabet_match_macro",
  "brotli",
  "cld2",
  "compact_str",

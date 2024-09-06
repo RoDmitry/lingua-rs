@@ -1,4 +1,4 @@
-use alphabet_matcher_macro::*;
+use alphabet_match_macro::*;
 
 #[derive(Debug, PartialEq)]
 enum SomeEnum {

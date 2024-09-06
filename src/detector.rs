@@ -292,11 +292,9 @@ impl LanguageDetector {
         let language_probability_diff =
             most_likely_language_probability - second_most_likely_language_probability;
 
-        if language_probability_diff.abs() < f64::EPSILON {
-            return None;
-        }
-
-        if language_probability_diff < self.minimum_relative_distance {
+        if language_probability_diff.abs() < f64::EPSILON
+            || language_probability_diff < self.minimum_relative_distance
+        {
             return None;
         }
 
