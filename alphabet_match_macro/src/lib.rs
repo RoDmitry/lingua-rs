@@ -20,7 +20,9 @@ pub fn alphabet_match(input: TokenStream) -> TokenStream {
 
             // Handle the array of values associated with the key
             if let Expr::Array(ExprArray { elems: values, .. }) = &elems[1] {
-                let mut values_temp: AHashSet<char> = AHashSet::new();
+                #[cfg(debug_assertions)]
+                let mut values_set: AHashSet<char> = AHashSet::new();
+
                 for val in values {
                     let value = match val {
                         Expr::Lit(expr_lit) => match &expr_lit.lit {
@@ -29,10 +31,12 @@ pub fn alphabet_match(input: TokenStream) -> TokenStream {
                         },
                         _ => panic!("Expected char literal for value"),
                     };
+
+                    #[cfg(debug_assertions)]
                     if let Expr::Path(ep) = key {
                         let ki = &ep.path.segments[1].ident;
                         assert!(
-                            values_temp.insert(value),
+                            values_set.insert(value),
                             "Char literal: {} was already added for key: {}",
                             value,
                             ki

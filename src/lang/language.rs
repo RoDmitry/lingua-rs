@@ -85,7 +85,7 @@ pub enum Language {
     Chakma,
     Cham,
     Cherokee,
-    Chinese, // todo: remove
+    Chinese,
     ChineseCantonese,
     ChineseMandarin,
     ChineseTuhua,
