@@ -3,7 +3,7 @@ use ::std::cmp::Ordering;
 use strum_macros::EnumIter;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
-pub enum Script {
+pub(crate) enum Script {
     Adlam,
     Ahom,
     AnatolianHieroglyphs,

@@ -180,6 +180,8 @@ impl<'a> TestDataLanguageModel<'a> {
         for ngram in ngrams {
             lower_order_ngrams.push(ngram.range_of_lower_order_ngrams().collect_vec());
         }
+        // println!("words: {:?}", words);
+        // println!("{:?}", lower_order_ngrams);
 
         Self {
             ngrams: lower_order_ngrams,

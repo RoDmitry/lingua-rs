@@ -18,9 +18,10 @@ use crate::constant::{
     CHARS_TO_LANGUAGES_MAPPING, LETTERS, TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE,
 };
 use crate::json::load_json;
+use crate::lang::{Alphabet, Script};
 use crate::model::{TestDataLanguageModel, TrainingDataLanguageModel};
 use crate::result::DetectionResult;
-use crate::{ExtraCheck, Language, Script};
+use crate::{ExtraCheck, Language};
 use ::std::borrow::Borrow;
 use ::std::cmp::Ordering;
 use ::std::collections::{HashMap, HashSet};
@@ -79,6 +80,28 @@ impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
     {
         self.contains_key(value)
     }
+}
+
+struct InternalWord<'t> {
+    word: &'t str,
+    most_frequent_alphabet: Alphabet,
+    languages: Vec<Language>, // ????????
+    /// can not include most frequent Alphabet
+    /// can not include same languages
+    /// usually it's empty, but if we get a different Alphabet,
+    ///   and it's supported languages are completely different,
+    ///   then it goes here
+    extra_alphabet_languages: AHashMap<Alphabet, Vec<Language>>,
+}
+
+/// final resulting word
+pub struct Word<'t> {
+    pub word: &'t str,
+    pub most_frequent_alphabet: Alphabet,
+    /// Languages listed here are always from the most frequent Alphabet
+    pub checked_languages: Vec<(Language, f64)>,
+    /// can include most frequent Alphabet, but for different languages
+    pub unverified_alphabet_languages: AHashMap<Alphabet, Vec<Language>>,
 }
 
 /// This struct detects the language of given input text.
@@ -370,7 +393,7 @@ impl LanguageDetector {
 
         let language = self.detect_language_of(text_str);
         if let Some(lang) = language {
-            self.increment_counter(&mut language_counts, lang, 1);
+            Self::increment_counter(&mut language_counts, lang, 1);
         }
 
         for word in tokens_without_whitespace.iter() {
@@ -379,7 +402,7 @@ impl LanguageDetector {
             }
             let language = self.detect_language_of(word);
             if let Some(lang) = language {
-                self.increment_counter(&mut language_counts, lang, 1);
+                Self::increment_counter(&mut language_counts, lang, 1);
             }
         }
 
@@ -636,7 +659,12 @@ impl LanguageDetector {
         }
 
         let /* (language_detected_by_rules, */ filtered_languages =
-            self.process_words(&words, search_languages);
+            Self::process_words(&words, search_languages);
+
+        if text_str.is_empty() {
+            return Vec::new();
+        }
+        let found_words = Self::text_to_words(text_str);
 
         // let language_detected_by_rules =
         // Self::find_most_frequent_opt(&mut total_language_counts);
@@ -942,8 +970,12 @@ impl LanguageDetector {
     }
 
     #[inline]
+    fn text_to_words<'t>(text: &'t str) -> Vec<InternalWord<'t>> {
+        Vec::new()
+    }
+
+    #[inline]
     fn process_words<S: BuildHasher>(
-        &self,
         words: &[String],
         search_languages: &HashSet<Language, S>,
     ) -> Vec<Language> {
@@ -965,12 +997,12 @@ impl LanguageDetector {
                 let Some(script) = Script::find(ch) else {
                     continue;
                 };
-                self.increment_counter(&mut word_script_count, script, 1);
+                Self::increment_counter(&mut word_script_count, script, 1);
             }
 
             // let mut word_script_count_to_remove = Vec::new();
             for word_most_frequent_script in Self::find_most_frequent(&mut word_script_count) {
-                self.increment_counter(
+                Self::increment_counter(
                     &mut total_script_counts,
                     word_most_frequent_script.0,
                     word.len(),
@@ -991,7 +1023,7 @@ impl LanguageDetector {
                             for character in word.chars() {
                                 if specifics.contains(character) {
                                     // println!("character2 {:?}", character);
-                                    self.increment_counter(
+                                    Self::increment_counter(
                                         &mut detected_language_counts,
                                         *lang,
                                         1,
@@ -1021,14 +1053,14 @@ impl LanguageDetector {
             // println!("search_langs {:?}", search_langs);
             if script == Script::Han {
                 if cfg!(feature = "chinese") && search_langs.contains(&Language::Chinese) {
-                    self.increment_counter(
+                    Self::increment_counter(
                         &mut detected_language_counts,
                         Language::Chinese,
                         script_count,
                     );
                 }
                 if cfg!(feature = "japanese") && search_langs.contains(&Language::Japanese) {
-                    self.increment_counter(
+                    Self::increment_counter(
                         &mut detected_language_counts,
                         Language::Japanese,
                         script_count,
@@ -1037,7 +1069,7 @@ impl LanguageDetector {
                 continue;
             }
             if search_langs.len() == 1 {
-                self.increment_counter(
+                Self::increment_counter(
                     &mut detected_language_counts,
                     search_langs[0],
                     script_count,
@@ -1051,7 +1083,7 @@ impl LanguageDetector {
                             if unique_chars.contains(ch) {
                                 // println!("search_lang {:?}", search_lang);
                                 // println!("unique_char {:?}", ch);
-                                self.increment_counter(
+                                Self::increment_counter(
                                     &mut detected_language_counts,
                                     *search_lang,
                                     1,
@@ -1076,7 +1108,11 @@ impl LanguageDetector {
                                 if specifics.contains(character) {
                                     // println!("lang {:?}", lang);
                                     // println!("specific character {:?}", character);
-                                    self.increment_counter(&mut detected_language_counts, *lang, 1);
+                                    Self::increment_counter(
+                                        &mut detected_language_counts,
+                                        *lang,
+                                        1,
+                                    );
                                 }
                             }
                         }
@@ -1089,7 +1125,7 @@ impl LanguageDetector {
                                 for character in word.chars() {
                                     if specifics.contains(character) {
                                         // println!("character2 {:?}", character);
-                                        self.increment_counter(
+                                        Self::increment_counter(
                                             &mut detected_language_counts,
                                             *lang,
                                             1,
@@ -1107,7 +1143,7 @@ impl LanguageDetector {
                                 for character in word.chars() {
                                     if specifics.contains(character) {
                                         // println!("character3 {:?}", character);
-                                        self.increment_counter(&mut detected_language_counts, *lang, 1);
+                                        Self::increment_counter(&mut detected_language_counts, *lang, 1);
                                     }
                                 }
                             }
@@ -1130,7 +1166,7 @@ impl LanguageDetector {
         //drop(script); // most frequent script should not be used to detect langs, use word detected scripts instead
 
         // let lang = Self::find_most_frequent(&mut word_language_counts);
-        // self.increment_counter(&mut total_language_counts, lang, word.len());
+        // Self::increment_counter(&mut total_language_counts, lang, word.len());
 
         // println!("detected_language_counts {:?}", detected_language_counts);
         let detected_languages = Self::find_most_frequent(&mut detected_language_counts);
@@ -1282,7 +1318,7 @@ impl LanguageDetector {
                     for character in word.chars() {
                         if specifics.contains(character) {
                             for language in relevant_languages.iter() {
-                                self.increment_counter(&mut language_counts, **language, 1);
+                                Self::increment_counter(&mut language_counts, **language, 1);
                             }
                         }
                     }
@@ -1502,7 +1538,7 @@ impl LanguageDetector {
                     .unwrap_or(0.0);
 
                 if probability > 0.0 {
-                    self.increment_counter(&mut unigram_counts, *language, 1);
+                    Self::increment_counter(&mut unigram_counts, *language, 1);
                 }
             }
         }
@@ -1560,7 +1596,6 @@ impl LanguageDetector {
     }
 
     fn increment_counter<T: Eq + Hash, S: BuildHasher>(
-        &self,
         counts: &mut HashMap<T, usize, S>,
         key: T,
         value: usize,
@@ -2563,8 +2598,10 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let detected_languages = detector_for_all_languages
-            .process_words(&[word.to_owned()], &detector_for_all_languages.languages);
+        let detected_languages = LanguageDetector::process_words(
+            &[word.to_owned()],
+            &detector_for_all_languages.languages,
+        );
         // let words_count_half = 0.5;
 
         let detected_language = if detected_languages.len() > 1 {
@@ -2595,7 +2632,7 @@ mod tests {
     ) {
         let words = split_text_into_words(text);
         let detected_languages =
-            detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
+            LanguageDetector::process_words(&words, &detector_for_all_languages.languages);
         // let words_count_half = 0.5;
         let detected_language = if detected_languages.len() > 1 {
             None
@@ -2738,7 +2775,7 @@ mod tests {
         let words = &[word.to_owned()];
 
         let filtered_languages =
-            detector_for_all_languages.process_words(words, &detector_for_all_languages.languages);
+            LanguageDetector::process_words(words, &detector_for_all_languages.languages);
 
         let filtered_languages: AHashSet<_> = filtered_languages.into_iter().collect();
 
@@ -2768,7 +2805,7 @@ mod tests {
         let words = split_text_into_words(text);
 
         let filtered_languages =
-            detector_for_all_languages.process_words(&words, &detector_for_all_languages.languages);
+            LanguageDetector::process_words(&words, &detector_for_all_languages.languages);
 
         /* let words_count_half = (words.len() as f64) * 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
