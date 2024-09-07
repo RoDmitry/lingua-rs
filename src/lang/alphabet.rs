@@ -1,6 +1,10 @@
 use super::{Language, Script};
+use ahash::AHashSet;
 use alphabet_match_macro::alphabet_match;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
 pub enum Alphabet {
     AfrikaansLatin,
     Ahom,
@@ -166,7 +170,6 @@ pub enum Alphabet {
     Mro,
     MundariNag,
     MycenaeanGreekLinearB,
-    NabataeanAramaic,
     NepaliDevanagari,
     NewariNewa,
     NorthernThaiTaiTham,
@@ -458,7 +461,6 @@ impl From<Alphabet> for &[Language] {
             Mro => &[Language::Mro],
             MundariNag => &[Language::Mundari],
             MycenaeanGreekLinearB => &[Language::MycenaeanGreek],
-            NabataeanAramaic => &[Language::NabataeanAramaic],
             NepaliDevanagari => &[Language::Nepali],
             NewariNewa => &[Language::Newari],
             NorthernThaiTaiTham => &[Language::NorthernThai],
@@ -575,6 +577,42 @@ impl From<Alphabet> for &[Language] {
             ZoPauCinHau => &[Language::ZoLanguages],
             ZuluLatin => &[Language::Zulu],
         }
+    }
+}
+
+#[test]
+fn test_language_missing_in_from_alphabet_to_language() {
+    let lang_len = Language::iter().size_hint().0;
+    let mut langs_set: AHashSet<Language> = AHashSet::with_capacity(lang_len);
+    for alphabet in Alphabet::iter() {
+        let langs: &[Language] = alphabet.into();
+        langs_set.extend(langs);
+    }
+    if langs_set.len() != lang_len {
+        let missing: Vec<_> = Language::iter().filter(|l| !langs_set.remove(&l)).collect();
+        panic!(
+            "Not all languages used in `from alphabet to language`, missing: {:?}",
+            missing
+        );
+    }
+}
+
+#[test]
+fn test_alphabets_missing_in_fn_script_alphabets() {
+    let alphabets_len = Alphabet::iter().size_hint().0;
+    let mut alphabets_set: AHashSet<Alphabet> = AHashSet::with_capacity(alphabets_len);
+    for script in Script::iter() {
+        let alphabets = script_alphabets(script, '\0');
+        alphabets_set.extend(alphabets);
+    }
+    if alphabets_set.len() != alphabets_len {
+        let missing: Vec<_> = Alphabet::iter()
+            .filter(|a| !alphabets_set.remove(&a))
+            .collect();
+        panic!(
+            "Not all alphabets used in `script_alphabets`, missing: {:?}",
+            missing
+        );
     }
 }
 
