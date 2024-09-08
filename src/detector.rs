@@ -1007,60 +1007,56 @@ impl LanguageDetector {
         let mut prev_char_len = 0;
         // let mut prev_char_alphabets: &'static [Alphabet] = &[];
         for (ch_idx, ch) in text.char_indices() {
-            let script = Script::find(ch);
-            println!("ch_idx {:?}", ch_idx);
-            println!("ch.len_utf8() {:?}", ch.len_utf8());
-            println!("ch {:?}", ch);
+            let script = Script::find(ch).unwrap_or(Script::Common);
+            // println!("ch_idx {:?}", ch_idx);
+            // println!("ch.len_utf8() {:?}", ch.len_utf8());
+            // println!("ch {:?}", ch);
 
-            if script.is_none()
-                || script == Some(Script::Common) && prev_char_script == Script::Common
-            {
+            if ch_idx > 0 && (script == Script::Common || prev_char_script == Script::Common) {
+                // means try to save word
                 let mut word_end_index = ch_idx;
-                println!("word_end_index1 {:?}", word_end_index);
+                // println!("word_end_index1 {:?}", word_end_index);
                 if prev_char_script == Script::Common {
                     // removes `'` for cases like `words' word` (we are at the space char)
                     word_end_index = word_end_index.saturating_sub(prev_char_len);
+                    if script == Script::Common {
+                        // removes ` ` for cases like `words' word` (we are at the last `w` char)
+                        word_start_index = ch_idx + ch.len_utf8();
+                    }
                 }
 
-                println!("word_start_index {:?}", word_start_index);
-                println!("word_end_index2 {:?}", word_end_index);
+                // println!("word_start_index {:?}", word_start_index);
+                // println!("word_end_index2 {:?}", word_end_index);
                 let word_len = word_end_index.saturating_sub(word_start_index);
-                if word_len == 0 {
-                    // for cases like ` A`
+                if word_len > 0 {
+                    // save word
+                    let word = &text[word_start_index..word_end_index];
+                    if let Some(w) = words.get_mut(word) {
+                        (*w).text_positions.push(word_counter);
+                    } else {
+                        /* Self::save_new_word(
+                            &mut words,
+                            word,
+                            std::mem::take(&mut word_alphabets_count),
+                            word_end_index - word_start_index,
+                        ); */
+                        let word_data = InternalWordData {
+                            alphabets_count: std::mem::take(&mut word_alphabets_count),
+                            len: word_len,
+                            text_positions: vec![word_counter],
+                        };
+                        words.insert(word, word_data);
+                    }
+
+                    word_counter += 1;
+                    // reset temp variables
                     word_start_index = ch_idx + ch.len_utf8();
-                    prev_char_script = Script::Common;
+                    prev_char_script = script;
                     prev_char_len = ch.len_utf8();
                     continue;
                 }
-
-                // save word
-                let word = &text[word_start_index..word_end_index];
-                if let Some(w) = words.get_mut(word) {
-                    (*w).text_positions.push(word_counter);
-                } else {
-                    /* Self::save_new_word(
-                        &mut words,
-                        word,
-                        std::mem::take(&mut word_alphabets_count),
-                        word_end_index - word_start_index,
-                    ); */
-                    let word_data = InternalWordData {
-                        alphabets_count: std::mem::take(&mut word_alphabets_count),
-                        len: word_len,
-                        text_positions: vec![word_counter],
-                    };
-                    words.insert(word, word_data);
-                }
-
-                word_counter += 1;
-                // reset temp variables
-                word_start_index = ch_idx + ch.len_utf8();
-                prev_char_script = Script::Common;
-                prev_char_len = ch.len_utf8();
-                continue;
             };
 
-            let script = script.unwrap();
             prev_char_script = script;
             prev_char_len = ch.len_utf8();
 
