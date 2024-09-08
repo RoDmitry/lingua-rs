@@ -1,4 +1,4 @@
-##### Sotho #####
+##### Sesotho #####
 
 >>> Accuracy on average: 71.63%
 

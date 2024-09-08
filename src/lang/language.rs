@@ -219,7 +219,9 @@ pub enum Language {
     Santali,
     Saraiki,
     Saurashtra,
+    Sepedi,
     Serbian,
+    Sesotho,
     Shan,
     Shona,
     Signlanguages,
@@ -231,7 +233,6 @@ pub enum Language {
     Sogdian,
     Somali,
     Sora,
-    Sotho,
     Spanish,
     Sumerian,
     Sundanese,
@@ -556,8 +557,8 @@ impl Language {
             #[cfg(feature = "somali")]
             Language::Somali => IsoCode639_1::SO,
 
-            #[cfg(feature = "sotho")]
-            Language::Sotho => IsoCode639_1::ST,
+            #[cfg(feature = "sesotho")]
+            Language::Sesotho => IsoCode639_1::ST,
 
             #[cfg(feature = "spanish")]
             Language::Spanish => IsoCode639_1::ES,
@@ -788,8 +789,8 @@ impl Language {
             #[cfg(feature = "somali")]
             Language::Somali => IsoCode639_3::SOM,
 
-            #[cfg(feature = "sotho")]
-            Language::Sotho => IsoCode639_3::SOT,
+            #[cfg(feature = "sesotho")]
+            Language::Sesotho => IsoCode639_3::SOT,
 
             #[cfg(feature = "spanish")]
             Language::Spanish => IsoCode639_3::SPA,
@@ -956,8 +957,8 @@ impl Language {
             #[cfg(feature = "somali")]
             Language::Somali => &[Script::Latin],
 
-            #[cfg(feature = "sotho")]
-            Language::Sotho => &[Script::Latin],
+            #[cfg(feature = "sesotho")]
+            Language::Sesotho => &[Script::Latin],
 
             #[cfg(feature = "spanish")]
             Language::Spanish => &[Script::Latin],
@@ -1232,7 +1233,7 @@ mod tests {
                 Slovak,
                 Slovene,
                 Somali,
-                Sotho,
+                Sesotho,
                 Spanish,
                 Swahili,
                 Swedish,
@@ -1315,7 +1316,7 @@ mod tests {
                 Slovak,
                 Slovene,
                 Somali,
-                Sotho,
+                Sesotho,
                 Spanish,
                 Swahili,
                 Swedish,
@@ -1404,7 +1405,7 @@ mod tests {
                 Slovak,
                 Slovene,
                 Somali,
-                Sotho,
+                Sesotho,
                 Spanish,
                 Swahili,
                 Swedish,

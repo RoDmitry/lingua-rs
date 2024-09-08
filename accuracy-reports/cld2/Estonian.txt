@@ -4,7 +4,7 @@
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 23.7%
-Erroneously classified as Unknown: 74.7%, English: 0.4%, Indonesian: 0.3%, Xhosa: 0.3%, Finnish: 0.1%, Lithuanian: 0.1%, Malay: 0.1%, Nynorsk: 0.1%, Portuguese: 0.1%, Sotho: 0.1%
+Erroneously classified as Unknown: 74.7%, English: 0.4%, Indonesian: 0.3%, Xhosa: 0.3%, Finnish: 0.1%, Lithuanian: 0.1%, Malay: 0.1%, Nynorsk: 0.1%, Portuguese: 0.1%, Sesotho: 0.1%
 
 >> Detection of 1000 word pairs (average length: 16 chars)
 Accuracy: 73.2%

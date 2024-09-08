@@ -82,7 +82,7 @@ use lingua_shona_language_model::SHONA_TESTDATA_DIRECTORY;
 use lingua_slovak_language_model::SLOVAK_TESTDATA_DIRECTORY;
 use lingua_slovene_language_model::SLOVENE_TESTDATA_DIRECTORY;
 use lingua_somali_language_model::SOMALI_TESTDATA_DIRECTORY;
-use lingua_sotho_language_model::SOTHO_TESTDATA_DIRECTORY;
+use lingua_sesotho_language_model::SESOTHO_TESTDATA_DIRECTORY;
 use lingua_spanish_language_model::SPANISH_TESTDATA_DIRECTORY;
 use lingua_swahili_language_model::SWAHILI_TESTDATA_DIRECTORY;
 use lingua_swedish_language_model::SWEDISH_TESTDATA_DIRECTORY;
@@ -734,7 +734,7 @@ fn get_test_data_directory(language: &Language) -> Dir<'static> {
         Language::Slovak => SLOVAK_TESTDATA_DIRECTORY,
         Language::Slovene => SLOVENE_TESTDATA_DIRECTORY,
         Language::Somali => SOMALI_TESTDATA_DIRECTORY,
-        Language::Sotho => SOTHO_TESTDATA_DIRECTORY,
+        Language::Sesotho => SESOTHO_TESTDATA_DIRECTORY,
         Language::Spanish => SPANISH_TESTDATA_DIRECTORY,
         Language::Swahili => SWAHILI_TESTDATA_DIRECTORY,
         Language::Swedish => SWEDISH_TESTDATA_DIRECTORY,

@@ -218,7 +218,9 @@ pub enum Alphabet {
     SantaliOlChiki,
     SaraikiMultani,
     Saurashtra,
+    SepediLatin,
     SerbianCyrillic,
+    SesothoLatin,
     ShanMyanmar,
     ShonaLatin,
     SignlanguageWriting,
@@ -234,7 +236,6 @@ pub enum Alphabet {
     SomaliLatin,
     SomaliOsmanya,
     Sora,
-    SothoLatin,
     SpanishLatin,
     SumerianCuneiform,
     Sundanese,
@@ -509,7 +510,9 @@ impl From<Alphabet> for &[Language] {
             SantaliOlChiki => &[Language::Santali],
             SaraikiMultani => &[Language::Saraiki],
             Saurashtra => &[Language::Saurashtra],
+            SepediLatin => &[Language::Sepedi],
             SerbianCyrillic => &[Language::Serbian],
+            SesothoLatin => &[Language::Sesotho],
             ShanMyanmar => &[Language::Shan],
             ShonaLatin => &[Language::Shona],
             SignlanguageWriting => &[Language::Signlanguages],
@@ -525,7 +528,6 @@ impl From<Alphabet> for &[Language] {
             SomaliLatin => &[Language::Somali],
             SomaliOsmanya => &[Language::Somali],
             Sora => &[Language::Sora],
-            SothoLatin => &[Language::Sotho],
             SpanishLatin => &[Language::Spanish],
             SumerianCuneiform => &[Language::Sumerian],
             Sundanese => &[Language::Sundanese],
@@ -1303,6 +1305,23 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
+                Alphabet::SepediLatin,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ê', 'ê', 'F', 'f', 'G', 'g',
+                    'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
+                    'Ô', 'ô', 'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w',
+                    'X', 'x', 'Y', 'y', 'Z', 'z', 'Š', 'š'
+                ]
+            ),
+            (
+                Alphabet::SesothoLatin,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y', 'Š', 'š'
+                ]
+            ),
+            (
                 Alphabet::ShonaLatin,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
@@ -1338,15 +1357,6 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Q', 'q',
                     'R', 'r', 'S', 's', /* 'Sh', 'sh', */ 'T', 't', 'U', 'u', 'W', 'w', 'X',
                     'x', 'Y', 'y'
-                ]
-            ),
-            (
-                Alphabet::SothoLatin,
-                [
-                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
-                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
-                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
-                    'Y', 'y', 'Z', 'z'
                 ]
             ),
             (

@@ -13,11 +13,11 @@
 # limitations under the License.
 
 [package]
-name = "lingua-sotho-language-model"
+name = "lingua-sesotho-language-model"
 version = "1.1.0"
 authors = ["Peter M. Stahl <pemistahl@gmail.com>"]
 description = """
-The Sotho language model for Lingua, an accurate natural language detection library
+The Sesotho language model for Lingua, an accurate natural language detection library
 """
 homepage = "https://github.com/pemistahl/lingua-rs"
 repository = "https://github.com/pemistahl/lingua-rs"

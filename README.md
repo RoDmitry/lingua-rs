@@ -128,7 +128,7 @@ Currently, the following 75 languages are supported:
   - Slovak
   - Slovene
   - Somali
-  - Sotho
+  - Sesotho
   - Spanish
   - Swahili
   - Swedish
@@ -1670,7 +1670,7 @@ including mean, median and standard deviation.
 		<td><img src="https://raw.githubusercontent.com/pemistahl/lingua-rs/main/images/green.png"> 99</td>
 	</tr>
 	<tr>
-		<td>Sotho</td>
+		<td>Sesotho</td>
 		<td><img src="https://raw.githubusercontent.com/pemistahl/lingua-rs/main/images/green.png"> 85</td>
 		<td><img src="https://raw.githubusercontent.com/pemistahl/lingua-rs/main/images/lightgreen.png"> 71</td>
 		<td><img src="https://raw.githubusercontent.com/pemistahl/lingua-rs/main/images/grey.png"> -</td>
@@ -2717,7 +2717,7 @@ to be found next to the `src` directory. As an example, here is the current outp
 
 >> Detection of 1000 single words (average length: 9 chars)
 Accuracy: 73.9%
-Erroneously classified as Dutch: 2.3%, Danish: 2.1%, English: 2%, Latin: 1.9%, Bokmal: 1.6%, Basque: 1.2%, Esperanto: 1.2%, French: 1.2%, Italian: 1.2%, Swedish: 1%, Afrikaans: 0.8%, Tsonga: 0.7%, Nynorsk: 0.6%, Spanish: 0.6%, Yoruba: 0.6%, Finnish: 0.5%, Sotho: 0.5%, Welsh: 0.5%, Estonian: 0.4%, Irish: 0.4%, Polish: 0.4%, Swahili: 0.4%, Tagalog: 0.4%, Tswana: 0.4%, Bosnian: 0.3%, Icelandic: 0.3%, Romanian: 0.3%, Albanian: 0.2%, Catalan: 0.2%, Croatian: 0.2%, Indonesian: 0.2%, Lithuanian: 0.2%, Maori: 0.2%, Turkish: 0.2%, Xhosa: 0.2%, Zulu: 0.2%, Latvian: 0.1%, Malay: 0.1%, Slovak: 0.1%, Slovene: 0.1%, Somali: 0.1%
+Erroneously classified as Dutch: 2.3%, Danish: 2.1%, English: 2%, Latin: 1.9%, Bokmal: 1.6%, Basque: 1.2%, Esperanto: 1.2%, French: 1.2%, Italian: 1.2%, Swedish: 1%, Afrikaans: 0.8%, Tsonga: 0.7%, Nynorsk: 0.6%, Spanish: 0.6%, Yoruba: 0.6%, Finnish: 0.5%, Sesotho: 0.5%, Welsh: 0.5%, Estonian: 0.4%, Irish: 0.4%, Polish: 0.4%, Swahili: 0.4%, Tagalog: 0.4%, Tswana: 0.4%, Bosnian: 0.3%, Icelandic: 0.3%, Romanian: 0.3%, Albanian: 0.2%, Catalan: 0.2%, Croatian: 0.2%, Indonesian: 0.2%, Lithuanian: 0.2%, Maori: 0.2%, Turkish: 0.2%, Xhosa: 0.2%, Zulu: 0.2%, Latvian: 0.1%, Malay: 0.1%, Slovak: 0.1%, Slovene: 0.1%, Somali: 0.1%
 
 >> Detection of 1000 word pairs (average length: 18 chars)
 Accuracy: 94.1%

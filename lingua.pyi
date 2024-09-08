@@ -129,7 +129,7 @@ class Language(Enum):
     SLOVAK = 55
     SLOVENE = 56
     SOMALI = 57
-    SOTHO = 58
+    SESOTHO = 58
     SPANISH = 59
     SWAHILI = 60
     SWEDISH = 61

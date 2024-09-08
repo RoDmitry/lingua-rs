@@ -4,7 +4,7 @@
 
 >> Detection of 1000 single words (average length: 9 chars)
 Accuracy: 45.2%
-Erroneously classified as Unknown: 48.5%, Zulu: 4.7%, English: 0.7%, Nynorsk: 0.3%, Danish: 0.1%, Ganda: 0.1%, Indonesian: 0.1%, Malay: 0.1%, Sotho: 0.1%, Tsonga: 0.1%
+Erroneously classified as Unknown: 48.5%, Zulu: 4.7%, English: 0.7%, Nynorsk: 0.3%, Danish: 0.1%, Ganda: 0.1%, Indonesian: 0.1%, Malay: 0.1%, Sesotho: 0.1%, Tsonga: 0.1%
 
 >> Detection of 1000 word pairs (average length: 18 chars)
 Accuracy: 70.8%

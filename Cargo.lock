@@ -695,11 +695,11 @@ dependencies = [
  "lingua-romanian-language-model",
  "lingua-russian-language-model",
  "lingua-serbian-language-model",
+ "lingua-sesotho-language-model",
  "lingua-shona-language-model",
  "lingua-slovak-language-model",
  "lingua-slovene-language-model",
  "lingua-somali-language-model",
- "lingua-sotho-language-model",
  "lingua-spanish-language-model",
  "lingua-swahili-language-model",
  "lingua-swedish-language-model",
@@ -1108,6 +1108,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "lingua-sesotho-language-model"
+version = "1.1.0"
+dependencies = [
+ "include_dir",
+]
+
+[[package]]
 name = "lingua-shona-language-model"
 version = "1.1.0"
 dependencies = [
@@ -1130,13 +1137,6 @@ dependencies = [
 
 [[package]]
 name = "lingua-somali-language-model"
-version = "1.1.0"
-dependencies = [
- "include_dir",
-]
-
-[[package]]
-name = "lingua-sotho-language-model"
 version = "1.1.0"
 dependencies = [
  "include_dir",

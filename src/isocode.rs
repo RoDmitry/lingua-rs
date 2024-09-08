@@ -274,8 +274,8 @@ pub enum IsoCode639_1 {
     /// The ISO 639-1 code for [`Serbian`](crate::language::Language::Serbian)
     SR,
 
-    #[cfg(feature = "sotho")]
-    /// The ISO 639-1 code for [`Sotho`](crate::language::Language::Sotho)
+    #[cfg(feature = "sesotho")]
+    /// The ISO 639-1 code for [`Sesotho`](crate::language::Language::Sesotho)
     ST,
 
     #[cfg(feature = "swedish")]
@@ -587,8 +587,8 @@ pub enum IsoCode639_3 {
     /// The ISO 639-3 code for [`Somali`](crate::language::Language::Somali)
     SOM,
 
-    #[cfg(feature = "sotho")]
-    /// The ISO 639-3 code for [`Sotho`](crate::language::Language::Sotho)
+    #[cfg(feature = "sesotho")]
+    /// The ISO 639-3 code for [`Sesotho`](crate::language::Language::Sesotho)
     SOT,
 
     #[cfg(feature = "spanish")]

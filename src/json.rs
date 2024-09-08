@@ -133,8 +133,8 @@ use lingua_slovak_language_model::SLOVAK_MODELS_DIRECTORY;
 use lingua_slovene_language_model::SLOVENE_MODELS_DIRECTORY;
 #[cfg(feature = "somali")]
 use lingua_somali_language_model::SOMALI_MODELS_DIRECTORY;
-#[cfg(feature = "sotho")]
-use lingua_sotho_language_model::SOTHO_MODELS_DIRECTORY;
+#[cfg(feature = "sesotho")]
+use lingua_sesotho_language_model::SESOTHO_MODELS_DIRECTORY;
 #[cfg(feature = "spanish")]
 use lingua_spanish_language_model::SPANISH_MODELS_DIRECTORY;
 #[cfg(feature = "swahili")]
@@ -360,8 +360,8 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
         #[cfg(feature = "somali")]
         Language::Somali => Some(SOMALI_MODELS_DIRECTORY),
 
-        #[cfg(feature = "sotho")]
-        Language::Sotho => Some(SOTHO_MODELS_DIRECTORY),
+        #[cfg(feature = "sesotho")]
+        Language::Sesotho => Some(SESOTHO_MODELS_DIRECTORY),
 
         #[cfg(feature = "spanish")]
         Language::Spanish => Some(SPANISH_MODELS_DIRECTORY),

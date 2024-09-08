@@ -122,7 +122,7 @@ lingua-shona-language-model = { path = "language-models/sn", version = "1.1.0", 
 lingua-slovak-language-model = { path = "language-models/sk", version = "1.1.0", optional = true }
 lingua-slovene-language-model = { path = "language-models/sl", version = "1.1.0", optional = true }
 lingua-somali-language-model = { path = "language-models/so", version = "1.1.0", optional = true }
-lingua-sotho-language-model = { path = "language-models/st", version = "1.1.0", optional = true }
+lingua-sesotho-language-model = { path = "language-models/st", version = "1.1.0", optional = true }
 lingua-spanish-language-model = { path = "language-models/es", version = "1.1.0", optional = true }
 lingua-swahili-language-model = { path = "language-models/sw", version = "1.1.0", optional = true }
 lingua-swedish-language-model = { path = "language-models/sv", version = "1.1.0", optional = true }
@@ -181,7 +181,7 @@ default = [
     "irish", "italian", "japanese", "kazakh", "korean", "latin", "latvian",
     "lithuanian", "macedonian", "malay", "maori", "marathi", "mongolian",
     "nynorsk", "persian", "polish", "portuguese", "punjabi", "romanian",
-    "russian", "serbian", "shona", "slovak", "slovene", "somali", "sotho",
+    "russian", "serbian", "shona", "slovak", "slovene", "somali", "sesotho",
     "spanish", "swahili", "swedish", "tagalog", "tamil", "telugu", "thai",
     "tsonga", "tswana", "turkish", "ukrainian", "urdu", "vietnamese",
     "welsh", "xhosa", "yoruba", "zulu"
@@ -246,7 +246,7 @@ shona = ["lingua-shona-language-model"]
 slovak = ["lingua-slovak-language-model"]
 slovene = ["lingua-slovene-language-model"]
 somali = ["lingua-somali-language-model"]
-sotho = ["lingua-sotho-language-model"]
+sesotho = ["lingua-sesotho-language-model"]
 spanish = ["lingua-spanish-language-model"]
 swahili = ["lingua-swahili-language-model"]
 swedish = ["lingua-swedish-language-model"]

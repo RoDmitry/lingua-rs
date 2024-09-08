@@ -1,6 +1,6 @@
-## Sotho language model for Lingua
+## Sesotho language model for Lingua
 
-This is the language model for the Sotho language which is used by 
+This is the language model for the Sesotho language which is used by 
 [*Lingua*](https://github.com/pemistahl/lingua-rs), 
 the most accurate natural language detection library in the Rust ecosystem.
 

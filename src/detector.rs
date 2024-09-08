@@ -1076,7 +1076,7 @@ impl LanguageDetector {
             prev_char_script = script;
             prev_char_len = ch.len_utf8();
         }
-        println!("{} {:?}", text, words);
+        // println!("{} {:?}", text, words);
 
         words
     }
@@ -1688,17 +1688,20 @@ impl LanguageDetector {
         language: &Language,
         ngram_length: usize,
     ) {
-        let models = language_models.read().unwrap();
-        if !models.contains_key(language) {
-            drop(models);
-            let mut models = language_models.write().unwrap();
-            let json = load_json(*language, ngram_length);
-            if let Ok(Some(json_content)) = json {
-                models.insert(
-                    *language,
-                    TrainingDataLanguageModel::from_json(&json_content),
-                );
-            }
+        let Ok(models) = language_models.read() else {
+            return;
+        };
+        if models.contains_key(language) {
+            return;
+        }
+        drop(models);
+        let mut models = language_models.write().unwrap();
+        let json = load_json(*language, ngram_length);
+        if let Ok(Some(json_content)) = json {
+            models.insert(
+                *language,
+                TrainingDataLanguageModel::from_json(&json_content),
+            );
         }
     }
 
@@ -2869,7 +2872,7 @@ mod tests {
                 Afrikaans, Albanian, Azerbaijani, Basque, Bokmal, Bosnian, Catalan, Croatian, Czech,
                 Danish, Dutch, English, Esperanto, Estonian, Finnish, French, Ganda, German, Hungarian,
                 Icelandic, Indonesian, Irish, Italian, Latin, Latvian, Lithuanian, Malay, Maori, Nynorsk,
-                Polish, Portuguese, Romanian, Shona, Slovak, Slovene, Somali, Sotho, Spanish, Swahili,
+                Polish, Portuguese, Romanian, Shona, Slovak, Slovene, Somali, Sesotho, Spanish, Swahili,
                 Swedish, Tagalog, Tsonga, Tswana, Turkish, Vietnamese, Welsh, Xhosa, Yoruba, Zulu
             )
         ),

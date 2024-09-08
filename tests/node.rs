@@ -122,7 +122,7 @@ fn assert_detector_cannot_be_built_from_too_long_blacklist() {
         JsValue::from(Language::Slovak.to_string()),
         JsValue::from(Language::Slovene.to_string()),
         JsValue::from(Language::Somali.to_string()),
-        JsValue::from(Language::Sotho.to_string()),
+        JsValue::from(Language::Sesotho.to_string()),
         JsValue::from(Language::Spanish.to_string()),
         JsValue::from(Language::Swahili.to_string()),
         JsValue::from(Language::Swedish.to_string()),
