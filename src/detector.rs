@@ -1009,13 +1009,57 @@ impl LanguageDetector {
         // let mut prev_char_alphabets: &'static [Alphabet] = &[];
         for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
             let script = Script::find(ch).unwrap_or(Script::Common);
+            println!("ch {:?}", ch);
             println!("ch_idx {:?}", ch_idx);
             // println!("ch.len_utf8() {:?}", ch.len_utf8());
-            println!("word_start_index {:?}", word_start_index);
-            println!("not_saved_word_end_index {:?}", not_saved_word_end_index);
+            println!("word_start_index1 {:?}", word_start_index);
+            println!("not_saved_word_end_index1 {:?}", not_saved_word_end_index);
+
+            let alphabets = script_char_to_alphabets(script, ch);
+            /* if script == Script::Common {
+                if word_alphabets_count.contains_key(k) {
+                    ///...
+                }
+            } */
+            let mut ch_skip = alphabets.is_empty();
+            for alphabet in alphabets {
+                if script == Script::Common {
+                    if !word_alphabets_count.contains(alphabet) {
+                        ch_skip = true;
+                        println!("save FALSE");
+                        continue;
+                    }
+                    ch_skip = false;
+                }
+
+                _ = word_alphabets_count
+                    .entry(*alphabet)
+                    .or_default()
+                    .wrapping_add(1);
+                /* match word_alphabets_counter.entry(alphabet) {
+                    Entry::Occupied(cnt) => _ = cnt.into_mut().wrapping_add(1),
+                    Entry::Vacant(cnt) => {
+                        _ = cnt.insert(Default::default());
+                    }
+                } */
+            }
+            println!("ch_skip {:?}", ch_skip);
+            if not_saved_word_end_index == ch_idx {
+                println!("not_saved_word_end_index == ch_idx");
+                if !ch_skip {
+                    not_saved_word_end_index = ch_idx + ch.len_utf8();
+                }
+            }
 
             // check if word needs saving
-            if not_saved_word_end_index < ch_idx && word_start_index < not_saved_word_end_index {
+            if ch_skip {
+                assert!(
+                    word_start_index < not_saved_word_end_index,
+                    "{} < {}",
+                    word_start_index,
+                    not_saved_word_end_index
+                );
+                //not_saved_word_end_index < ch_idx {
                 println!("SAVE");
                 //prev_char_script == Script::Common {
                 // let mut word_end_index = not_saved_word_end_index;
@@ -1069,44 +1113,6 @@ impl LanguageDetector {
                 continue;
                 // }
                 // }
-            }
-
-            let alphabets = script_char_to_alphabets(script, ch);
-            /* if script == Script::Common {
-                if word_alphabets_count.contains_key(k) {
-                    ///...
-                }
-            } */
-            let mut save = !alphabets.is_empty();
-            for alphabet in alphabets {
-                if script == Script::Common {
-                    if !word_alphabets_count.contains(alphabet) {
-                        save = false;
-                        println!("save FALSE");
-                        continue;
-                    }
-                    save = true;
-                }
-
-                _ = word_alphabets_count
-                    .entry(*alphabet)
-                    .or_default()
-                    .wrapping_add(1);
-                /* match word_alphabets_counter.entry(alphabet) {
-                    Entry::Occupied(cnt) => _ = cnt.into_mut().wrapping_add(1),
-                    Entry::Vacant(cnt) => {
-                        _ = cnt.insert(Default::default());
-                    }
-                } */
-            }
-            println!("Save {:?}", save);
-            if not_saved_word_end_index == ch_idx {
-                println!("not_saved_word_end_index == ch_idx");
-                if save {
-                    not_saved_word_end_index = ch_idx + ch.len_utf8();
-                } else {
-                    word_start_index = ch_idx + ch.len_utf8();
-                }
             }
             // prev_char_script = script;
             // prev_char_len = ch.len_utf8();
