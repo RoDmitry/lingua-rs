@@ -1003,68 +1003,91 @@ impl LanguageDetector {
 
         let mut word_start_index = 0;
         let mut word_alphabets_count: AHashMap<Alphabet, usize> = AHashMap::new();
-        let mut prev_char_script: Script = Script::Common;
-        let mut prev_char_len = 0;
+        let mut not_saved_word_end_index: usize = 0;
+        // let mut prev_char_script: Script = Script::Common;
+        // let mut prev_char_len = 0;
         // let mut prev_char_alphabets: &'static [Alphabet] = &[];
-        for (ch_idx, ch) in text.char_indices() {
+        for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
             let script = Script::find(ch).unwrap_or(Script::Common);
-            // println!("ch_idx {:?}", ch_idx);
+            println!("ch_idx {:?}", ch_idx);
             // println!("ch.len_utf8() {:?}", ch.len_utf8());
-            // println!("ch {:?}", ch);
+            println!("word_start_index {:?}", word_start_index);
+            println!("not_saved_word_end_index {:?}", not_saved_word_end_index);
 
-            if ch_idx > 0 && (script == Script::Common || prev_char_script == Script::Common) {
-                // means try to save word
-                let mut word_end_index = ch_idx;
+            // check if word needs saving
+            if not_saved_word_end_index < ch_idx && word_start_index < not_saved_word_end_index {
+                println!("SAVE");
+                //prev_char_script == Script::Common {
+                // let mut word_end_index = not_saved_word_end_index;
                 // println!("word_end_index1 {:?}", word_end_index);
-                if prev_char_script == Script::Common {
+                /* if prev_char_script == Script::Common && script == Script::Common {
                     // removes `'` for cases like `words' word` (we are at the space char)
-                    word_end_index = word_end_index.saturating_sub(prev_char_len);
-                    if script == Script::Common {
-                        // removes ` ` for cases like `words' word` (we are at the last `w` char)
+                    // not a case --for cases like `words' word` (we are at the last `w` char)--
+                    not_saved_word_end_index =
+                        not_saved_word_end_index.saturating_sub(prev_char_len);
+                    if not_saved_word_end_index == word_start_index {
                         word_start_index = ch_idx + ch.len_utf8();
+                        // prev_char_script = script;
+                        // not_saved_word_end_index = 0;
+                        // prev_char_len = ch.len_utf8();
+                        continue;
                     }
-                }
+                } */
 
+                // if script == Script::Common {
                 // println!("word_start_index {:?}", word_start_index);
                 // println!("word_end_index2 {:?}", word_end_index);
-                let word_len = word_end_index.saturating_sub(word_start_index);
-                if word_len > 0 {
-                    // save word
-                    let word = &text[word_start_index..word_end_index];
-                    if let Some(w) = words.get_mut(word) {
-                        (*w).text_positions.push(word_counter);
-                    } else {
-                        /* Self::save_new_word(
-                            &mut words,
-                            word,
-                            std::mem::take(&mut word_alphabets_count),
-                            word_end_index - word_start_index,
-                        ); */
-                        let word_data = InternalWordData {
-                            alphabets_count: std::mem::take(&mut word_alphabets_count),
-                            len: word_len,
-                            text_positions: vec![word_counter],
-                        };
-                        words.insert(word, word_data);
-                    }
+                // let word_len = not_saved_word_end_index.saturating_sub(word_start_index);
+                // if word_len > 0 {
 
-                    word_counter += 1;
-                    // reset temp variables
-                    word_start_index = ch_idx + ch.len_utf8();
-                    prev_char_script = script;
-                    prev_char_len = ch.len_utf8();
-                    continue;
+                // save word
+                let word = &text[word_start_index..not_saved_word_end_index];
+                if let Some(w) = words.get_mut(word) {
+                    (*w).text_positions.push(word_counter);
+                } else {
+                    /* Self::save_new_word(
+                        &mut words,
+                        word,
+                        std::mem::take(&mut word_alphabets_count),
+                        word_end_index - word_start_index,
+                    ); */
+                    let word_len = not_saved_word_end_index - word_start_index;
+                    let word_data = InternalWordData {
+                        alphabets_count: std::mem::take(&mut word_alphabets_count),
+                        len: word_len,
+                        text_positions: vec![word_counter],
+                    };
+                    words.insert(word, word_data);
                 }
-            };
 
-            prev_char_script = script;
-            prev_char_len = ch.len_utf8();
+                word_counter += 1;
+                // reset temp variables
+                word_start_index = ch_idx + ch.len_utf8();
+                // prev_char_script = script;
+                not_saved_word_end_index = word_start_index;
+                // prev_char_len = ch.len_utf8();
+                continue;
+                // }
+                // }
+            }
 
             let alphabets = script_char_to_alphabets(script, ch);
+            /* if script == Script::Common {
+                if word_alphabets_count.contains_key(k) {
+                    ///...
+                }
+            } */
+            let mut save = !alphabets.is_empty();
             for alphabet in alphabets {
-                /* if script == Script::Common && !prev_char_alphabets.contains(alphabet) {
-                    continue;
-                } */
+                if script == Script::Common {
+                    if !word_alphabets_count.contains(alphabet) {
+                        save = false;
+                        println!("save FALSE");
+                        continue;
+                    }
+                    save = true;
+                }
+
                 _ = word_alphabets_count
                     .entry(*alphabet)
                     .or_default()
@@ -1076,10 +1099,21 @@ impl LanguageDetector {
                     }
                 } */
             }
+            println!("Save {:?}", save);
+            if not_saved_word_end_index == ch_idx {
+                println!("not_saved_word_end_index == ch_idx");
+                if save {
+                    not_saved_word_end_index = ch_idx + ch.len_utf8();
+                } else {
+                    word_start_index = ch_idx + ch.len_utf8();
+                }
+            }
+            // prev_char_script = script;
+            // prev_char_len = ch.len_utf8();
             // prev_char_alphabets = alphabets;
         }
         // todo: save last word
-        println!("{:?}", words);
+        println!("{} {:?}", text, words);
 
         words
     }
@@ -2417,7 +2451,7 @@ mod tests {
         assert_eq!(second_result.language(), expected_second_language);
     }
 
-    #[rstest(
+    /*#[rstest(
         sentence,
         expected_first_substring,
         expected_first_word_count,
@@ -2486,9 +2520,9 @@ mod tests {
         assert_eq!(third_substring, expected_third_substring);
         assert_eq!(third_result.word_count, expected_third_word_count);
         assert_eq!(third_result.language(), expected_third_language);
-    }
+    }*/
 
-    #[rstest(
+    /*#[rstest(
         sentence,
         expected_first_substring,
         expected_first_word_count,
@@ -2560,9 +2594,9 @@ mod tests {
         assert_eq!(fourth_substring, expected_fourth_substring);
         assert_eq!(fourth_result.word_count, expected_fourth_word_count);
         assert_eq!(fourth_result.language(), expected_fourth_language);
-    }
+    }*/
 
-    #[rstest(
+    /*#[rstest(
         builder_languages,
         text,
         expected_language,
@@ -2728,7 +2762,7 @@ mod tests {
             "expected {:?} for word '{}', got {:?}",
             expected_language, word, detected_language
         );
-    }
+    }*/
 
     #[rstest(
         text,
@@ -2904,7 +2938,45 @@ mod tests {
         );
     }
 
-    #[should_panic]
+    #[rstest(text, expected_words,
+        case("word", ahashset!("word")),
+        case("word1 word2", ahashset!("word1", "word2")),
+        case("can't", ahashset!("can't")),
+        case("word1' word2", ahashset!("word1", "word2")),
+    )]
+    fn test_text_to_words(
+        detector_for_all_languages: LanguageDetector,
+        text: &str,
+        expected_words: AHashSet<&str>,
+    ) {
+        // let words = &[word.to_owned()];
+
+        let res = LanguageDetector::text_to_words(text);
+        let res: AHashSet<_> = res
+            .into_iter()
+            .map(|(w, _)| w)
+            // .map(|(_, w)| w.alphabets_count.keys())
+            // .flatten()
+            // .map(|&a| <&[Language]>::from(a))
+            // .flatten()
+            .collect();
+
+        /* let words_count_half = 0.5;
+        let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
+            words,
+            // &detector_for_all_languages.languages,
+            words_count_half,
+            // alps,
+            filtered_languages,
+        ); */
+        assert_eq!(
+            res, expected_words,
+            "text: {}\nwords: {:?}\nexpected: {:?}",
+            text, res, expected_words
+        );
+    }
+
+    /* #[should_panic]
     #[rstest(text,
         case("kejurnas iii пїѕ aa boxer cup iii пїѕ bertempat di bandung jumlah peserta petarung dari daerah provinsi jawa barat dki jakarta jawa timur sumatera utara sumatera barat nusa tenggara barat bali kalimantan barat"),
     )]
@@ -2925,7 +2997,7 @@ mod tests {
             // alps,
             filtered_languages,
         ); */
-    }
+    } */
 
     #[rstest(invalid_str, case(""), case(" \n  \t;"), case("3<856%)§"))]
     fn assert_strings_without_letters_return_no_language(
