@@ -88,15 +88,13 @@ impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
 #[derive(Debug)]
 struct InternalWordData {
     // word: &'t str,
-    alphabets_count: AHashMap<Alphabet, usize>,
-    // languages: AHashSet<Language>,
+    alphabets_count: Vec<(Alphabet, usize)>,
     text_positions: Vec<usize>,
-    len: usize, //
-                // can not include most frequent Alphabet
-                // can not include same languages
-                // usually it's empty, but if we get a different Alphabet,
-                //   and it's supported languages are completely different,
-                //   then it goes here
+    // can not include most frequent Alphabet
+    // can not include same languages
+    // usually it's empty, but if we get a different Alphabet,
+    //   and it's supported languages are completely different,
+    //   then it goes here
 }
 
 /* impl Hash for InternalWord<'_> {
@@ -307,7 +305,7 @@ impl LanguageDetector {
             .collect()
     }
 
-    fn detect_language_from_languages<S: BuildHasher>(
+    fn detect_language_from_languages<S: BuildHasher + Default>(
         &self,
         text: &str,
         languages: &HashSet<Language, S>,
@@ -653,7 +651,7 @@ impl LanguageDetector {
             .collect()
     }
 
-    fn compute_language_confidence_values_for_languages<S: BuildHasher>(
+    fn compute_language_confidence_values_for_languages<S: BuildHasher + Default>(
         &self,
         text_str: &str,
         search_languages: &HashSet<Language, S>,
@@ -669,13 +667,35 @@ impl LanguageDetector {
             return values;
         }
 
-        let /* (language_detected_by_rules, */ filtered_languages =
-            Self::process_words(&words, search_languages);
+        // let filtered_languages = Self::process_words(&words, search_languages);
+        // let filtered_languages = filtered_languages.into_iter().collect();
 
         if text_str.is_empty() {
             return Vec::new();
         }
-        let found_words = Self::text_to_words(text_str);
+        println!("text_str {:?}", text_str);
+        let found_words = self.text_to_words(text_str);
+
+        let alphabets: AHashSet<_> = found_words
+            .iter()
+            .map(|(_, w)| &w.alphabets_count)
+            .flatten()
+            .copied()
+            .collect();
+        println!("alphabets {:?}", alphabets);
+
+        let languages: HashSet<_, S> = alphabets
+            .iter()
+            .map(|(a, _)| <&[Language]>::from(*a))
+            .flatten()
+            .copied()
+            .collect();
+        println!("languages {:?}", languages);
+        println!("search_languages {:?}", search_languages);
+
+        let filtered_languages: AHashSet<_> =
+            languages.intersection(search_languages).copied().collect();
+        println!("filtered_languages {:?}", filtered_languages);
 
         // let language_detected_by_rules =
         // Self::find_most_frequent_opt(&mut total_language_counts);
@@ -695,7 +715,7 @@ impl LanguageDetector {
             filtered_languages,
         ); */
 
-        if filtered_languages.len() == 1 {
+        if alphabets.len() == 1 && filtered_languages.len() == 1 {
             let filtered_language = filtered_languages.into_iter().next().unwrap();
             update_confidence_values(&mut values, filtered_language, 1.0);
             values.sort_by(confidence_values_comparator);
@@ -714,9 +734,6 @@ impl LanguageDetector {
         } else {
             1..6usize
         };
-
-        // TODO: remove this conversion
-        let filtered_languages = filtered_languages.into_iter().collect();
 
         #[allow(clippy::type_complexity)]
         let all_probabilities_and_unigram_counts: Vec<(
@@ -746,6 +763,7 @@ impl LanguageDetector {
         }
 
         self.compute_confidence_values(&mut values, probability_maps, summed_up_probabilities);
+        println!("res {:?}", &values[..values.len().min(5)]);
 
         values
     }
@@ -996,7 +1014,7 @@ impl LanguageDetector {
     } */
 
     #[inline]
-    fn text_to_words<'t>(text: &'t str) -> AHashMap<&'t str, InternalWordData> {
+    fn text_to_words<'t>(&self, text: &'t str) -> AHashMap<&'t str, InternalWordData> {
         let mut words: AHashMap<&str, InternalWordData> = AHashMap::new();
         let mut word_counter = 0;
 
@@ -1044,6 +1062,7 @@ impl LanguageDetector {
                     not_saved_word_end_index =
                         not_saved_word_end_index.saturating_sub(prev_char_len);
                     if not_saved_word_end_index == word_start_index {
+                        // reset temp variables
                         word_start_index = ch_idx + ch.len_utf8();
                         prev_char_script = script;
                         prev_char_len = ch.len_utf8();
@@ -1056,13 +1075,32 @@ impl LanguageDetector {
                 if let Some(w) = words.get_mut(word) {
                     (*w).text_positions.push(word_counter);
                 } else {
-                    let word_len = not_saved_word_end_index - word_start_index;
+                    let alphabets_count_max = word_alphabets_count
+                        .iter()
+                        .fold(1, |acc, (_, cnt)| acc.max(*cnt));
+
+                    let alphabets_count: Vec<(Alphabet, usize)> =
+                        if self.is_low_accuracy_mode_enabled {
+                            word_alphabets_count
+                                .into_iter()
+                                .filter(|(_, cnt): &(_, _)| *cnt == alphabets_count_max)
+                                .collect()
+                        } else {
+                            let close_to_max = alphabets_count_max - 1;
+                            let mut alphabets_count: Vec<_> = word_alphabets_count
+                                .into_iter()
+                                .filter(|(_, cnt): &(_, _)| *cnt > close_to_max)
+                                .collect();
+                            alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
+                            alphabets_count
+                        };
+
                     let word_data = InternalWordData {
-                        alphabets_count: std::mem::take(&mut word_alphabets_count),
-                        len: word_len,
+                        alphabets_count,
                         text_positions: vec![word_counter],
                     };
                     words.insert(word, word_data);
+                    word_alphabets_count = Default::default();
                 }
 
                 word_counter += 1;
@@ -2925,7 +2963,7 @@ mod tests {
     ) {
         // let words = &[word.to_owned()];
 
-        let res = LanguageDetector::text_to_words(text);
+        let res = detector_for_all_languages.text_to_words(text);
         let res: AHashSet<_> = res
             .into_iter()
             .map(|(w, _)| w)
