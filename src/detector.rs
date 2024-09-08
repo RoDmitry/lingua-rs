@@ -1001,11 +1001,13 @@ impl LanguageDetector {
         let mut word_counter = 0;
         // let mut word_alphabets_words: AHashMap<Alphabet, AHashMap<&str, usize>> = AHashMap::new();
 
+        println!("text {:?}", text);
+
         let mut word_start_index = 0;
         let mut word_alphabets_count: AHashMap<Alphabet, usize> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
-        // let mut prev_char_script: Script = Script::Common;
-        // let mut prev_char_len = 0;
+        let mut prev_char_script: Script = Script::Common;
+        let mut prev_char_len = 0;
         // let mut prev_char_alphabets: &'static [Alphabet] = &[];
         for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
             let script = Script::find(ch).unwrap_or(Script::Common);
@@ -1044,39 +1046,42 @@ impl LanguageDetector {
                 } */
             }
             println!("ch_skip {:?}", ch_skip);
-            if not_saved_word_end_index == ch_idx {
-                println!("not_saved_word_end_index == ch_idx");
-                if !ch_skip {
-                    not_saved_word_end_index = ch_idx + ch.len_utf8();
-                }
-            }
-
-            // check if word needs saving
+            // if not_saved_word_end_index == ch_idx {
+            // println!("not_saved_word_end_index == ch_idx");
             if ch_skip {
-                assert!(
-                    word_start_index < not_saved_word_end_index,
-                    "{} < {}",
-                    word_start_index,
-                    not_saved_word_end_index
-                );
+                if word_start_index == ch_idx {
+                    word_start_index = ch_idx + ch.len_utf8();
+                }
+            } else if not_saved_word_end_index == ch_idx {
+                println!("update not_saved_word_end_index");
+                not_saved_word_end_index = ch_idx + ch.len_utf8();
+            }
+            // }
+
+            // todo?? replace with assert
+            /* if word_start_index >= not_saved_word_end_index {
+                println!("{} < {}", word_start_index, not_saved_word_end_index);
+            } */
+            // check if word needs saving
+            if ch_skip && word_start_index < not_saved_word_end_index {
                 //not_saved_word_end_index < ch_idx {
                 println!("SAVE");
                 //prev_char_script == Script::Common {
                 // let mut word_end_index = not_saved_word_end_index;
                 // println!("word_end_index1 {:?}", word_end_index);
-                /* if prev_char_script == Script::Common && script == Script::Common {
+                if prev_char_script == Script::Common && script == Script::Common {
                     // removes `'` for cases like `words' word` (we are at the space char)
                     // not a case --for cases like `words' word` (we are at the last `w` char)--
                     not_saved_word_end_index =
                         not_saved_word_end_index.saturating_sub(prev_char_len);
                     if not_saved_word_end_index == word_start_index {
                         word_start_index = ch_idx + ch.len_utf8();
-                        // prev_char_script = script;
+                        prev_char_script = script;
                         // not_saved_word_end_index = 0;
-                        // prev_char_len = ch.len_utf8();
+                        prev_char_len = ch.len_utf8();
                         continue;
                     }
-                } */
+                }
 
                 // if script == Script::Common {
                 // println!("word_start_index {:?}", word_start_index);
@@ -1107,15 +1112,16 @@ impl LanguageDetector {
                 word_counter += 1;
                 // reset temp variables
                 word_start_index = ch_idx + ch.len_utf8();
-                // prev_char_script = script;
                 not_saved_word_end_index = word_start_index;
-                // prev_char_len = ch.len_utf8();
+                prev_char_script = script;
+                prev_char_len = ch.len_utf8();
                 continue;
                 // }
                 // }
             }
-            // prev_char_script = script;
-            // prev_char_len = ch.len_utf8();
+            not_saved_word_end_index = ch_idx + ch.len_utf8();
+            prev_char_script = script;
+            prev_char_len = ch.len_utf8();
             // prev_char_alphabets = alphabets;
         }
         // todo: save last word
@@ -2946,9 +2952,14 @@ mod tests {
 
     #[rstest(text, expected_words,
         case("word", ahashset!("word")),
-        case("word1 word2", ahashset!("word1", "word2")),
+        case("worda wordb", ahashset!("worda", "wordb")),
+        case("worda'", ahashset!("worda")),
+        case("'worda", ahashset!("worda")),
+        case("'worda'", ahashset!("worda")),
         case("can't", ahashset!("can't")),
-        case("word1' word2", ahashset!("word1", "word2")),
+        case("worda' wordb", ahashset!("worda", "wordb")),
+        case("worda 'wordb", ahashset!("worda", "wordb")),
+        case("'worda', 'wordb'", ahashset!("worda", "wordb")),
     )]
     fn test_text_to_words(
         detector_for_all_languages: LanguageDetector,
