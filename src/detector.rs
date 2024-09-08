@@ -999,76 +999,45 @@ impl LanguageDetector {
     fn text_to_words<'t>(text: &'t str) -> AHashMap<&'t str, InternalWordData> {
         let mut words: AHashMap<&str, InternalWordData> = AHashMap::new();
         let mut word_counter = 0;
-        // let mut word_alphabets_words: AHashMap<Alphabet, AHashMap<&str, usize>> = AHashMap::new();
-
-        println!("text {:?}", text);
 
         let mut word_start_index = 0;
         let mut word_alphabets_count: AHashMap<Alphabet, usize> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
         let mut prev_char_len = 0;
-        // let mut prev_char_alphabets: &'static [Alphabet] = &[];
         for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
             let script = Script::find(ch).unwrap_or(Script::Common);
-            println!("ch {:?}", ch);
-            println!("ch_idx {:?}", ch_idx);
-            // println!("ch.len_utf8() {:?}", ch.len_utf8());
-            println!("word_start_index1 {:?}", word_start_index);
-            println!("not_saved_word_end_index1 {:?}", not_saved_word_end_index);
-
             let alphabets = script_char_to_alphabets(script, ch);
-            /* if script == Script::Common {
-                if word_alphabets_count.contains_key(k) {
-                    ///...
-                }
-            } */
             let mut ch_skip = alphabets.is_empty();
-            for alphabet in alphabets {
-                if script == Script::Common {
-                    if !word_alphabets_count.contains(alphabet) {
-                        ch_skip = true;
-                        println!("save FALSE");
-                        continue;
-                    }
-                    ch_skip = false;
-                }
 
-                _ = word_alphabets_count
-                    .entry(*alphabet)
-                    .or_default()
-                    .wrapping_add(1);
-                /* match word_alphabets_counter.entry(alphabet) {
-                    Entry::Occupied(cnt) => _ = cnt.into_mut().wrapping_add(1),
-                    Entry::Vacant(cnt) => {
-                        _ = cnt.insert(Default::default());
+            for alphabet in alphabets {
+                let cnt_entry = word_alphabets_count.entry(*alphabet);
+                match cnt_entry {
+                    Entry::Occupied(cnt_o) => {
+                        let cnt = cnt_o.into_mut();
+                        *cnt = cnt.wrapping_add(1);
                     }
-                } */
+                    Entry::Vacant(cnt) => {
+                        if script == Script::Common {
+                            ch_skip = true;
+                            continue;
+                        }
+                        cnt.insert(1);
+                    }
+                }
+                ch_skip = false;
             }
-            println!("ch_skip {:?}", ch_skip);
-            // if not_saved_word_end_index == ch_idx {
-            // println!("not_saved_word_end_index == ch_idx");
+
             if ch_skip {
                 if word_start_index == ch_idx {
                     word_start_index = ch_idx + ch.len_utf8();
                 }
             } else if not_saved_word_end_index == ch_idx {
-                println!("update not_saved_word_end_index");
                 not_saved_word_end_index = ch_idx + ch.len_utf8();
             }
-            // }
 
-            // todo?? replace with assert
-            /* if word_start_index >= not_saved_word_end_index {
-                println!("{} < {}", word_start_index, not_saved_word_end_index);
-            } */
             // check if word needs saving
             if ch_skip && word_start_index < not_saved_word_end_index {
-                //not_saved_word_end_index < ch_idx {
-                println!("SAVE");
-                //prev_char_script == Script::Common {
-                // let mut word_end_index = not_saved_word_end_index;
-                // println!("word_end_index1 {:?}", word_end_index);
                 if prev_char_script == Script::Common && script == Script::Common {
                     // removes `'` for cases like `words' word` (we are at the space char)
                     // not a case --for cases like `words' word` (we are at the last `w` char)--
@@ -1077,29 +1046,16 @@ impl LanguageDetector {
                     if not_saved_word_end_index == word_start_index {
                         word_start_index = ch_idx + ch.len_utf8();
                         prev_char_script = script;
-                        // not_saved_word_end_index = 0;
                         prev_char_len = ch.len_utf8();
                         continue;
                     }
                 }
-
-                // if script == Script::Common {
-                // println!("word_start_index {:?}", word_start_index);
-                // println!("word_end_index2 {:?}", word_end_index);
-                // let word_len = not_saved_word_end_index.saturating_sub(word_start_index);
-                // if word_len > 0 {
 
                 // save word
                 let word = &text[word_start_index..not_saved_word_end_index];
                 if let Some(w) = words.get_mut(word) {
                     (*w).text_positions.push(word_counter);
                 } else {
-                    /* Self::save_new_word(
-                        &mut words,
-                        word,
-                        std::mem::take(&mut word_alphabets_count),
-                        word_end_index - word_start_index,
-                    ); */
                     let word_len = not_saved_word_end_index - word_start_index;
                     let word_data = InternalWordData {
                         alphabets_count: std::mem::take(&mut word_alphabets_count),
@@ -1112,19 +1068,14 @@ impl LanguageDetector {
                 word_counter += 1;
                 // reset temp variables
                 word_start_index = ch_idx + ch.len_utf8();
-                not_saved_word_end_index = word_start_index;
                 prev_char_script = script;
                 prev_char_len = ch.len_utf8();
                 continue;
-                // }
-                // }
             }
             not_saved_word_end_index = ch_idx + ch.len_utf8();
             prev_char_script = script;
             prev_char_len = ch.len_utf8();
-            // prev_char_alphabets = alphabets;
         }
-        // todo: save last word
         println!("{} {:?}", text, words);
 
         words
@@ -2463,7 +2414,7 @@ mod tests {
         assert_eq!(second_result.language(), expected_second_language);
     }
 
-    /*#[rstest(
+    #[rstest(
         sentence,
         expected_first_substring,
         expected_first_word_count,
@@ -2532,9 +2483,9 @@ mod tests {
         assert_eq!(third_substring, expected_third_substring);
         assert_eq!(third_result.word_count, expected_third_word_count);
         assert_eq!(third_result.language(), expected_third_language);
-    }*/
+    }
 
-    /*#[rstest(
+    #[rstest(
         sentence,
         expected_first_substring,
         expected_first_word_count,
@@ -2606,9 +2557,9 @@ mod tests {
         assert_eq!(fourth_substring, expected_fourth_substring);
         assert_eq!(fourth_result.word_count, expected_fourth_word_count);
         assert_eq!(fourth_result.language(), expected_fourth_language);
-    }*/
+    }
 
-    /*#[rstest(
+    #[rstest(
         builder_languages,
         text,
         expected_language,
@@ -2774,7 +2725,7 @@ mod tests {
             "expected {:?} for word '{}', got {:?}",
             expected_language, word, detected_language
         );
-    }*/
+    }
 
     #[rstest(
         text,
@@ -2960,6 +2911,9 @@ mod tests {
         case("worda' wordb", ahashset!("worda", "wordb")),
         case("worda 'wordb", ahashset!("worda", "wordb")),
         case("'worda', 'wordb'", ahashset!("worda", "wordb")),
+        case::chinese("中文", ahashset!("中文")),
+        case("worda 🙈", ahashset!("worda")),
+        case::kanji("昨日、東京で大切な友達に会いました。", ahashset!("昨日", "東京で大切な友達に会いました")),
     )]
     fn test_text_to_words(
         detector_for_all_languages: LanguageDetector,
