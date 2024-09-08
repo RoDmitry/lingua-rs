@@ -1,4 +1,4 @@
-mod alphabet;
+pub(crate) mod alphabet;
 mod language;
 mod script;
 mod ucd;

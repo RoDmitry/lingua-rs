@@ -1,7 +1,5 @@
 use super::{Language, Script};
-use ahash::AHashSet;
 use alphabet_match_macro::alphabet_match;
-use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
@@ -580,47 +578,54 @@ impl From<Alphabet> for &[Language] {
     }
 }
 
-#[test]
-fn test_language_missing_in_from_alphabet_to_language() {
-    let lang_len = Language::iter().size_hint().0;
-    let mut langs_set: AHashSet<Language> = AHashSet::with_capacity(lang_len);
-    for alphabet in Alphabet::iter() {
-        let langs: &[Language] = alphabet.into();
-        langs_set.extend(langs);
-    }
-    if langs_set.len() != lang_len {
-        let missing: Vec<_> = Language::iter().filter(|l| !langs_set.remove(&l)).collect();
-        panic!(
-            "Not all languages used in `from alphabet to language`, missing: {:?}",
-            missing
-        );
-    }
-}
+#[cfg(test)]
+mod test {
+    use super::*;
+    use ahash::AHashSet;
+    use strum::IntoEnumIterator;
 
-#[test]
-fn test_alphabets_missing_in_fn_script_alphabets() {
-    let alphabets_len = Alphabet::iter().size_hint().0;
-    let mut alphabets_set: AHashSet<Alphabet> = AHashSet::with_capacity(alphabets_len);
-    for script in Script::iter() {
-        let alphabets = script_alphabets(script, '\0');
-        alphabets_set.extend(alphabets);
+    #[test]
+    fn test_language_missing_in_from_alphabet_to_language() {
+        let lang_len = Language::iter().size_hint().0;
+        let mut langs_set: AHashSet<Language> = AHashSet::with_capacity(lang_len);
+        for alphabet in Alphabet::iter() {
+            let langs: &[Language] = alphabet.into();
+            langs_set.extend(langs);
+        }
+        if langs_set.len() != lang_len {
+            let missing: Vec<_> = Language::iter().filter(|l| !langs_set.remove(&l)).collect();
+            panic!(
+                "Not all languages used in `from alphabet to language`, missing: {:?}",
+                missing
+            );
+        }
     }
-    if alphabets_set.len() != alphabets_len {
-        let missing: Vec<_> = Alphabet::iter()
-            .filter(|a| !alphabets_set.remove(&a))
-            .collect();
-        panic!(
-            "Not all alphabets used in `script_alphabets`, missing: {:?}",
-            missing
-        );
+
+    #[test]
+    fn test_alphabets_missing_in_fn_script_alphabets() {
+        let alphabets_len = Alphabet::iter().size_hint().0;
+        let mut alphabets_set: AHashSet<Alphabet> = AHashSet::with_capacity(alphabets_len);
+        for script in Script::iter() {
+            let alphabets = script_char_to_alphabets(script, '\0');
+            alphabets_set.extend(alphabets);
+        }
+        if alphabets_set.len() != alphabets_len {
+            let missing: Vec<_> = Alphabet::iter()
+                .filter(|a| !alphabets_set.remove(&a))
+                .collect();
+            panic!(
+                "Not all alphabets used in `script_alphabets`, missing: {:?}",
+                missing
+            );
+        }
     }
 }
 
 /// add all the leters of all the alphabets in the script group
 /// or not all, only if it does not require to exclude letters
 /// if the script group has only one language, then leave it empty
-pub(crate) fn script_alphabets(a: Script, ch: char) -> &'static [Alphabet] {
-    match a {
+pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Alphabet] {
+    match script {
         Script::Adlam => alphabet_match!([(Alphabet::FulaniAdlam, []), (Alphabet::PularAdlam, [])]),
         Script::Ahom => alphabet_match!([(Alphabet::Ahom, [])]),
         Script::AnatolianHieroglyphs => {

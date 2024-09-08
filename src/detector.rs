@@ -18,6 +18,7 @@ use crate::constant::{
     CHARS_TO_LANGUAGES_MAPPING, LETTERS, TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE,
 };
 use crate::json::load_json;
+use crate::lang::alphabet::{self, script_char_to_alphabets};
 use crate::lang::{Alphabet, Script};
 use crate::model::{TestDataLanguageModel, TrainingDataLanguageModel};
 use crate::result::DetectionResult;
@@ -34,6 +35,8 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
+use std::collections::hash_map::Entry;
+use std::hash::Hasher;
 
 type LazyLanguageModelMap = Lazy<RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>>;
 type StaticLanguageModelMap = &'static RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>;
@@ -82,17 +85,25 @@ impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
     }
 }
 
-struct InternalWord<'t> {
-    word: &'t str,
-    most_frequent_alphabet: Alphabet,
-    languages: Vec<Language>, // ????????
-    /// can not include most frequent Alphabet
-    /// can not include same languages
-    /// usually it's empty, but if we get a different Alphabet,
-    ///   and it's supported languages are completely different,
-    ///   then it goes here
-    extra_alphabet_languages: AHashMap<Alphabet, Vec<Language>>,
+#[derive(Debug)]
+struct InternalWordData {
+    // word: &'t str,
+    alphabets_count: AHashMap<Alphabet, usize>,
+    // languages: AHashSet<Language>,
+    text_positions: Vec<usize>,
+    len: usize, //
+                // can not include most frequent Alphabet
+                // can not include same languages
+                // usually it's empty, but if we get a different Alphabet,
+                //   and it's supported languages are completely different,
+                //   then it goes here
 }
+
+/* impl Hash for InternalWord<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.word.hash(state);
+    }
+} */
 
 /// final resulting word
 pub struct Word<'t> {
@@ -969,9 +980,112 @@ impl LanguageDetector {
         data_counts
     }
 
+    /* fn save_new_word<'t>(
+        words: &mut AHashMap<&'t str, InternalWordData>,
+        word: &'t str,
+        alphabets_count: AHashMap<Alphabet, usize>,
+        len: usize,
+    ) {
+        let alphabets_count_iter = alphabets_count.iter();
+        let mut word_langs: AHashSet<Language> = AHashSet::new();
+        for (alphabet, cnt) in alphabets_count {
+            let langs: &[Language] = alphabet.into();
+            word_langs.retain(|l| langs.contains(l));
+            if word_langs.is_empty() {}
+        }
+    } */
+
     #[inline]
-    fn text_to_words<'t>(text: &'t str) -> Vec<InternalWord<'t>> {
-        Vec::new()
+    fn text_to_words<'t>(text: &'t str) -> AHashMap<&'t str, InternalWordData> {
+        let mut words: AHashMap<&str, InternalWordData> = AHashMap::new();
+        let mut word_counter = 0;
+        // let mut word_alphabets_words: AHashMap<Alphabet, AHashMap<&str, usize>> = AHashMap::new();
+
+        let mut word_start_index = 0;
+        let mut word_alphabets_count: AHashMap<Alphabet, usize> = AHashMap::new();
+        let mut prev_char_script: Script = Script::Common;
+        let mut prev_char_len = 0;
+        // let mut prev_char_alphabets: &'static [Alphabet] = &[];
+        for (ch_idx, ch) in text.char_indices() {
+            let script = Script::find(ch);
+            println!("ch_idx {:?}", ch_idx);
+            println!("ch.len_utf8() {:?}", ch.len_utf8());
+            println!("ch {:?}", ch);
+
+            if script.is_none()
+                || script == Some(Script::Common) && prev_char_script == Script::Common
+            {
+                let mut word_end_index = ch_idx;
+                println!("word_end_index1 {:?}", word_end_index);
+                if prev_char_script == Script::Common {
+                    // removes `'` for cases like `words' word` (we are at the space char)
+                    word_end_index = word_end_index.saturating_sub(prev_char_len);
+                }
+
+                println!("word_start_index {:?}", word_start_index);
+                println!("word_end_index2 {:?}", word_end_index);
+                let word_len = word_end_index.saturating_sub(word_start_index);
+                if word_len == 0 {
+                    // for cases like ` A`
+                    word_start_index = ch_idx + ch.len_utf8();
+                    prev_char_script = Script::Common;
+                    prev_char_len = ch.len_utf8();
+                    continue;
+                }
+
+                // save word
+                let word = &text[word_start_index..word_end_index];
+                if let Some(w) = words.get_mut(word) {
+                    (*w).text_positions.push(word_counter);
+                } else {
+                    /* Self::save_new_word(
+                        &mut words,
+                        word,
+                        std::mem::take(&mut word_alphabets_count),
+                        word_end_index - word_start_index,
+                    ); */
+                    let word_data = InternalWordData {
+                        alphabets_count: std::mem::take(&mut word_alphabets_count),
+                        len: word_len,
+                        text_positions: vec![word_counter],
+                    };
+                    words.insert(word, word_data);
+                }
+
+                word_counter += 1;
+                // reset temp variables
+                word_start_index = ch_idx + ch.len_utf8();
+                prev_char_script = Script::Common;
+                prev_char_len = ch.len_utf8();
+                continue;
+            };
+
+            let script = script.unwrap();
+            prev_char_script = script;
+            prev_char_len = ch.len_utf8();
+
+            let alphabets = script_char_to_alphabets(script, ch);
+            for alphabet in alphabets {
+                /* if script == Script::Common && !prev_char_alphabets.contains(alphabet) {
+                    continue;
+                } */
+                _ = word_alphabets_count
+                    .entry(*alphabet)
+                    .or_default()
+                    .wrapping_add(1);
+                /* match word_alphabets_counter.entry(alphabet) {
+                    Entry::Occupied(cnt) => _ = cnt.into_mut().wrapping_add(1),
+                    Entry::Vacant(cnt) => {
+                        _ = cnt.insert(Default::default());
+                    }
+                } */
+            }
+            // prev_char_alphabets = alphabets;
+        }
+        // todo: save last word
+        println!("{:?}", words);
+
+        words
     }
 
     #[inline]
