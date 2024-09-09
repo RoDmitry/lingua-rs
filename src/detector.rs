@@ -89,7 +89,7 @@ impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
 struct InternalWordData {
     // word: &'t str,
     // alphabets_count: Vec<(Alphabet, usize)>,
-    alphabets_count: AHashMap<Language, Vec<(Alphabet, usize)>>,
+    alphabets_count: AHashMap<Language, Vec<(usize, Alphabet)>>,
     text_positions: Vec<usize>,
     // can not include most frequent Alphabet
     // can not include same languages
@@ -1004,8 +1004,8 @@ impl LanguageDetector {
     }
 
     fn process_alphabets_count<'t>(
-        word_alphabets_count: AHashMap<Alphabet, (usize, Script)>,
-    ) -> AHashMap<Language, Vec<(Alphabet, usize)>> {
+        word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
+    ) -> AHashMap<Language, Vec<(usize, Alphabet)>> {
         /* let alphabets_count_iter = alphabets_count.iter();
         let mut word_langs: AHashSet<Language> = AHashSet::new();
         for (alphabet, cnt) in alphabets_count {
@@ -1015,12 +1015,12 @@ impl LanguageDetector {
         } */
 
         println!("word_alphabets_count {:?}", word_alphabets_count);
-        let mut script_alphabets: AHashMap<Script, AHashMap<Language, Vec<(Alphabet, usize)>>> =
+        let mut script_alphabets: AHashMap<Script, AHashMap<Language, Vec<(usize, Alphabet)>>> =
             AHashMap::new();
-        for (a, (c, s)) in word_alphabets_count {
+        for ((s, a), c) in word_alphabets_count {
             let sa_entry = script_alphabets.entry(s).or_default();
             for &l in <&[Language]>::from(a) {
-                sa_entry.entry(l).or_default().push((a, c));
+                sa_entry.entry(l).or_default().push((c, a));
             }
         }
         if script_alphabets.is_empty() {
@@ -1031,34 +1031,63 @@ impl LanguageDetector {
         let mut script_alphabets_iter = script_alphabets.into_values();
         let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
 
+        // sort langs if one script
         if script_alphabets_len == 1 {
             let lang_alphabets_count_max = langs_alphabets_count
                 .iter()
                 .map(|(_, asc)| asc)
                 .flatten()
-                .fold(1, |acc, (_, cnt)| acc.max(*cnt));
+                .fold(1, |acc, (cnt, _)| acc.max(*cnt));
+            let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
             println!("pre1 langs_alphabets_count {:?}", langs_alphabets_count);
             langs_alphabets_count.retain(|_, acs| {
-                acs.retain(|(_, cnt)| *cnt == lang_alphabets_count_max);
+                acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
                 !acs.is_empty()
             });
+
+            // langs_alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
             println!("alphabets_count_max {:?}", lang_alphabets_count_max);
 
-            println!("langs_alphabets_count1 {:?}", langs_alphabets_count);
+            println!("FILTERED langs_alphabets_count {:?}", langs_alphabets_count);
             return langs_alphabets_count;
         }
 
-        println!("pre2 langs_alphabets_count {:?}", langs_alphabets_count);
-        for langs_alphs_cnt in script_alphabets_iter {
+        println!("prefinal langs_alphabets_count {:?}", langs_alphabets_count);
+        for mut langs_alphs_cnt in script_alphabets_iter {
             // acc_init.retain(|k, v| if acc_init.contains(k));
-            for (lang, mut alphabets_count) in langs_alphs_cnt {
-                langs_alphabets_count.entry(lang).and_modify(|asc| {
-                    // todo: debug_assert panic if alphabets intersect in `asc` with `alphabets_count`
-                    asc.append(&mut alphabets_count);
-                });
-            }
+            // for (lang, alphabets_count) in langs_alphs_cnt {
+            langs_alphabets_count.retain(|l, alphabets_count| {
+                let Some(asc) = langs_alphs_cnt.remove(l) else {
+                    return false;
+                };
+
+                for (cnt, alphabet) in asc {
+                    if alphabets_count
+                        .iter_mut()
+                        .find(|(_, a)| *a == alphabet)
+                        .map(|(c, _)| *c = c.wrapping_add(cnt))
+                        .is_none()
+                    {
+                        alphabets_count.push((cnt, alphabet));
+                    }
+                    /* asc.entry(a)
+                    .and_modify(|c| *c = c.wrapping_add(cnt))
+                    .or_insert(cnt); */
+                }
+
+                true
+            });
+            /* langs_alphabets_count.entry(lang).and_modify(|asc| {
+                // todo: debug_assert panic if alphabets intersect in `asc` with `alphabets_count`
+                for (a, cnt) in alphabets_count {
+                    asc.entry(a)
+                        .and_modify(|c| *c = c.wrapping_add(cnt))
+                        .or_insert(cnt);
+                }
+            }); */
+            // }
         }
-        println!("langs_alphabets_count2 {:?}", langs_alphabets_count);
+        println!("FINAL langs_alphabets_count {:?}", langs_alphabets_count);
 
         langs_alphabets_count
 
@@ -1074,7 +1103,7 @@ impl LanguageDetector {
         let mut word_counter = 0;
 
         let mut word_start_index = 0;
-        let mut word_alphabets_count: AHashMap<Alphabet, (usize, Script)> = AHashMap::new();
+        let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
         let mut prev_char_len = 0;
@@ -1086,16 +1115,39 @@ impl LanguageDetector {
                 .or_else(|| Script::find(ch))
                 .unwrap_or(Script::Common);
             let alphabets = script_char_to_alphabets(script, ch);
-            let mut ch_skip = alphabets.is_empty();
 
-            if !ch_skip && script == Script::Common {
-                if let Some(next_ch) = text[(ch_idx + ch.len_utf8())..].chars().next() {
-                    next_char_script = Script::find(next_ch);
-                    if next_char_script.is_none() || next_char_script == Some(Script::Common) {
-                        ch_skip = true;
+            let ch_skip = if alphabets.is_empty() {
+                true
+            } else if script == Script::Common {
+                if prev_char_script == Script::Common {
+                    true
+                } else {
+                    if let Some(next_ch) = text[(ch_idx + ch.len_utf8())..].chars().next() {
+                        next_char_script = Script::find(next_ch);
+                        next_char_script.is_none() || next_char_script == Some(Script::Common)
+                    } else {
+                        true
                     }
                 }
-            }
+            } else {
+                false
+            };
+
+            /* if !ch_skip && script == Script::Common {
+                if prev_char_script == Script::Common {
+                    ch_skip = true;
+                } else {
+                    println!("else {} {} {}", ch_idx, ch.len_utf8(), text.len());
+                    if let Some(next_ch) = text[(ch_idx + ch.len_utf8())..].chars().next() {
+                        next_char_script = Script::find(next_ch);
+                        println!("next_char_script {:?}", next_char_script);
+                        if next_char_script.is_none() || next_char_script == Some(Script::Common) {
+                            ch_skip = true;
+                        }
+                    }
+                }
+            } */
+            println!("{} {} {}", ch_skip, ch_idx, ch);
 
             if ch_skip {
                 if word_start_index == ch_idx {
@@ -1103,15 +1155,15 @@ impl LanguageDetector {
                 }
             } else {
                 for alphabet in alphabets {
-                    let cnt_entry = word_alphabets_count.entry(*alphabet);
+                    let cnt_entry = word_alphabets_count.entry((script, *alphabet));
                     match cnt_entry {
                         Entry::Occupied(cnt_o) => {
-                            let (cnt, _) = cnt_o.into_mut();
+                            let cnt = cnt_o.into_mut();
                             // todo: fix, increases `worda` in `worda' wordb` to 6 on `'`
                             *cnt = cnt.wrapping_add(1);
                         }
                         Entry::Vacant(cnt) => {
-                            cnt.insert((1, script));
+                            cnt.insert(1);
                         }
                     }
                 }
@@ -1123,7 +1175,7 @@ impl LanguageDetector {
 
             // check if word needs saving
             if ch_skip && word_start_index < not_saved_word_end_index {
-                if prev_char_script == Script::Common && script == Script::Common {
+                /* if prev_char_script == Script::Common && script == Script::Common {
                     // removes `'` for cases like `words' word` (we are at the space char)
                     // not a case --for cases like `words' word` (we are at the last `w` char)--
                     not_saved_word_end_index =
@@ -1135,7 +1187,7 @@ impl LanguageDetector {
                         prev_char_len = ch.len_utf8();
                         continue;
                     }
-                }
+                } */
 
                 // save word
                 let word = &text[word_start_index..not_saved_word_end_index];
@@ -1178,12 +1230,10 @@ impl LanguageDetector {
                 // reset temp variables
                 word_start_index = ch_idx + ch.len_utf8();
                 prev_char_script = script;
-                prev_char_len = ch.len_utf8();
                 continue;
             }
             not_saved_word_end_index = ch_idx + ch.len_utf8();
             prev_char_script = script;
-            prev_char_len = ch.len_utf8();
         }
         println!("{} {:?}", text, words);
 
@@ -3025,7 +3075,7 @@ mod tests {
         case("'worda', 'wordb'", ahashset!("worda", "wordb")),
         case::chinese("中文", ahashset!("中文")),
         case("worda 🙈", ahashset!("worda")),
-        case::kanji("昨日、東京で大切な友達に会また。", ahashset!("昨日", "東京で大切な友達に会いました")),
+        case::kanji("昨日、東京で大切な友達に会いました。", ahashset!("昨日", "東京で大切な友達に会いました")),
     )]
     fn test_text_to_words(
         detector_for_all_languages: LanguageDetector,
