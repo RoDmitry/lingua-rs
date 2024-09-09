@@ -90,7 +90,7 @@ struct InternalWordData {
     // word: &'t str,
     // alphabets_count: Vec<(Alphabet, usize)>,
     alphabets_count: AHashMap<Language, Vec<(usize, Alphabet)>>,
-    text_positions: Vec<usize>,
+    text_indexes: Vec<(usize, usize)>,
     // can not include most frequent Alphabet
     // can not include same languages
     // usually it's empty, but if we get a different Alphabet,
@@ -674,7 +674,7 @@ impl LanguageDetector {
             return Vec::new();
         }
         println!("text_str {:?}", text_str);
-        let found_words = self.text_to_words(text_str);
+        let found_words = self.filter_text_to_words(text_str);
 
         /* let alphabets: AHashSet<_> = found_words
             .iter()
@@ -1072,16 +1072,15 @@ impl LanguageDetector {
     }
 
     #[inline]
-    fn text_to_words<'t>(&self, text: &'t str) -> AHashMap<&'t str, InternalWordData> {
+    fn filter_text_to_words<'t>(&self, text: &'t str) -> AHashMap<&'t str, InternalWordData> {
         let mut words: AHashMap<&str, InternalWordData> = AHashMap::new();
-        let mut word_counter = 0;
 
         let mut word_start_index = 0;
         let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
         let mut next_char_script: Option<Script> = None;
-        for (ch_idx, ch) in text.char_indices().peekable().chain([(text.len(), '\0')]) {
+        for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
             let script = next_char_script
                 .take()
                 .or_else(|| Script::find(ch))
@@ -1133,18 +1132,18 @@ impl LanguageDetector {
                 // save word
                 let word = &text[word_start_index..not_saved_word_end_index];
                 if let Some(w) = words.get_mut(word) {
-                    (*w).text_positions.push(word_counter);
+                    w.text_indexes
+                        .push((word_start_index, not_saved_word_end_index));
                 } else {
                     let alphabets_count = Self::process_alphabets_count(word_alphabets_count);
                     let word_data = InternalWordData {
                         alphabets_count,
-                        text_positions: vec![word_counter],
+                        text_indexes: vec![(word_start_index, not_saved_word_end_index)],
                     };
                     words.insert(word, word_data);
                     word_alphabets_count = Default::default();
                 }
 
-                word_counter += 1;
                 // reset temp variables
                 word_start_index = ch_idx + ch.len_utf8();
                 prev_char_script = script;
@@ -2995,14 +2994,14 @@ mod tests {
         case("worda 🙈", ahashset!("worda")),
         case::kanji("昨日、東京で大切な友達に会いました。", ahashset!("昨日", "東京で大切な友達に会いました")),
     )]
-    fn test_text_to_words(
+    fn test_filter_text_to_words(
         detector_for_all_languages: LanguageDetector,
         text: &str,
         expected_words: AHashSet<&str>,
     ) {
         // let words = &[word.to_owned()];
 
-        let res = detector_for_all_languages.text_to_words(text);
+        let res = detector_for_all_languages.filter_text_to_words(text);
         let res: AHashSet<_> = res
             .into_iter()
             .map(|(w, _)| w)
