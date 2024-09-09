@@ -1014,6 +1014,7 @@ impl LanguageDetector {
             if word_langs.is_empty() {}
         } */
 
+        println!("word_alphabets_count {:?}", word_alphabets_count);
         let mut script_alphabets: AHashMap<Script, AHashMap<Language, Vec<(Alphabet, usize)>>> =
             AHashMap::new();
         for (a, (c, s)) in word_alphabets_count {
@@ -1036,17 +1037,18 @@ impl LanguageDetector {
                 .map(|(_, asc)| asc)
                 .flatten()
                 .fold(1, |acc, (_, cnt)| acc.max(*cnt));
-            println!("pre langs_alphabets_count {:?}", langs_alphabets_count);
+            println!("pre1 langs_alphabets_count {:?}", langs_alphabets_count);
             langs_alphabets_count.retain(|_, acs| {
                 acs.retain(|(_, cnt)| *cnt == lang_alphabets_count_max);
                 !acs.is_empty()
             });
             println!("alphabets_count_max {:?}", lang_alphabets_count_max);
 
-            println!("langs_alphabets_count {:?}", langs_alphabets_count);
+            println!("langs_alphabets_count1 {:?}", langs_alphabets_count);
             return langs_alphabets_count;
         }
 
+        println!("pre2 langs_alphabets_count {:?}", langs_alphabets_count);
         for langs_alphs_cnt in script_alphabets_iter {
             // acc_init.retain(|k, v| if acc_init.contains(k));
             for (lang, mut alphabets_count) in langs_alphs_cnt {
@@ -1056,7 +1058,7 @@ impl LanguageDetector {
                 });
             }
         }
-        println!("langs_alphabets_count {:?}", langs_alphabets_count);
+        println!("langs_alphabets_count2 {:?}", langs_alphabets_count);
 
         langs_alphabets_count
 
@@ -1076,37 +1078,47 @@ impl LanguageDetector {
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
         let mut prev_char_len = 0;
+        let mut next_char_script: Option<Script> = None;
         println!("text {:?}", text);
-        for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
-            let script = Script::find(ch).unwrap_or(Script::Common);
+        for (ch_idx, ch) in text.char_indices().peekable().chain([(text.len(), '\0')]) {
+            let script = next_char_script
+                .take()
+                .or_else(|| Script::find(ch))
+                .unwrap_or(Script::Common);
             let alphabets = script_char_to_alphabets(script, ch);
             let mut ch_skip = alphabets.is_empty();
 
-            for alphabet in alphabets {
-                let cnt_entry = word_alphabets_count.entry(*alphabet);
-                match cnt_entry {
-                    Entry::Occupied(cnt_o) => {
-                        let (cnt, _) = cnt_o.into_mut();
-                        // todo: fix, increases `worda` in `worda' wordb` to 6 on `'`
-                        *cnt = cnt.wrapping_add(1);
-                    }
-                    Entry::Vacant(cnt) => {
-                        if script == Script::Common {
-                            ch_skip = true;
-                            continue;
-                        }
-                        cnt.insert((1, script));
+            if !ch_skip && script == Script::Common {
+                if let Some(next_ch) = text[(ch_idx + ch.len_utf8())..].chars().next() {
+                    next_char_script = Script::find(next_ch);
+                    if next_char_script.is_none() || next_char_script == Some(Script::Common) {
+                        ch_skip = true;
                     }
                 }
-                ch_skip = false;
             }
 
             if ch_skip {
                 if word_start_index == ch_idx {
                     word_start_index = ch_idx + ch.len_utf8();
                 }
-            } else if not_saved_word_end_index == ch_idx {
-                not_saved_word_end_index = ch_idx + ch.len_utf8();
+            } else {
+                for alphabet in alphabets {
+                    let cnt_entry = word_alphabets_count.entry(*alphabet);
+                    match cnt_entry {
+                        Entry::Occupied(cnt_o) => {
+                            let (cnt, _) = cnt_o.into_mut();
+                            // todo: fix, increases `worda` in `worda' wordb` to 6 on `'`
+                            *cnt = cnt.wrapping_add(1);
+                        }
+                        Entry::Vacant(cnt) => {
+                            cnt.insert((1, script));
+                        }
+                    }
+                }
+
+                if not_saved_word_end_index == ch_idx {
+                    not_saved_word_end_index = ch_idx + ch.len_utf8();
+                }
             }
 
             // check if word needs saving
