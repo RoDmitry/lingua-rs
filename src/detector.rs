@@ -88,7 +88,8 @@ impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
 #[derive(Debug)]
 struct InternalWordData {
     // word: &'t str,
-    alphabets_count: Vec<(Alphabet, usize)>,
+    // alphabets_count: Vec<(Alphabet, usize)>,
+    alphabets_count: AHashMap<Language, Vec<(Alphabet, usize)>>,
     text_positions: Vec<usize>,
     // can not include most frequent Alphabet
     // can not include same languages
@@ -668,7 +669,6 @@ impl LanguageDetector {
         }
 
         // let filtered_languages = Self::process_words(&words, search_languages);
-        // let filtered_languages = filtered_languages.into_iter().collect();
 
         if text_str.is_empty() {
             return Vec::new();
@@ -676,26 +676,28 @@ impl LanguageDetector {
         println!("text_str {:?}", text_str);
         let found_words = self.text_to_words(text_str);
 
-        let alphabets: AHashSet<_> = found_words
+        /* let alphabets: AHashSet<_> = found_words
             .iter()
             .map(|(_, w)| &w.alphabets_count)
             .flatten()
             .copied()
             .collect();
-        println!("alphabets {:?}", alphabets);
+        println!("alphabets {:?}", alphabets); */
 
-        let languages: HashSet<_, S> = alphabets
-            .iter()
-            .map(|(a, _)| <&[Language]>::from(*a))
+        let mut languages: HashMap<_, Vec<_>, S> = found_words
+            .into_iter()
+            .map(|(_, w)| w.alphabets_count)
             .flatten()
-            .copied()
+            // .map(|(a, _)| <&[Language]>::from(*a))
+            // .flatten()
             .collect();
         println!("languages {:?}", languages);
         println!("search_languages {:?}", search_languages);
 
-        let filtered_languages: AHashSet<_> =
-            languages.intersection(search_languages).copied().collect();
-        println!("filtered_languages {:?}", filtered_languages);
+        /* let filtered_languages: AHashSet<_> =
+        languages.intersection(search_languages).copied().collect(); */
+        languages.retain(|l, _| search_languages.contains(l));
+        println!("filtered_languages {:?}", languages);
 
         // let language_detected_by_rules =
         // Self::find_most_frequent_opt(&mut total_language_counts);
@@ -715,12 +717,15 @@ impl LanguageDetector {
             filtered_languages,
         ); */
 
-        if alphabets.len() == 1 && filtered_languages.len() == 1 {
-            let filtered_language = filtered_languages.into_iter().next().unwrap();
-            update_confidence_values(&mut values, filtered_language, 1.0);
+        if languages.len() == 1 {
+            let (&lang, _alphabets) = languages.iter().next().unwrap();
+            // todo: return alphabets also
+            update_confidence_values(&mut values, lang, 1.0);
             values.sort_by(confidence_values_comparator);
             return values;
         }
+
+        let filtered_languages = languages.into_iter().map(|(l, _)| l).collect();
 
         let character_count: usize = words.iter().map(|word| word.chars().count()).sum();
 
@@ -998,20 +1003,68 @@ impl LanguageDetector {
         data_counts
     }
 
-    /* fn save_new_word<'t>(
-        words: &mut AHashMap<&'t str, InternalWordData>,
-        word: &'t str,
-        alphabets_count: AHashMap<Alphabet, usize>,
-        len: usize,
-    ) {
-        let alphabets_count_iter = alphabets_count.iter();
+    fn process_alphabets_count<'t>(
+        word_alphabets_count: AHashMap<Alphabet, (usize, Script)>,
+    ) -> AHashMap<Language, Vec<(Alphabet, usize)>> {
+        /* let alphabets_count_iter = alphabets_count.iter();
         let mut word_langs: AHashSet<Language> = AHashSet::new();
         for (alphabet, cnt) in alphabets_count {
             let langs: &[Language] = alphabet.into();
             word_langs.retain(|l| langs.contains(l));
             if word_langs.is_empty() {}
+        } */
+
+        let mut script_alphabets: AHashMap<Script, AHashMap<Language, Vec<(Alphabet, usize)>>> =
+            AHashMap::new();
+        for (a, (c, s)) in word_alphabets_count {
+            let sa_entry = script_alphabets.entry(s).or_default();
+            for &l in <&[Language]>::from(a) {
+                sa_entry.entry(l).or_default().push((a, c));
+            }
         }
-    } */
+        if script_alphabets.is_empty() {
+            return Default::default();
+        }
+        let script_alphabets_len = script_alphabets.len();
+
+        let mut script_alphabets_iter = script_alphabets.into_values();
+        let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
+
+        if script_alphabets_len == 1 {
+            let lang_alphabets_count_max = langs_alphabets_count
+                .iter()
+                .map(|(_, asc)| asc)
+                .flatten()
+                .fold(1, |acc, (_, cnt)| acc.max(*cnt));
+            println!("pre langs_alphabets_count {:?}", langs_alphabets_count);
+            langs_alphabets_count.retain(|_, acs| {
+                acs.retain(|(_, cnt)| *cnt == lang_alphabets_count_max);
+                !acs.is_empty()
+            });
+            println!("alphabets_count_max {:?}", lang_alphabets_count_max);
+
+            println!("langs_alphabets_count {:?}", langs_alphabets_count);
+            return langs_alphabets_count;
+        }
+
+        for langs_alphs_cnt in script_alphabets_iter {
+            // acc_init.retain(|k, v| if acc_init.contains(k));
+            for (lang, mut alphabets_count) in langs_alphs_cnt {
+                langs_alphabets_count.entry(lang).and_modify(|asc| {
+                    // todo: debug_assert panic if alphabets intersect in `asc` with `alphabets_count`
+                    asc.append(&mut alphabets_count);
+                });
+            }
+        }
+        println!("langs_alphabets_count {:?}", langs_alphabets_count);
+
+        langs_alphabets_count
+
+        /* let langs: AHashMap<Language, Vec<(Alphabet, usize)>> = AHashMap::new();
+        for (s, alphs) in script_alphabets {
+            for (a, c) in alphs {}
+        } */
+    }
 
     #[inline]
     fn text_to_words<'t>(&self, text: &'t str) -> AHashMap<&'t str, InternalWordData> {
@@ -1019,10 +1072,11 @@ impl LanguageDetector {
         let mut word_counter = 0;
 
         let mut word_start_index = 0;
-        let mut word_alphabets_count: AHashMap<Alphabet, usize> = AHashMap::new();
+        let mut word_alphabets_count: AHashMap<Alphabet, (usize, Script)> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
         let mut prev_char_len = 0;
+        println!("text {:?}", text);
         for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
             let script = Script::find(ch).unwrap_or(Script::Common);
             let alphabets = script_char_to_alphabets(script, ch);
@@ -1032,7 +1086,8 @@ impl LanguageDetector {
                 let cnt_entry = word_alphabets_count.entry(*alphabet);
                 match cnt_entry {
                     Entry::Occupied(cnt_o) => {
-                        let cnt = cnt_o.into_mut();
+                        let (cnt, _) = cnt_o.into_mut();
+                        // todo: fix, increases `worda` in `worda' wordb` to 6 on `'`
                         *cnt = cnt.wrapping_add(1);
                     }
                     Entry::Vacant(cnt) => {
@@ -1040,7 +1095,7 @@ impl LanguageDetector {
                             ch_skip = true;
                             continue;
                         }
-                        cnt.insert(1);
+                        cnt.insert((1, script));
                     }
                 }
                 ch_skip = false;
@@ -1075,26 +1130,30 @@ impl LanguageDetector {
                 if let Some(w) = words.get_mut(word) {
                     (*w).text_positions.push(word_counter);
                 } else {
-                    let alphabets_count_max = word_alphabets_count
-                        .iter()
-                        .fold(1, |acc, (_, cnt)| acc.max(*cnt));
+                    // word_alphabets_count.into_iter().map(|(a, (c, s))| (s, (a, c))).collect();
+                    /* let alphabets_count_max = word_alphabets_count
+                    .iter()
+                    .fold(1, |acc, (_, (cnt, _))| acc.max(*cnt)); */
 
-                    let alphabets_count: Vec<(Alphabet, usize)> =
-                        if self.is_low_accuracy_mode_enabled {
-                            word_alphabets_count
-                                .into_iter()
-                                .filter(|(_, cnt): &(_, _)| *cnt == alphabets_count_max)
-                                .collect()
-                        } else {
-                            let close_to_max = alphabets_count_max - 1;
-                            let mut alphabets_count: Vec<_> = word_alphabets_count
-                                .into_iter()
-                                .filter(|(_, cnt): &(_, _)| *cnt > close_to_max)
-                                .collect();
-                            alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
-                            alphabets_count
-                        };
+                    println!("word {:?}", word);
+                    // println!("{:?}", word_alphabets_count);
+                    /* let alphabets_count: Vec<(Alphabet, usize)> =
+                    // if self.is_low_accuracy_mode_enabled {
+                        word_alphabets_count
+                            .into_iter()
+                            .filter(|(_, (cnt, _)): &(_, _)| *cnt == alphabets_count_max)
+                            .collect(); */
+                    /* } else {
+                        let close_to_max = alphabets_count_max.saturating_sub(2);
+                        let mut alphabets_count: Vec<_> = word_alphabets_count
+                            .into_iter()
+                            .filter(|(_, cnt): &(_, _)| *cnt > close_to_max)
+                            .collect();
+                        alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
+                        alphabets_count
+                    }; */
 
+                    let alphabets_count = Self::process_alphabets_count(word_alphabets_count);
                     let word_data = InternalWordData {
                         alphabets_count,
                         text_positions: vec![word_counter],
@@ -1114,7 +1173,7 @@ impl LanguageDetector {
             prev_char_script = script;
             prev_char_len = ch.len_utf8();
         }
-        // println!("{} {:?}", text, words);
+        println!("{} {:?}", text, words);
 
         words
     }
@@ -2954,7 +3013,7 @@ mod tests {
         case("'worda', 'wordb'", ahashset!("worda", "wordb")),
         case::chinese("中文", ahashset!("中文")),
         case("worda 🙈", ahashset!("worda")),
-        case::kanji("昨日、東京で大切な友達に会いました。", ahashset!("昨日", "東京で大切な友達に会いました")),
+        case::kanji("昨日、東京で大切な友達に会また。", ahashset!("昨日", "東京で大切な友達に会いました")),
     )]
     fn test_text_to_words(
         detector_for_all_languages: LanguageDetector,
@@ -2973,6 +3032,7 @@ mod tests {
             // .flatten()
             .collect();
 
+        panic!();
         /* let words_count_half = 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
             words,
