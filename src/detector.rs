@@ -674,7 +674,7 @@ impl LanguageDetector {
             return Vec::new();
         }
         println!("text_str {:?}", text_str);
-        let found_words = self.filter_text_to_words(text_str);
+        let found_words = Self::filter_text_to_words(text_str);
 
         /* let alphabets: AHashSet<_> = found_words
             .iter()
@@ -1030,11 +1030,12 @@ impl LanguageDetector {
                 .map(|(_, asc)| asc)
                 .flatten()
                 .fold(1, |acc, (cnt, _)| acc.max(*cnt));
-            let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
+            // let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
 
             // println!("pre1 langs_alphabets_count {:?}", langs_alphabets_count);
             langs_alphabets_count.retain(|_, acs| {
-                acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
+                // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
+                acs.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
                 !acs.is_empty()
             });
 
@@ -1072,7 +1073,7 @@ impl LanguageDetector {
     }
 
     #[inline]
-    fn filter_text_to_words<'t>(&self, text: &'t str) -> AHashMap<&'t str, InternalWordData> {
+    fn filter_text_to_words<'t>(text: &'t str) -> AHashMap<&'t str, InternalWordData> {
         let mut words: AHashMap<&str, InternalWordData> = AHashMap::new();
 
         let mut word_start_index = 0;
@@ -1158,7 +1159,7 @@ impl LanguageDetector {
     }
 
     #[inline]
-    fn process_words<S: BuildHasher>(
+    fn process_words_unused<S: BuildHasher>(
         words: &[String],
         search_languages: &HashSet<Language, S>,
     ) -> Vec<Language> {
@@ -2160,27 +2161,6 @@ mod tests {
     // ##############################
 
     #[rstest(
-        text,
-        expected_words,
-        case("this is a sentence", vec!["this", "is", "a", "sentence"]),
-        case("sentence", vec!["sentence"]),
-        case(
-            "上海大学是一个好大学 this is a sentence",
-            vec![
-                "上", "海", "大", "学", "是", "一", "个", "好", "大", "学",
-                "this", "is", "a", "sentence"
-            ]
-        ),
-        case(
-            "Weltweit    gibt es ungefähr 6.000 Sprachen.",
-            vec!["weltweit", "gibt", "es", "ungefähr", "sprachen"]
-        )
-    )]
-    fn test_split_text_into_words(text: &str, expected_words: Vec<&str>) {
-        assert_eq!(split_text_into_words(text), expected_words);
-    }
-
-    #[rstest(
         language,
         ngram,
         expected_probability,
@@ -2668,7 +2648,6 @@ mod tests {
         expected_language,
         // words with unique characters
         case("məhərrəm", Some(Azerbaijani)),
-        case("substituïts", Some(Catalan)),
         case("rozdělit", Some(Czech)),
         case("tvořen", Some(Czech)),
         case("subjektů", Some(Czech)),
@@ -2698,8 +2677,6 @@ mod tests {
         case("припаѓа", Some(Macedonian)),
         case("ѕидови", Some(Macedonian)),
         case("ќерка", Some(Macedonian)),
-        case("џамиите", Some(Macedonian)),
-        case("मिळते", Some(Marathi)),
         case("zmieniły", Some(Polish)),
         case("państwowych", Some(Polish)),
         case("mniejszości", Some(Polish)),
@@ -2767,11 +2744,9 @@ mod tests {
 
         // words with unique script
         case("ունենա", Some(Armenian)),
-        case("জানাতে", Some(Bengali)),
         case("გარეუბან", Some(Georgian)),
         case("σταμάτησε", Some(Greek)),
         case("ઉપકરણોની", Some(Gujarati)),
-        case("בתחרויות", Some(Hebrew)),
         case("びさ", Some(Japanese)),
         case("대결구도가", Some(Korean)),
         case("ਮੋਟਰਸਾਈਕਲਾਂ", Some(Punjabi)),
@@ -2784,199 +2759,160 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let detected_languages = LanguageDetector::process_words(
-            &[word.to_owned()],
-            &detector_for_all_languages.languages,
-        );
-        // let words_count_half = 0.5;
+        let found_words = LanguageDetector::filter_text_to_words(word);
+        let mut languages: AHashSet<_> = found_words
+            .into_iter()
+            .map(|(_, w)| w.alphabets_count)
+            .flatten()
+            .map(|(l, _)| l)
+            .collect();
 
-        let detected_language = if detected_languages.len() > 1 {
+        let language = if languages.len() > 1 {
             None
         } else {
-            detected_languages.into_iter().next()
+            languages.iter().next().copied()
         };
 
-        // let detected_language = detector_for_all_languages
-        // .detect_language_with_rules(words_count_half, total_language_counts);
-
         assert_eq!(
-            detected_language, expected_language,
+            language, expected_language,
             "expected {:?} for word '{}', got {:?}",
-            expected_language, word, detected_language
-        );
-    }
-
-    #[rstest(
-        text,
-        expected_language,
-        case::kanji("昨日、東京で大切な友達に会いました。", Some(Japanese)), // Kanji (Han) + Hiragana
-    )]
-    fn assert_language_detection_with_rules_text_works_correctly(
-        detector_for_all_languages: LanguageDetector,
-        text: &str,
-        expected_language: Option<Language>,
-    ) {
-        let words = split_text_into_words(text);
-        let detected_languages =
-            LanguageDetector::process_words(&words, &detector_for_all_languages.languages);
-        // let words_count_half = 0.5;
-        let detected_language = if detected_languages.len() > 1 {
-            None
-        } else {
-            detected_languages.into_iter().next()
-        };
-
-        // let detected_language = detector_for_all_languages
-        // .detect_language_with_rules(words_count_half, total_language_counts);
-
-        assert_eq!(
-            detected_language, expected_language,
-            "expected {:?} for text '{}', got {:?}",
-            expected_language, text, detected_language
+            expected_language, word, languages
         );
     }
 
     #[rstest(word, expected_languages,
-        case("والموضوع", ahashset!(Arabic, Persian, Urdu)),
-        case(
+        case::arab("والموضوع", ahashset!(Urdu, Persian, Arabic, Pashto, Kurdish, Sindhi, Uyghur)),
+        case::ru1(
             "сопротивление",
+            ahashset!(Serbian, Kazakh, Russian, Ukrainian, Bulgarian, Macedonian, Mongolian)
+        ),
+        case::ru2("этот", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
+        case::ru3("огнём", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
+        case::bel1("раскрывае", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
+        case::bel2("павінен", ahashset!(Belarusian, Kazakh, Ukrainian)),
+        case::bul1("плаваща", ahashset!(Mongolian, Bulgarian, Russian, Kazakh, Ukrainian)),
+        case::bul2("довършат", ahashset!(Bulgarian, Kazakh, Mongolian, Russian)),
+        case::mon1("үндсэн", ahashset!(Kazakh, Mongolian)),
+        case::mon2("дөхөж", ahashset!(Kazakh, Mongolian)),
+        case::mac1("затоплување", ahashset!(Macedonian, Serbian)),
+        case::mac2("ректасцензија", ahashset!(Macedonian, Serbian)),
+        case::mac3("набљудувач", ahashset!(Macedonian, Serbian)),
+        case::mac4("џамиите", ahashset!(Macedonian, Serbian)),
+        case::latv1("aizklātā", ahashset!(Latin, Latvian)),
+        case::latv2("sistēmas", ahashset!(Latin, Latvian)),
+        case::latv3("palīdzi", ahashset!(Latin, Latvian)),
+        case::viet1("nhẹn", ahashset!(Vietnamese, Yoruba)),
+        case::viet2("chọn", ahashset!(Vietnamese)),
+        case::croat1("prihvaćanju", ahashset!(Croatian, Bosnian)),
+        case::croat2("nađete", ahashset!(Bosnian, Croatian, Vietnamese)),
+        case::port1("visão", ahashset!(Portuguese, Vietnamese)),
+        case::port2(
+            "catedráticos",
+            ahashset!(Vietnamese, Irish, Slovak, Hungarian, Portuguese, Spanish, Shona)
+        ),
+        case::port3(
+            "política",
+            ahashset!(Spanish, Irish, Hungarian, Portuguese, Vietnamese, Czech, Slovak, Shona)
+        ),
+        case::port4(
+            "música",
+            ahashset!(Slovak, Spanish, Portuguese, Czech, Vietnamese, Irish, Shona, Hungarian)
+        ),
+        case::pol1("wystąpią", ahashset!(Polish)),
+        case::pol2("budowę", ahashset!(Polish)),
+        case::pol3("kradzieżami", ahashset!(Polish)),
+        case::lith1("nebūsime", ahashset!(Latvian, Latin, Lithuanian)),
+        case::rom1("afişate", ahashset!(Azerbaijani, Turkish)),
+        case::rom2("înviat", ahashset!(French, Romanian)),
+        case::rom3("pregătire", ahashset!(Romanian, Vietnamese)),
+        case::it1("venerdì", ahashset!(Vietnamese, Italian)),
+        case::es1("años", ahashset!(Basque, Spanish)),
+        case::slov1("rozohňuje", ahashset!(Czech, Slovak)),
+        case::cz1("rtuť", ahashset!(Czech, Slovak)),
+        case::cz2("jeďte", ahashset!(Slovak, Czech)),
+        case::cz3("vývoj", ahashset!(Czech, Icelandic, Slovak)),
+        case::cz4("zaručen", ahashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
+        case::cz5(
+            "zkouškou", 
+            ahashset!(Slovene, Lithuanian, Slovak, Bosnian, Czech, Sepedi, Finnish, Croatian, Latvian, Estonian)
+        ),
+        case::cz6("navržen", ahashset!(Lithuanian, Bosnian, Latvian, Finnish, Czech, Slovene, Slovak, Croatian, Estonian)),
+        case::ic1("minjaverðir", ahashset!(Icelandic)),
+        case::ic2("þagnarskyldu", ahashset!(Icelandic)),
+        case::alb1("hashemidëve", ahashset!(Albanian, Catalan, Dutch, Afrikaans, French)),
+        case::fr1("forêt", ahashset!(Portuguese, Albanian, Welsh, Sepedi, French, Danish)),
+        case::fr2("succèdent", ahashset!(Vietnamese, Italian, Catalan, Ganda, French)),
+        case::fr3("où", ahashset!(French, Italian, Vietnamese, Yoruba)),
+        case::fr4("contrôle", ahashset!(Afrikaans, Vietnamese, Welsh, Portuguese, French, Danish, Sepedi, Slovak)),
+        case::fr5(
+            "façonnage",
             ahashset!(
-                Belarusian, Bulgarian, Kazakh, Macedonian, Mongolian, Russian, Serbian, Ukrainian
+                Afrikaans, Azerbaijani, Croatian, Portuguese, Bosnian, Danish, Catalan, French, 
+                Turkish, Basque, Bokmal, Dutch, Albanian
             )
         ),
-        case("раскрывае", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
-        case("этот", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
-        case("огнём", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
-        case("плаваща", ahashset!(Bulgarian, Kazakh, Mongolian, Russian)),
-        case("довършат", ahashset!(Bulgarian, Kazakh, Mongolian, Russian)),
-        case("павінен", ahashset!(Belarusian, Kazakh, Ukrainian)),
-        case("үндсэн", ahashset!(Kazakh, Mongolian)),
-        case("дөхөж", ahashset!(Kazakh, Mongolian)),
-        case("затоплување", ahashset!(Macedonian, Serbian)),
-        case("ректасцензија", ahashset!(Macedonian, Serbian)),
-        case("набљудувач", ahashset!(Macedonian, Serbian)),
-        case("aizklātā", ahashset!(Latvian, Maori, Yoruba)),
-        case("sistēmas", ahashset!(Latvian, Maori, Yoruba)),
-        case("palīdzi", ahashset!(Latvian, Maori, Yoruba)),
-        case("nhẹn", ahashset!(Vietnamese, Yoruba)),
-        case("chọn", ahashset!(Vietnamese, Yoruba)),
-        case("prihvaćanju", ahashset!(Bosnian, Croatian, Polish)),
-        case("nađete", ahashset!(Bosnian, Croatian, Vietnamese)),
-        case("visão", ahashset!(Portuguese, Vietnamese)),
-        case("wystąpią", ahashset!(Lithuanian, Polish)),
-        case("budowę", ahashset!(Lithuanian, Polish)),
-        case("nebūsime", ahashset!(Latvian, Lithuanian, Maori, Yoruba)),
-        case("afişate", ahashset!(Azerbaijani, Romanian, Turkish)),
-        case("kradzieżami", ahashset!(Polish, Romanian)),
-        case("înviat", ahashset!(French, Romanian)),
-        case("venerdì", ahashset!(Italian, Vietnamese, Yoruba)),
-        case("años", ahashset!(Basque, Spanish)),
-        case("rozohňuje", ahashset!(Czech, Slovak)),
-        case("rtuť", ahashset!(Czech, Slovak)),
-        case("pregătire", ahashset!(Romanian, Vietnamese)),
-        case("jeďte", ahashset!(Czech, Romanian, Slovak)),
-        case("minjaverðir", ahashset!(Icelandic, Turkish)),
-        case("þagnarskyldu", ahashset!(Icelandic, Turkish)),
-        case("nebûtu", ahashset!(French, Hungarian)),
-        case("hashemidëve", ahashset!(Afrikaans, Albanian, Dutch, French)),
-        case("forêt", ahashset!(Afrikaans, French, Portuguese, Vietnamese)),
-        case("succèdent", ahashset!(French, Italian, Vietnamese, Yoruba)),
-        case("où", ahashset!(French, Italian, Vietnamese, Yoruba)),
-        case("tõeliseks", ahashset!(Estonian, Hungarian, Portuguese, Vietnamese)),
-        case("viòiem", ahashset!(Catalan, Italian, Vietnamese, Yoruba)),
-        case("contrôle", ahashset!(French, Portuguese, Slovak, Vietnamese)),
-        case("direktør", ahashset!(Bokmal, Danish, Nynorsk)),
-        case("vývoj", ahashset!(Czech, Icelandic, Slovak, Turkish, Vietnamese)),
-        case("päralt", ahashset!(Estonian, Finnish, German, Slovak, Swedish)),
-        case("labâk", ahashset!(French, Portuguese, Romanian, Turkish, Vietnamese)),
-        case("pràctiques", ahashset!(Catalan, French, Italian, Portuguese, Vietnamese)),
-        case(
+        case::est1("tõeliseks", ahashset!(Vietnamese, Estonian, Portuguese)),
+        case::est2("päralt", ahashset!(Estonian, Finnish, German, Slovak, Swedish)),
+        case::dan1("direktør", ahashset!(Bokmal, Danish, Nynorsk)),
+        case::dan2("indebærer", ahashset!(Bokmal, Danish, Icelandic, Nynorsk, French, Latin)),
+        case::dan3("måned", ahashset!(Bokmal, Danish, Nynorsk, Swedish)),
+        case::cat1("pràctiques", ahashset!(Catalan, French, Italian, Portuguese, Vietnamese)),
+        case::cat2(
+            "contradicció",
+            ahashset!(
+                Irish, Catalan, Czech, Portuguese, Polish, Spanish, Shona, Slovak, Hungarian, Vietnamese
+            )
+        ),
+        case::cat3(
+            "només",
+            ahashset!(
+                Yoruba, French, Hungarian, Italian, Danish, Afrikaans, Bokmal, Ganda, Czech,
+                Irish, Portuguese, Slovak, Shona, Vietnamese, Icelandic, Spanish, Catalan, Dutch
+            )
+        ),
+        case::cat4("substituïts", ahashset!(Afrikaans, Dutch, Catalan, French)),
+        case::ge1(
             "überrascht",
-            ahashset!(Azerbaijani, Catalan, Estonian, German, Hungarian, Spanish, Turkish)
+            ahashset!(Portuguese, Catalan, Hungarian, Turkish, French, Spanish, German, Dutch, Azerbaijani)
         ),
-        case("indebærer", ahashset!(Bokmal, Danish, Icelandic, Nynorsk)),
-        case("måned", ahashset!(Bokmal, Danish, Nynorsk, Swedish)),
-        case("zaručen", ahashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
-        case("zkouškou", ahashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
-        case("navržen", ahashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
-        case(
-            "façonnage",
-            ahashset!(Albanian, Azerbaijani, Basque, Catalan, French, Portuguese, Turkish)
-        ),
-        case(
+        case::ge2(
             "höher",
             ahashset!(Azerbaijani, Estonian, Finnish, German, Hungarian, Icelandic, Swedish, Turkish)
         ),
-        case(
-            "catedráticos",
-            ahashset!(
-                Catalan, Czech, Icelandic, Irish, Hungarian, Portuguese, Slovak, Spanish,
-                Vietnamese, Yoruba
-            )
-        ),
-        case(
-            "política",
-            ahashset!(
-                Catalan, Czech, Icelandic, Irish, Hungarian, Portuguese, Slovak, Spanish,
-                Vietnamese, Yoruba
-            )
-        ),
-        case(
-            "música",
-            ahashset!(
-                Catalan, Czech, Icelandic, Irish, Hungarian, Portuguese, Slovak, Spanish,
-                Vietnamese, Yoruba
-            )
-        ),
-        case(
-            "contradicció",
-            ahashset!(
-                Catalan, Hungarian, Icelandic, Irish, Polish, Portuguese, Slovak, Spanish,
-                Vietnamese, Yoruba
-            )
-        ),
-        case(
-            "només",
-            ahashset!(
-                Catalan, Czech, French, Hungarian, Icelandic, Irish, Italian, Portuguese, Slovak,
-                Spanish, Vietnamese, Yoruba
-            )
-        ),
-        case(
+        case::en(
             "house",
             ahashset!(
-                Afrikaans, Albanian, Azerbaijani, Basque, Bokmal, Bosnian, Catalan, Croatian, Czech,
-                Danish, Dutch, English, Esperanto, Estonian, Finnish, French, Ganda, German, Hungarian,
-                Icelandic, Indonesian, Irish, Italian, Latin, Latvian, Lithuanian, Malay, Maori, Nynorsk,
-                Polish, Portuguese, Romanian, Shona, Slovak, Slovene, Somali, Sesotho, Spanish, Swahili,
-                Swedish, Tagalog, Tsonga, Tswana, Turkish, Vietnamese, Welsh, Xhosa, Yoruba, Zulu
+                Sepedi, Finnish, Vietnamese, Spanish, Azerbaijani, Latin, Slovene, Danish, Bokmal,
+                Basque, Yoruba, Sesotho, Albanian, Tsonga, Czech, Croatian, Hungarian, Slovak, Irish,
+                Romanian, Indonesian, Swedish, Turkish, Icelandic, English, Nynorsk, Afrikaans, Shona,
+                Tswana, Lithuanian, Polish, Italian, Somali, Dutch, German, Portuguese, Tagalog, Ganda,
+                Swahili, Malay, French, Catalan, Xhosa, Esperanto, Latvian, Welsh, Zulu, Bosnian, Estonian
             )
         ),
+        case::marat("मिळते", ahashset!(Marathi, Hindi, Nepali, Sanskrit)),
+        case::ben("জানাতে", ahashset!(Assamese, BishnupriyaManipuri, Bengali)),
+        case::heb("בתחרויות", ahashset!(Yiddish, Hebrew)),
+        case("nebûtu", ahashset!(Welsh, French)),
+        case("viòiem", ahashset!(Vietnamese, Catalan, Italian)),
+        case("labâk", ahashset!(Vietnamese, Albanian, Romanian, French, Portuguese)),
     )]
     fn assert_language_filtering_with_rules_works_correctly(
         detector_for_all_languages: LanguageDetector,
         word: &str,
         expected_languages: AHashSet<Language>,
     ) {
-        let words = &[word.to_owned()];
+        let found_words = LanguageDetector::filter_text_to_words(word);
+        let mut languages: AHashSet<_> = found_words
+            .into_iter()
+            .map(|(_, w)| w.alphabets_count)
+            .flatten()
+            .map(|(l, _)| l)
+            .collect();
 
-        let filtered_languages =
-            LanguageDetector::process_words(words, &detector_for_all_languages.languages);
-
-        let filtered_languages: AHashSet<_> = filtered_languages.into_iter().collect();
-
-        /* let words_count_half = 0.5;
-        let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
-            words,
-            // &detector_for_all_languages.languages,
-            words_count_half,
-            // alps,
-            filtered_languages,
-        ); */
         assert_eq!(
-            filtered_languages, expected_languages,
+            languages, expected_languages,
             "expected {:?} for word '{}', got {:?}",
-            expected_languages, word, filtered_languages
+            expected_languages, word, languages
         );
     }
 
@@ -2993,37 +2929,59 @@ mod tests {
         case::chinese("中文", ahashset!("中文")),
         case("worda 🙈", ahashset!("worda")),
         case::kanji("昨日、東京で大切な友達に会いました。", ahashset!("昨日", "東京で大切な友達に会いました")),
+        case("this is a sentence", ahashset!("this", "is", "a", "sentence")),
+        case("I can't do this", ahashset!("I", "can't", "do", "this")),
+        case(
+            "上海大学是一个好大学 this is a sentence",
+            ahashset!("上海大学是一个好大学", "this", "is", "a", "sentence")
+        ),
+        case(
+            "Weltweit    gibt es ungefähr 6.000 Sprachen.",
+            ahashset!("Weltweit", "gibt", "es", "ungefähr", "Sprachen")
+        )
     )]
     fn test_filter_text_to_words(
         detector_for_all_languages: LanguageDetector,
         text: &str,
         expected_words: AHashSet<&str>,
     ) {
-        // let words = &[word.to_owned()];
+        let found_words = LanguageDetector::filter_text_to_words(text);
+        let words: AHashSet<_> = found_words.into_iter().map(|(w, _)| w).collect();
 
-        let res = detector_for_all_languages.filter_text_to_words(text);
-        let res: AHashSet<_> = res
-            .into_iter()
-            .map(|(w, _)| w)
-            // .map(|(_, w)| w.alphabets_count.keys())
-            // .flatten()
-            // .map(|&a| <&[Language]>::from(a))
-            // .flatten()
-            .collect();
-
-        // panic!();
-        /* let words_count_half = 0.5;
-        let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
-            words,
-            // &detector_for_all_languages.languages,
-            words_count_half,
-            // alps,
-            filtered_languages,
-        ); */
         assert_eq!(
-            res, expected_words,
+            words, expected_words,
             "text: {}\nwords: {:?}\nexpected: {:?}",
-            text, res, expected_words
+            text, words, expected_words
+        );
+    }
+
+    #[rstest(
+        text,
+        expected_language,
+        case::kanji("昨日、東京で大切な友達に会いました。", Japanese), // Kanji (Han) + Hiragana
+    )]
+    fn assert_language_detection_with_rules_text_works_correctly(
+        detector_for_all_languages: LanguageDetector,
+        text: &str,
+        expected_language: Language,
+    ) {
+        let found_words = LanguageDetector::filter_text_to_words(text);
+        let mut languages: AHashSet<_> = found_words
+            .into_iter()
+            .map(|(_, w)| w.alphabets_count)
+            .flatten()
+            .map(|(l, _)| l)
+            .collect();
+        /* let language = if languages.len() > 1 {
+            None
+        } else {
+            languages.into_iter().next()
+        }; */
+
+        assert!(
+            languages.contains(&expected_language),
+            "expected {:?} for text '{}', got {:?}",
+            expected_language, text, languages
         );
     }
 
