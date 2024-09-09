@@ -1006,15 +1006,7 @@ impl LanguageDetector {
     fn process_alphabets_count<'t>(
         word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
     ) -> AHashMap<Language, Vec<(usize, Alphabet)>> {
-        /* let alphabets_count_iter = alphabets_count.iter();
-        let mut word_langs: AHashSet<Language> = AHashSet::new();
-        for (alphabet, cnt) in alphabets_count {
-            let langs: &[Language] = alphabet.into();
-            word_langs.retain(|l| langs.contains(l));
-            if word_langs.is_empty() {}
-        } */
-
-        println!("word_alphabets_count {:?}", word_alphabets_count);
+        // println!("word_alphabets_count {:?}", word_alphabets_count);
         let mut script_alphabets: AHashMap<Script, AHashMap<Language, Vec<(usize, Alphabet)>>> =
             AHashMap::new();
         for ((s, a), c) in word_alphabets_count {
@@ -1031,7 +1023,7 @@ impl LanguageDetector {
         let mut script_alphabets_iter = script_alphabets.into_values();
         let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
 
-        // sort langs if one script
+        // filter langs if one script
         if script_alphabets_len == 1 {
             let lang_alphabets_count_max = langs_alphabets_count
                 .iter()
@@ -1039,23 +1031,22 @@ impl LanguageDetector {
                 .flatten()
                 .fold(1, |acc, (cnt, _)| acc.max(*cnt));
             let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
-            println!("pre1 langs_alphabets_count {:?}", langs_alphabets_count);
+
+            // println!("pre1 langs_alphabets_count {:?}", langs_alphabets_count);
             langs_alphabets_count.retain(|_, acs| {
                 acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
                 !acs.is_empty()
             });
 
             // langs_alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
-            println!("alphabets_count_max {:?}", lang_alphabets_count_max);
+            // println!("alphabets_count_max {:?}", lang_alphabets_count_max);
 
-            println!("FILTERED langs_alphabets_count {:?}", langs_alphabets_count);
+            // println!("FILTERED langs_alphabets_count {:?}", langs_alphabets_count);
             return langs_alphabets_count;
         }
 
-        println!("prefinal langs_alphabets_count {:?}", langs_alphabets_count);
+        // println!("prefinal langs_alphabets_count {:?}", langs_alphabets_count);
         for mut langs_alphs_cnt in script_alphabets_iter {
-            // acc_init.retain(|k, v| if acc_init.contains(k));
-            // for (lang, alphabets_count) in langs_alphs_cnt {
             langs_alphabets_count.retain(|l, alphabets_count| {
                 let Some(asc) = langs_alphs_cnt.remove(l) else {
                     return false;
@@ -1070,31 +1061,14 @@ impl LanguageDetector {
                     {
                         alphabets_count.push((cnt, alphabet));
                     }
-                    /* asc.entry(a)
-                    .and_modify(|c| *c = c.wrapping_add(cnt))
-                    .or_insert(cnt); */
                 }
 
                 true
             });
-            /* langs_alphabets_count.entry(lang).and_modify(|asc| {
-                // todo: debug_assert panic if alphabets intersect in `asc` with `alphabets_count`
-                for (a, cnt) in alphabets_count {
-                    asc.entry(a)
-                        .and_modify(|c| *c = c.wrapping_add(cnt))
-                        .or_insert(cnt);
-                }
-            }); */
-            // }
         }
-        println!("FINAL langs_alphabets_count {:?}", langs_alphabets_count);
+        // println!("FINAL langs_alphabets_count {:?}", langs_alphabets_count);
 
         langs_alphabets_count
-
-        /* let langs: AHashMap<Language, Vec<(Alphabet, usize)>> = AHashMap::new();
-        for (s, alphs) in script_alphabets {
-            for (a, c) in alphs {}
-        } */
     }
 
     #[inline]
@@ -1106,9 +1080,7 @@ impl LanguageDetector {
         let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
-        let mut prev_char_len = 0;
         let mut next_char_script: Option<Script> = None;
-        println!("text {:?}", text);
         for (ch_idx, ch) in text.char_indices().peekable().chain([(text.len(), '\0')]) {
             let script = next_char_script
                 .take()
@@ -1133,22 +1105,6 @@ impl LanguageDetector {
                 false
             };
 
-            /* if !ch_skip && script == Script::Common {
-                if prev_char_script == Script::Common {
-                    ch_skip = true;
-                } else {
-                    println!("else {} {} {}", ch_idx, ch.len_utf8(), text.len());
-                    if let Some(next_ch) = text[(ch_idx + ch.len_utf8())..].chars().next() {
-                        next_char_script = Script::find(next_ch);
-                        println!("next_char_script {:?}", next_char_script);
-                        if next_char_script.is_none() || next_char_script == Some(Script::Common) {
-                            ch_skip = true;
-                        }
-                    }
-                }
-            } */
-            println!("{} {} {}", ch_skip, ch_idx, ch);
-
             if ch_skip {
                 if word_start_index == ch_idx {
                     word_start_index = ch_idx + ch.len_utf8();
@@ -1159,7 +1115,6 @@ impl LanguageDetector {
                     match cnt_entry {
                         Entry::Occupied(cnt_o) => {
                             let cnt = cnt_o.into_mut();
-                            // todo: fix, increases `worda` in `worda' wordb` to 6 on `'`
                             *cnt = cnt.wrapping_add(1);
                         }
                         Entry::Vacant(cnt) => {
@@ -1175,48 +1130,11 @@ impl LanguageDetector {
 
             // check if word needs saving
             if ch_skip && word_start_index < not_saved_word_end_index {
-                /* if prev_char_script == Script::Common && script == Script::Common {
-                    // removes `'` for cases like `words' word` (we are at the space char)
-                    // not a case --for cases like `words' word` (we are at the last `w` char)--
-                    not_saved_word_end_index =
-                        not_saved_word_end_index.saturating_sub(prev_char_len);
-                    if not_saved_word_end_index == word_start_index {
-                        // reset temp variables
-                        word_start_index = ch_idx + ch.len_utf8();
-                        prev_char_script = script;
-                        prev_char_len = ch.len_utf8();
-                        continue;
-                    }
-                } */
-
                 // save word
                 let word = &text[word_start_index..not_saved_word_end_index];
                 if let Some(w) = words.get_mut(word) {
                     (*w).text_positions.push(word_counter);
                 } else {
-                    // word_alphabets_count.into_iter().map(|(a, (c, s))| (s, (a, c))).collect();
-                    /* let alphabets_count_max = word_alphabets_count
-                    .iter()
-                    .fold(1, |acc, (_, (cnt, _))| acc.max(*cnt)); */
-
-                    println!("word {:?}", word);
-                    // println!("{:?}", word_alphabets_count);
-                    /* let alphabets_count: Vec<(Alphabet, usize)> =
-                    // if self.is_low_accuracy_mode_enabled {
-                        word_alphabets_count
-                            .into_iter()
-                            .filter(|(_, (cnt, _)): &(_, _)| *cnt == alphabets_count_max)
-                            .collect(); */
-                    /* } else {
-                        let close_to_max = alphabets_count_max.saturating_sub(2);
-                        let mut alphabets_count: Vec<_> = word_alphabets_count
-                            .into_iter()
-                            .filter(|(_, cnt): &(_, _)| *cnt > close_to_max)
-                            .collect();
-                        alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
-                        alphabets_count
-                    }; */
-
                     let alphabets_count = Self::process_alphabets_count(word_alphabets_count);
                     let word_data = InternalWordData {
                         alphabets_count,
@@ -3094,7 +3012,7 @@ mod tests {
             // .flatten()
             .collect();
 
-        panic!();
+        // panic!();
         /* let words_count_half = 0.5;
         let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
             words,
