@@ -54,13 +54,12 @@ impl LanguageModelFilesWriter {
     /// - the input file's encoding is not UTF-8
     /// - the output directory path is not absolute or does not point to an existing directory
     /// - the character class cannot be compiled to a valid regular expression
-    pub fn create_and_write_language_model<'f>(
+    pub fn create_and_write_language_model(
         // input_file_path: &Path,
         output_directory_path: &Path,
         // lines: Vec<&str>,
-        text: impl Iterator<Item = &'f str>,
+        text: impl Iterator<Item = String>,
         language: &Language,
-        char_class: &str,
     ) -> io::Result<()> {
         // check_input_file_path(input_file_path);
         // check_output_directory_path(output_directory_path);
@@ -69,13 +68,19 @@ impl LanguageModelFilesWriter {
         .into_par_iter()
         .map(|text| LanguageDetector::filter_text_to_words(text))
         .collect(); */
-        println!("create_and_write_language_model");
-        let chars = text.map(|t| t.char_indices()).flatten();
+        let chars = text.map(|t| t.char_indices().collect::<Vec<_>>()).flatten();
+        // let chars: Vec<_> = chars.collect();
+        // println!("{:?}", chars);
         let words = LanguageDetector::filter_text_to_words(chars);
-        let words: Vec<Vec<char>> = words
+        /* let wrong_words: Vec<_> = words
+            .iter()
+            .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
+            .collect();
+        println!("wrong_words {}", wrong_words.len()); */
+        let word_chars: Vec<(Vec<char>, usize)> = words
             .into_iter()
             .filter(|(_, wd)| wd.alphabets_count.contains_key(language))
-            .map(|(w, _)| w.chars().collect::<Vec<_>>())
+            .map(|(w, wd)| (w.chars().collect::<Vec<_>>(), wd.text_indexes.len()))
             .collect();
         /* let words: Vec<Vec<char>> = lines
         .into_iter()
@@ -85,25 +90,22 @@ impl LanguageModelFilesWriter {
         .map(|(w, _)| w.chars().collect::<Vec<_>>())
         .collect(); */
 
-        println!("unigram_model");
         let unigram_model =
-            TrainingDataLanguageModel::from_text(&words, language, 1, char_class, &ahashmap!());
+            TrainingDataLanguageModel::from_text(&word_chars, language, 1, &ahashmap!());
 
         let bigram_model = TrainingDataLanguageModel::from_text(
-            &words,
+            &word_chars,
             language,
             2,
-            char_class,
             unigram_model.absolute_frequencies.as_ref().unwrap(),
         );
         // panic!("{:?}\n{:?}", unigram_model.absolute_frequencies, bigram_model);
         unigram_model.to_match(output_directory_path, "unigrams.rs")?;
 
         let trigram_model = TrainingDataLanguageModel::from_text(
-            &words,
+            &word_chars,
             language,
             3,
-            char_class,
             bigram_model.absolute_frequencies.as_ref().unwrap(),
         );
         bigram_model.to_match(output_directory_path, "bigrams.rs")?;

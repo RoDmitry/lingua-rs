@@ -1048,6 +1048,7 @@ impl LanguageDetector {
 
         // println!("prefinal langs_alphabets_count {:?}", langs_alphabets_count);
         for mut langs_alphs_cnt in script_alphabets_iter {
+            // println!("prefinal langs_alphs_cnt {:?}", langs_alphs_cnt);
             langs_alphabets_count.retain(|l, alphabets_count| {
                 let Some(asc) = langs_alphs_cnt.remove(l) else {
                     return false;
@@ -1155,7 +1156,8 @@ impl LanguageDetector {
             }
 
             // checks if word needs saving
-            if ch_skip && word_start_index < not_saved_word_end_index {
+            if ch_skip && !word_buf.is_empty() {
+                //word_start_index < not_saved_word_end_index {
                 // saves word
                 // let orig_word = &text[word_start_index..not_saved_word_end_index];
                 if let Some(w) = words.get_mut(&word_buf) {
@@ -1163,17 +1165,20 @@ impl LanguageDetector {
                         .push((word_start_index, not_saved_word_end_index));
                 } else {
                     let alphabets_count = Self::process_alphabets_count(word_alphabets_count);
+                    /* if alphabets_count.is_empty() {
+                        println!("{}", word_buf);
+                    } */
                     let word_data = WordData {
                         alphabets_count,
                         text_indexes: vec![(word_start_index, not_saved_word_end_index)],
                     };
                     words.insert(word_buf, word_data);
-                    word_alphabets_count = Default::default();
                 }
 
                 // reset temp variables
                 word_start_index = ch_idx + ch.len_utf8();
                 word_buf = Default::default();
+                word_alphabets_count = Default::default();
             }
             prev_char_script = script;
         }
@@ -2984,6 +2989,7 @@ mod tests {
         text,
         expected_language,
         case::kanji("昨日、東京で大切な友達に会いました。", Japanese), // Kanji (Han) + Hiragana
+        case("也有越來越多的人開始飼養寵物", Chinese),
     )]
     fn assert_language_detection_with_rules_text_works_correctly(
         detector_for_all_languages: LanguageDetector,

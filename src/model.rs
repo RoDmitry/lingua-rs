@@ -54,20 +54,18 @@ impl JsonLanguageModel {
 #[derive(Debug)]
 pub(crate) struct TrainingDataLanguageModel {
     language: Language,
-    pub(crate) absolute_frequencies: Option<AHashMap<Ngram, u32>>,
-    relative_frequencies: Option<AHashMap<GenericFraction<u32>, Vec<Ngram>>>,
+    pub(crate) absolute_frequencies: Option<AHashMap<Ngram, usize>>,
+    relative_frequencies: Option<AHashMap<GenericFraction<usize>, Vec<Ngram>>>,
 }
 
 impl TrainingDataLanguageModel {
     pub(crate) fn from_text(
-        words_chars: &Vec<Vec<char>>,
+        words_chars: &Vec<(Vec<char>, usize)>,
         language: &Language,
         ngram_length: usize,
-        char_class: &str,
-        lower_ngram_absolute_frequencies: &AHashMap<Ngram, u32>,
+        lower_ngram_absolute_frequencies: &AHashMap<Ngram, usize>,
     ) -> Self {
-        let absolute_frequencies =
-            Self::compute_absolute_frequencies(words_chars, ngram_length, char_class);
+        let absolute_frequencies = Self::compute_absolute_frequencies(words_chars, ngram_length);
 
         let relative_frequencies = Self::compute_relative_frequencies(
             ngram_length,
@@ -83,10 +81,9 @@ impl TrainingDataLanguageModel {
     }
 
     fn compute_absolute_frequencies(
-        words_chars: &Vec<Vec<char>>,
+        words_chars: &Vec<(Vec<char>, usize)>,
         ngram_length: usize,
-        char_class: &str,
-    ) -> AHashMap<Ngram, u32> {
+    ) -> AHashMap<Ngram, usize> {
         let mut absolute_frequencies = AHashMap::new();
         /* let regex = Regex::new(&format!("^[{char_class}]+$")).unwrap_or_else(|_| {
             panic!(
@@ -94,7 +91,7 @@ impl TrainingDataLanguageModel {
             )
         }); */
 
-        for chars in words_chars.iter() {
+        for (chars, count) in words_chars.iter() {
             /* let chars = word
             .chars()
             .map(|c| c.to_lowercase().next().unwrap())
@@ -103,12 +100,15 @@ impl TrainingDataLanguageModel {
                 continue;
             }
 
+            let count = *count;
             for i in 0..=chars.len() - ngram_length {
                 let slice = &chars[i..i + ngram_length].iter().collect::<String>();
 
                 // if regex.is_match(slice) {
-                let counter = absolute_frequencies.entry(Ngram::new(slice)).or_insert(0);
-                *counter += 1;
+                absolute_frequencies
+                    .entry(Ngram::new(slice))
+                    .and_modify(|c| *c += count)
+                    .or_insert(count);
                 // }
             }
         }
@@ -118,11 +118,11 @@ impl TrainingDataLanguageModel {
 
     fn compute_relative_frequencies(
         ngram_length: usize,
-        absolute_frequencies: &AHashMap<Ngram, u32>,
-        lower_ngram_absolute_frequencies: &AHashMap<Ngram, u32>,
-    ) -> AHashMap<GenericFraction<u32>, Vec<Ngram>> {
-        let total_ngram_frequency = absolute_frequencies.values().sum::<u32>();
-        let mut ngram_probabilities: AHashMap<GenericFraction<u32>, Vec<Ngram>> = AHashMap::new();
+        absolute_frequencies: &AHashMap<Ngram, usize>,
+        lower_ngram_absolute_frequencies: &AHashMap<Ngram, usize>,
+    ) -> AHashMap<GenericFraction<usize>, Vec<Ngram>> {
+        let total_ngram_frequency = absolute_frequencies.values().sum::<usize>();
+        let mut ngram_probabilities: AHashMap<GenericFraction<usize>, Vec<Ngram>> = AHashMap::new();
 
         for (ngram, frequency) in absolute_frequencies {
             let denominator = if ngram_length == 1 || lower_ngram_absolute_frequencies.is_empty() {
@@ -140,7 +140,7 @@ impl TrainingDataLanguageModel {
                     .unwrap();
                 start_abs_fr.min(end_abs_fr)
             };
-            let fract = GenericFraction::<u32>::new(*frequency, denominator);
+            let fract = GenericFraction::<usize>::new(*frequency, denominator);
             ngram_probabilities
                 .entry(fract)
                 .or_default()
