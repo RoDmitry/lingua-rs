@@ -1568,7 +1568,10 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         Script::PsalterPahlavi => alphabet_match!([(Alphabet::MiddlePersianPsalterPahlavi, [])]),
         Script::Rejang => alphabet_match!([(Alphabet::Rejang, [])]),
         Script::Runic => {
-            alphabet_match!([(Alphabet::OldNorseRunic, []), (Alphabet::OldEnglishRunic, [])])
+            alphabet_match!([
+                (Alphabet::OldNorseRunic, []),
+                (Alphabet::OldEnglishRunic, [])
+            ])
         }
         Script::Samaritan => alphabet_match!([(Alphabet::HebrewSamaritan, [])]),
         Script::Saurashtra => alphabet_match!([(Alphabet::Saurashtra, [])]),

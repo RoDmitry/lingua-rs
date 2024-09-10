@@ -54,23 +54,38 @@ impl LanguageModelFilesWriter {
     /// - the input file's encoding is not UTF-8
     /// - the output directory path is not absolute or does not point to an existing directory
     /// - the character class cannot be compiled to a valid regular expression
-    pub fn create_and_write_language_model(
+    pub fn create_and_write_language_model<'f>(
         // input_file_path: &Path,
         output_directory_path: &Path,
-        lines: Vec<&str>,
+        // lines: Vec<&str>,
+        text: impl Iterator<Item = &'f str>,
         language: &Language,
         char_class: &str,
     ) -> io::Result<()> {
         // check_input_file_path(input_file_path);
         // check_output_directory_path(output_directory_path);
-        let words: Vec<Vec<char>> = lines
+
+        /* let words = lines
+        .into_par_iter()
+        .map(|text| LanguageDetector::filter_text_to_words(text))
+        .collect(); */
+        println!("create_and_write_language_model");
+        let chars = text.map(|t| t.char_indices()).flatten();
+        let words = LanguageDetector::filter_text_to_words(chars);
+        let words: Vec<Vec<char>> = words
             .into_iter()
-            .map(|text| LanguageDetector::filter_text_to_words(text).into_iter())
-            .flatten()
-            .filter(|(_, wd)| wd.alphabets_count.contains_key(&Language::English))
+            .filter(|(_, wd)| wd.alphabets_count.contains_key(language))
             .map(|(w, _)| w.chars().collect::<Vec<_>>())
             .collect();
+        /* let words: Vec<Vec<char>> = lines
+        .into_iter()
+        .map(|text| LanguageDetector::filter_text_to_words(text).into_iter())
+        .flatten()
+        .filter(|(_, wd)| wd.alphabets_count.contains_key(language))
+        .map(|(w, _)| w.chars().collect::<Vec<_>>())
+        .collect(); */
 
+        println!("unigram_model");
         let unigram_model =
             TrainingDataLanguageModel::from_text(&words, language, 1, char_class, &ahashmap!());
 

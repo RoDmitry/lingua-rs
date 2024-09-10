@@ -125,6 +125,8 @@ use lingua_romanian_language_model::ROMANIAN_MODELS_DIRECTORY;
 use lingua_russian_language_model::RUSSIAN_MODELS_DIRECTORY;
 #[cfg(feature = "serbian")]
 use lingua_serbian_language_model::SERBIAN_MODELS_DIRECTORY;
+#[cfg(feature = "sesotho")]
+use lingua_sesotho_language_model::SESOTHO_MODELS_DIRECTORY;
 #[cfg(feature = "shona")]
 use lingua_shona_language_model::SHONA_MODELS_DIRECTORY;
 #[cfg(feature = "slovak")]
@@ -133,8 +135,6 @@ use lingua_slovak_language_model::SLOVAK_MODELS_DIRECTORY;
 use lingua_slovene_language_model::SLOVENE_MODELS_DIRECTORY;
 #[cfg(feature = "somali")]
 use lingua_somali_language_model::SOMALI_MODELS_DIRECTORY;
-#[cfg(feature = "sesotho")]
-use lingua_sesotho_language_model::SESOTHO_MODELS_DIRECTORY;
 #[cfg(feature = "spanish")]
 use lingua_spanish_language_model::SPANISH_MODELS_DIRECTORY;
 #[cfg(feature = "swahili")]

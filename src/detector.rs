@@ -674,7 +674,7 @@ impl LanguageDetector {
             return Vec::new();
         }
         println!("text_str {:?}", text_str);
-        let found_words = Self::filter_text_to_words(text_str);
+        let found_words = Self::filter_text_to_words(text_str.char_indices());
 
         /* let alphabets: AHashSet<_> = found_words
             .iter()
@@ -1072,24 +1072,44 @@ impl LanguageDetector {
         langs_alphabets_count
     }
 
-    pub fn filter_text_to_words<'t>(text: &'t str) -> AHashMap<String, WordData> {
+    pub fn filter_text_to_words<'t>(
+        text: impl Iterator<Item = (usize, char)>,
+    ) -> AHashMap<String, WordData> {
         let mut words: AHashMap<String, WordData> = AHashMap::new();
 
         let mut word_start_index = 0;
         let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
-        let mut next_char_script: Option<Script> = None;
+        // let mut next_char_script: Option<Script> = None;
         let mut word_buf = String::new();
-        for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
-            let script = next_char_script
+        let mut script_alphabets_iter = text
+            .map(|(ch_idx, ch)| (Script::find(ch), ch_idx, ch))
+            .filter(|(s, _, _)| s != &Some(Script::Inherited))
+            .map(|(scr, ch_idx, ch)| {
+                (
+                    scr.map(|s| script_char_to_alphabets(s, ch))
+                        .unwrap_or_default(),
+                    scr.unwrap_or(Script::Common),
+                    ch_idx,
+                    ch,
+                )
+            })
+            .chain([([].as_slice(), Script::Common, usize::MAX - 1, '\0')])
+            .peekable();
+        // while let Some((ch_idx, ch)) = ch_iter.next() {
+        // for (alphabets, script, ch_idx, ch) in script_alphabets_iter/* .chain([(text.len(), '\0')]) */ {
+        while let Some((alphabets, script, ch_idx, ch)) = script_alphabets_iter.next()
+        /* .chain([(text.len(), '\0')]) */
+        {
+            /* let script = next_char_script
                 .take()
                 .or_else(|| Script::find(ch))
                 .unwrap_or(Script::Common);
             if script == Script::Inherited {
                 continue;
-            }
-            let alphabets = script_char_to_alphabets(script, ch);
+            } */
+            // let alphabets = script_char_to_alphabets(script, ch);
 
             let ch_skip = if alphabets.is_empty() {
                 true
@@ -1097,9 +1117,10 @@ impl LanguageDetector {
                 if prev_char_script == Script::Common {
                     true
                 } else {
-                    if let Some(next_ch) = text[(ch_idx + ch.len_utf8())..].chars().next() {
-                        next_char_script = Script::find(next_ch);
-                        next_char_script.is_none() || next_char_script == Some(Script::Common)
+                    if let Some((_, next_char_script, _, _)) = script_alphabets_iter.peek() {
+                        // if let Some(next_ch) = script_alphabets[ch_idx + ch.len_utf8()] {
+                        // next_char_script = Script::find(next_ch);
+                        next_char_script == &Script::Common
                     } else {
                         true
                     }
@@ -1778,10 +1799,7 @@ impl LanguageDetector {
         let mut models = language_models.write().unwrap();
         let json = load_json(*language, ngram_length);
         if let Ok(Some(json_content)) = json {
-            models.insert(
-                *language,
-                JsonLanguageModel::from_json(&json_content),
-            );
+            models.insert(*language, JsonLanguageModel::from_json(&json_content));
         }
     }
 
@@ -2762,7 +2780,7 @@ mod tests {
         word: &str,
         expected_language: Option<Language>,
     ) {
-        let found_words = LanguageDetector::filter_text_to_words(word);
+        let found_words = LanguageDetector::filter_text_to_words(word.char_indices());
         let mut languages: AHashSet<_> = found_words
             .into_iter()
             .map(|(_, w)| w.alphabets_count)
@@ -2850,7 +2868,7 @@ mod tests {
         case::fr5(
             "façonnage",
             ahashset!(
-                Afrikaans, Azerbaijani, Croatian, Portuguese, Bosnian, Danish, Catalan, French, 
+                Afrikaans, Azerbaijani, Croatian, Portuguese, Bosnian, Danish, Catalan, French,
                 Turkish, Basque, Bokmal, Dutch, Albanian
             )
         ),
@@ -2904,7 +2922,7 @@ mod tests {
         word: &str,
         expected_languages: AHashSet<Language>,
     ) {
-        let found_words = LanguageDetector::filter_text_to_words(word);
+        let found_words = LanguageDetector::filter_text_to_words(word.char_indices());
         let mut languages: AHashSet<_> = found_words
             .into_iter()
             .map(|(_, w)| w.alphabets_count)
@@ -2952,7 +2970,7 @@ mod tests {
         text: &str,
         expected_words: AHashSet<&str>,
     ) {
-        let found_words = LanguageDetector::filter_text_to_words(text);
+        let found_words = LanguageDetector::filter_text_to_words(text.char_indices());
         let words: AHashSet<&str> = found_words.iter().map(|(w, _)| w.as_str()).collect();
 
         assert_eq!(
@@ -2972,7 +2990,7 @@ mod tests {
         text: &str,
         expected_language: Language,
     ) {
-        let found_words = LanguageDetector::filter_text_to_words(text);
+        let found_words = LanguageDetector::filter_text_to_words(text.char_indices());
         let mut languages: AHashSet<_> = found_words
             .into_iter()
             .map(|(_, w)| w.alphabets_count)
@@ -2988,7 +3006,9 @@ mod tests {
         assert!(
             languages.contains(&expected_language),
             "expected {:?} for text '{}', got {:?}",
-            expected_language, text, languages
+            expected_language,
+            text,
+            languages
         );
     }
 

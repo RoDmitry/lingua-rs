@@ -103,14 +103,12 @@ fn main() {
     let text = String::from_utf8(buf).expect("Input should be valid utf-8");
 
     let output_directory_path = Path::new(&args.out);
-    let lines: Vec<_> = text
-        .lines()
-        .filter(|line| !line.trim().is_empty()).collect();
+    let lines = text.lines().filter(|line| !line.trim().is_empty());
 
     let result = LanguageModelFilesWriter::create_and_write_language_model(
         output_directory_path,
         lines,
-        &Language::English,
+        &Language::Chinese,
         "\\p{L}",
     );
     println!("{:?}", result)

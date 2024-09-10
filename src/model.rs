@@ -96,9 +96,9 @@ impl TrainingDataLanguageModel {
 
         for chars in words_chars.iter() {
             /* let chars = word
-                .chars()
-                .map(|c| c.to_lowercase().next().unwrap())
-                .collect_vec(); */
+            .chars()
+            .map(|c| c.to_lowercase().next().unwrap())
+            .collect_vec(); */
             if chars.len() < ngram_length {
                 continue;
             }
@@ -179,18 +179,12 @@ impl TrainingDataLanguageModel {
 
         let file_path = output_directory_path.join(file_name);
         let mut file = File::create(file_path)?;
-        file.write_all(b"pub fn prob(t: &str) -> f64 {\n    match t {\n")?;
+        file.write_all(b"pub fn prob(t: &str) -> f64 {\nmatch t {\n")?;
 
         for (fraction, ngrams) in sorted {
-            file.write_all(b"        \"")?;
-            file.write_all(
-                ngrams
-                    .into_iter()
-                    .map(|n| n.value)
-                    .join("\" | \"")
-                    .as_bytes(),
-            )?;
-            file.write_all(b"\" => ")?;
+            file.write_all(b"\"")?;
+            file.write_all(ngrams.into_iter().map(|n| n.value).join("\"|\"").as_bytes())?;
+            file.write_all(b"\"=>")?;
 
             let numer = fraction.numer().unwrap();
             let denom = fraction.denom().unwrap();
@@ -198,12 +192,12 @@ impl TrainingDataLanguageModel {
                 file.write_all(b"1.0,\n")?;
             } else {
                 file.write_all(numer.to_string().as_bytes())?;
-                file.write_all(b".0 / ")?;
+                file.write_all(b".0/")?;
                 file.write_all(denom.to_string().as_bytes())?;
                 file.write_all(b".0,\n")?;
             }
         }
-        file.write_all(b"        _ => 0.0,\n    }\n}\n")
+        file.write_all(b"_=>0.0,\n}\n}")
     }
 }
 
