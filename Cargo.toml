@@ -35,12 +35,21 @@ keywords = [
     "language-recognition",
     "nlp"
 ]
+default-run = "cli_train"
 
 [profile.dev]
 opt-level = 1
 
 [lib]
+name = "lingua"
 crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "cli_train"
+
+[[bin]]
+name = "cli_detect"
 
 [[bin]]
 name = "accuracy_reports"
@@ -54,6 +63,7 @@ required-features = ["benchmark"]
 [dependencies]
 alphabet_match_macro = { path = "alphabet_match_macro" }
 brotli = "6.0.0"
+clap = { version = "4.5.17", features = ["derive"] }
 compact_str = "0.8.0"
 fraction = "0.15.3"
 include_dir = "0.7.4"

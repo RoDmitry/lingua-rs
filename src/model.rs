@@ -30,6 +30,7 @@ struct JsonLanguageModel {
     ngrams: BTreeMap<Fraction, String>,
 }
 
+#[derive(Debug)]
 pub(crate) struct TrainingDataLanguageModel {
     language: Language,
     pub(crate) absolute_frequencies: Option<AHashMap<Ngram, u32>>,
@@ -137,12 +138,17 @@ impl TrainingDataLanguageModel {
             let denominator = if ngram_length == 1 || lower_ngram_absolute_frequencies.is_empty() {
                 total_ngram_frequency
             } else {
-                let chars = ngram.value.chars().collect_vec();
-                let slice = &chars[0..ngram_length - 1].iter().collect::<String>();
+                let mut ngram_tmp = ngram.value.chars().map(|ch| ch.len_utf8());
+                let end_ngram = &ngram.value[ngram_tmp.next().unwrap()..];
+                let start_ngram = &ngram.value[0..(ngram.value.len() - ngram_tmp.last().unwrap())];
 
-                *lower_ngram_absolute_frequencies
-                    .get(&Ngram::new(slice))
-                    .unwrap()
+                let start_abs_fr = *lower_ngram_absolute_frequencies
+                    .get(&Ngram::new(start_ngram))
+                    .unwrap();
+                let end_abs_fr = *lower_ngram_absolute_frequencies
+                    .get(&Ngram::new(end_ngram))
+                    .unwrap();
+                start_abs_fr.min(end_abs_fr)
             };
             ngram_probabilities.insert(ngram.clone(), Fraction::new(*frequency, denominator));
         }

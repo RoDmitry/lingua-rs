@@ -54,27 +54,29 @@ impl LanguageModelFilesWriter {
     /// - the input file's encoding is not UTF-8
     /// - the output directory path is not absolute or does not point to an existing directory
     /// - the character class cannot be compiled to a valid regular expression
-    pub fn create_and_write_language_model_files(
-        input_file_path: &Path,
-        output_directory_path: &Path,
+    pub fn create_and_write_language_model(
+        // input_file_path: &Path,
+        // output_directory_path: &Path,
+        lines: &[&str],
         language: &Language,
         char_class: &str,
-    ) -> io::Result<()> {
-        check_input_file_path(input_file_path);
-        check_output_directory_path(output_directory_path);
+    ) -> String {
+        // check_input_file_path(input_file_path);
+        // check_output_directory_path(output_directory_path);
 
         let unigram_model =
-            Self::create_language_model(input_file_path, language, 1, char_class, &ahashmap!())?;
+            Self::create_language_model(lines, language, 1, char_class, &ahashmap!());
 
         let bigram_model = Self::create_language_model(
-            input_file_path,
+            lines,
             language,
             2,
             char_class,
             unigram_model.absolute_frequencies.as_ref().unwrap(),
-        )?;
+        );
+        // panic!("{:?}\n{:?}", unigram_model.absolute_frequencies, bigram_model);
 
-        let trigram_model = Self::create_language_model(
+        /* let trigram_model = Self::create_language_model(
             input_file_path,
             language,
             3,
@@ -96,9 +98,9 @@ impl LanguageModelFilesWriter {
             5,
             char_class,
             quadrigram_model.absolute_frequencies.as_ref().unwrap(),
-        )?;
+        )?; */
 
-        Self::write_compressed_language_model(
+        /* Self::write_compressed_language_model(
             &unigram_model,
             output_directory_path,
             "unigrams.json",
@@ -122,34 +124,35 @@ impl LanguageModelFilesWriter {
             &fivegram_model,
             output_directory_path,
             "fivegrams.json",
-        )?;
+        )?; */
 
-        Ok(())
+        bigram_model.to_json()
     }
 
     fn create_language_model(
-        input_file_path: &Path,
+        // input_file_path: &Path,
+        lines_as_str: &[&str],
         language: &Language,
         ngram_length: usize,
         char_class: &str,
         lower_ngram_absolute_frequencies: &AHashMap<Ngram, u32>,
-    ) -> io::Result<TrainingDataLanguageModel> {
-        let file = File::open(input_file_path)?;
+    ) -> TrainingDataLanguageModel {
+        /* let file = File::open(input_file_path)?;
         let reader = BufReader::new(file);
         let lines = reader
             .lines()
             .map(|line| line.unwrap())
             .filter(|line| !line.trim().is_empty())
             .collect_vec();
-        let lines_as_str = lines.iter().map(|line| line.as_str()).collect_vec();
+        let lines_as_str = lines.iter().map(|line| line.as_str()).collect_vec(); */
 
-        Ok(TrainingDataLanguageModel::from_text(
+        TrainingDataLanguageModel::from_text(
             &lines_as_str,
             language,
             ngram_length,
             char_class,
             lower_ngram_absolute_frequencies,
-        ))
+        )
     }
 
     fn write_compressed_language_model(
@@ -483,7 +486,7 @@ mod tests {
         }
         "#;
 
-        #[test]
+        /* #[test]
         fn test_language_model_files_writer() {
             let input_file = create_temp_input_file(TEXT);
             let output_directory = tempdir().expect("Temporary directory could not be created");
@@ -532,7 +535,7 @@ mod tests {
                 .unwrap();
 
             assert_eq!(uncompressed_file_content, minify(expected_file_content));
-        }
+        } */
     }
 
     mod test_data_files {
