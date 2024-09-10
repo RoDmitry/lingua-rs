@@ -87,7 +87,7 @@ impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
 
 #[derive(Debug)]
 pub struct WordData {
-    // word: &'t str,
+    // orig_word: &'t str,
     // alphabets_count: Vec<(Alphabet, usize)>,
     pub alphabets_count: AHashMap<Language, Vec<(usize, Alphabet)>>,
     pub text_indexes: Vec<(usize, usize)>,
@@ -1072,14 +1072,15 @@ impl LanguageDetector {
         langs_alphabets_count
     }
 
-    pub fn filter_text_to_words<'t>(text: &'t str) -> AHashMap<&'t str, WordData> {
-        let mut words: AHashMap<&str, WordData> = AHashMap::new();
+    pub fn filter_text_to_words<'t>(text: &'t str) -> AHashMap<String, WordData> {
+        let mut words: AHashMap<String, WordData> = AHashMap::new();
 
         let mut word_start_index = 0;
         let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
         let mut next_char_script: Option<Script> = None;
+        let mut word_buf = String::new();
         for (ch_idx, ch) in text.char_indices().chain([(text.len(), '\0')]) {
             let script = next_char_script
                 .take()
@@ -1125,16 +1126,18 @@ impl LanguageDetector {
                     }
                 }
 
-                if not_saved_word_end_index == ch_idx {
+                /* if not_saved_word_end_index == ch_idx {
                     not_saved_word_end_index = ch_idx + ch.len_utf8();
-                }
+                } */
+                not_saved_word_end_index = ch_idx + ch.len_utf8();
+                word_buf.push(ch.to_lowercase().next().unwrap()); // maybe check each char?
             }
 
-            // check if word needs saving
+            // checks if word needs saving
             if ch_skip && word_start_index < not_saved_word_end_index {
-                // save word
-                let word = &text[word_start_index..not_saved_word_end_index];
-                if let Some(w) = words.get_mut(word) {
+                // saves word
+                // let orig_word = &text[word_start_index..not_saved_word_end_index];
+                if let Some(w) = words.get_mut(&word_buf) {
                     w.text_indexes
                         .push((word_start_index, not_saved_word_end_index));
                 } else {
@@ -1143,16 +1146,14 @@ impl LanguageDetector {
                         alphabets_count,
                         text_indexes: vec![(word_start_index, not_saved_word_end_index)],
                     };
-                    words.insert(word, word_data);
+                    words.insert(word_buf, word_data);
                     word_alphabets_count = Default::default();
                 }
 
                 // reset temp variables
                 word_start_index = ch_idx + ch.len_utf8();
-                prev_char_script = script;
-                continue;
+                word_buf = Default::default();
             }
-            not_saved_word_end_index = ch_idx + ch.len_utf8();
             prev_char_script = script;
         }
         // println!("{} {:?}", text, words);
@@ -2932,18 +2933,18 @@ mod tests {
         case("worda 🙈", ahashset!("worda")),
         case::kanji("昨日、東京で大切な友達に会いました。", ahashset!("昨日", "東京で大切な友達に会いました")),
         case("this is a sentence", ahashset!("this", "is", "a", "sentence")),
-        case("I can't do this", ahashset!("I", "can't", "do", "this")),
+        case("I can't do this", ahashset!("i", "can't", "do", "this")),
         case(
             "上海大学是一个好大学 this is a sentence",
             ahashset!("上海大学是一个好大学", "this", "is", "a", "sentence")
         ),
         case(
             "Weltweit    gibt es ungefähr 6.000 Sprachen.",
-            ahashset!("Weltweit", "gibt", "es", "ungefähr", "Sprachen")
+            ahashset!("weltweit", "gibt", "es", "ungefähr", "sprachen")
         ),
         case(
             "Thi̇s is one word", // This = THİS with lowered İ
-            ahashset!("Thi̇s", "is", "one", "word")
+            ahashset!("this", "is", "one", "word")
         )
     )]
     fn test_filter_text_to_words(
@@ -2952,7 +2953,7 @@ mod tests {
         expected_words: AHashSet<&str>,
     ) {
         let found_words = LanguageDetector::filter_text_to_words(text);
-        let words: AHashSet<_> = found_words.into_iter().map(|(w, _)| w).collect();
+        let words: AHashSet<&str> = found_words.iter().map(|(w, _)| w.as_str()).collect();
 
         assert_eq!(
             words, expected_words,

@@ -102,20 +102,14 @@ fn main() {
         .expect("expected input via stdin");
     let text = String::from_utf8(buf).expect("Input should be valid utf-8");
 
-    let words: Vec<_> = text
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .map(|text| LanguageDetector::filter_text_to_words(text).into_iter())
-        .flatten()
-        .filter(|(_, wd)| wd.alphabets_count.contains_key(&Language::English))
-        .map(|(w, _)| w)
-        .collect();
-
     let output_directory_path = Path::new(&args.out);
+    let lines: Vec<_> = text
+        .lines()
+        .filter(|line| !line.trim().is_empty()).collect();
 
     let result = LanguageModelFilesWriter::create_and_write_language_model(
         output_directory_path,
-        &words,
+        lines,
         &Language::English,
         "\\p{L}",
     );

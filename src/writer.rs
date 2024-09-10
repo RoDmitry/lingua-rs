@@ -17,7 +17,7 @@
 use crate::constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION};
 use crate::model::TrainingDataLanguageModel;
 use crate::ngram::Ngram;
-use crate::Language;
+use crate::{Language, LanguageDetector};
 use ::std::fs::{remove_file, File};
 use ::std::io::{self, BufRead, BufReader, LineWriter, Write};
 use ::std::path::Path;
@@ -57,18 +57,25 @@ impl LanguageModelFilesWriter {
     pub fn create_and_write_language_model(
         // input_file_path: &Path,
         output_directory_path: &Path,
-        words: &[&str],
+        lines: Vec<&str>,
         language: &Language,
         char_class: &str,
     ) -> io::Result<()> {
         // check_input_file_path(input_file_path);
         // check_output_directory_path(output_directory_path);
+        let words: Vec<Vec<char>> = lines
+            .into_iter()
+            .map(|text| LanguageDetector::filter_text_to_words(text).into_iter())
+            .flatten()
+            .filter(|(_, wd)| wd.alphabets_count.contains_key(&Language::English))
+            .map(|(w, _)| w.chars().collect::<Vec<_>>())
+            .collect();
 
         let unigram_model =
-            TrainingDataLanguageModel::from_text(words, language, 1, char_class, &ahashmap!());
+            TrainingDataLanguageModel::from_text(&words, language, 1, char_class, &ahashmap!());
 
         let bigram_model = TrainingDataLanguageModel::from_text(
-            words,
+            &words,
             language,
             2,
             char_class,
@@ -78,7 +85,7 @@ impl LanguageModelFilesWriter {
         unigram_model.to_match(output_directory_path, "unigrams.rs")?;
 
         let trigram_model = TrainingDataLanguageModel::from_text(
-            words,
+            &words,
             language,
             3,
             char_class,

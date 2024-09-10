@@ -60,14 +60,14 @@ pub(crate) struct TrainingDataLanguageModel {
 
 impl TrainingDataLanguageModel {
     pub(crate) fn from_text(
-        words: &[&str],
+        words_chars: &Vec<Vec<char>>,
         language: &Language,
         ngram_length: usize,
         char_class: &str,
         lower_ngram_absolute_frequencies: &AHashMap<Ngram, u32>,
     ) -> Self {
         let absolute_frequencies =
-            Self::compute_absolute_frequencies(words, ngram_length, char_class);
+            Self::compute_absolute_frequencies(words_chars, ngram_length, char_class);
 
         let relative_frequencies = Self::compute_relative_frequencies(
             ngram_length,
@@ -83,7 +83,7 @@ impl TrainingDataLanguageModel {
     }
 
     fn compute_absolute_frequencies(
-        words: &[&str],
+        words_chars: &Vec<Vec<char>>,
         ngram_length: usize,
         char_class: &str,
     ) -> AHashMap<Ngram, u32> {
@@ -94,11 +94,11 @@ impl TrainingDataLanguageModel {
             )
         }); */
 
-        for word in words.iter() {
-            let chars = word
+        for chars in words_chars.iter() {
+            /* let chars = word
                 .chars()
                 .map(|c| c.to_lowercase().next().unwrap())
-                .collect_vec();
+                .collect_vec(); */
             if chars.len() < ngram_length {
                 continue;
             }
@@ -203,7 +203,7 @@ impl TrainingDataLanguageModel {
                 file.write_all(b".0,\n")?;
             }
         }
-        file.write_all(b"        _ => 0.0,\n    }\n}")
+        file.write_all(b"        _ => 0.0,\n    }\n}\n")
     }
 }
 
