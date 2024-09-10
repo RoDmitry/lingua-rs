@@ -20,7 +20,7 @@ use crate::constant::{
 use crate::json::load_json;
 use crate::lang::alphabet::{self, script_char_to_alphabets};
 use crate::lang::{Alphabet, Script};
-use crate::model::{TestDataLanguageModel, TrainingDataLanguageModel};
+use crate::model::{JsonLanguageModel, TestDataLanguageModel, TrainingDataLanguageModel};
 use crate::result::DetectionResult;
 use crate::{ExtraCheck, Language};
 use ::std::borrow::Borrow;
@@ -86,11 +86,11 @@ impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
 }
 
 #[derive(Debug)]
-struct InternalWordData {
+pub struct WordData {
     // word: &'t str,
     // alphabets_count: Vec<(Alphabet, usize)>,
-    alphabets_count: AHashMap<Language, Vec<(usize, Alphabet)>>,
-    text_indexes: Vec<(usize, usize)>,
+    pub alphabets_count: AHashMap<Language, Vec<(usize, Alphabet)>>,
+    pub text_indexes: Vec<(usize, usize)>,
     // can not include most frequent Alphabet
     // can not include same languages
     // usually it's empty, but if we get a different Alphabet,
@@ -120,8 +120,8 @@ pub struct LanguageDetector {
     languages: AHashSet<Language>,
     minimum_relative_distance: f64,
     is_low_accuracy_mode_enabled: bool,
-    languages_with_unique_characters: AHashSet<Language>,
-    one_language_scripts: AHashMap<Script, Language>,
+    // languages_with_unique_characters: AHashSet<Language>,
+    // one_language_scripts: AHashMap<Script, Language>,
     unigram_language_models: StaticLanguageModelMap,
     bigram_language_models: StaticLanguageModelMap,
     trigram_language_models: StaticLanguageModelMap,
@@ -140,8 +140,8 @@ impl LanguageDetector {
             languages: languages.clone(),
             minimum_relative_distance,
             is_low_accuracy_mode_enabled,
-            languages_with_unique_characters: collect_languages_with_unique_characters(&languages),
-            one_language_scripts: collect_one_language_scripts(&languages),
+            // languages_with_unique_characters: collect_languages_with_unique_characters(&languages),
+            // one_language_scripts: collect_one_language_scripts(&languages),
             unigram_language_models: &UNIGRAM_MODELS,
             bigram_language_models: &BIGRAM_MODELS,
             trigram_language_models: &TRIGRAM_MODELS,
@@ -1072,9 +1072,8 @@ impl LanguageDetector {
         langs_alphabets_count
     }
 
-    #[inline]
-    fn filter_text_to_words<'t>(text: &'t str) -> AHashMap<&'t str, InternalWordData> {
-        let mut words: AHashMap<&str, InternalWordData> = AHashMap::new();
+    pub fn filter_text_to_words<'t>(text: &'t str) -> AHashMap<&'t str, WordData> {
+        let mut words: AHashMap<&str, WordData> = AHashMap::new();
 
         let mut word_start_index = 0;
         let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
@@ -1137,7 +1136,7 @@ impl LanguageDetector {
                         .push((word_start_index, not_saved_word_end_index));
                 } else {
                     let alphabets_count = Self::process_alphabets_count(word_alphabets_count);
-                    let word_data = InternalWordData {
+                    let word_data = WordData {
                         alphabets_count,
                         text_indexes: vec![(word_start_index, not_saved_word_end_index)],
                     };
@@ -1153,7 +1152,7 @@ impl LanguageDetector {
             not_saved_word_end_index = ch_idx + ch.len_utf8();
             prev_char_script = script;
         }
-        println!("{} {:?}", text, words);
+        // println!("{} {:?}", text, words);
 
         words
     }
@@ -1777,7 +1776,7 @@ impl LanguageDetector {
         if let Ok(Some(json_content)) = json {
             models.insert(
                 *language,
-                TrainingDataLanguageModel::from_json(&json_content),
+                JsonLanguageModel::from_json(&json_content),
             );
         }
     }
@@ -2134,15 +2133,15 @@ mod tests {
         fivegram_language_models: StaticLanguageModelMap,
     ) -> LanguageDetector {
         let languages = ahashset!(English, German);
-        let languages_with_unique_characters = collect_languages_with_unique_characters(&languages);
-        let one_language_scripts = collect_one_language_scripts(&languages);
+        // let languages_with_unique_characters = collect_languages_with_unique_characters(&languages);
+        // let one_language_scripts = collect_one_language_scripts(&languages);
 
         LanguageDetector {
             languages,
             minimum_relative_distance: 0.0,
             is_low_accuracy_mode_enabled: false,
-            languages_with_unique_characters,
-            one_language_scripts,
+            // languages_with_unique_characters,
+            // one_language_scripts,
             unigram_language_models,
             bigram_language_models,
             trigram_language_models,

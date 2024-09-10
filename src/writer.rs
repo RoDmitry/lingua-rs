@@ -56,18 +56,18 @@ impl LanguageModelFilesWriter {
     /// - the character class cannot be compiled to a valid regular expression
     pub fn create_and_write_language_model(
         // input_file_path: &Path,
-        // output_directory_path: &Path,
+        output_directory_path: &Path,
         lines: &[&str],
         language: &Language,
         char_class: &str,
-    ) -> String {
+    ) -> io::Result<()> {
         // check_input_file_path(input_file_path);
         // check_output_directory_path(output_directory_path);
 
         let unigram_model =
-            Self::create_language_model(lines, language, 1, char_class, &ahashmap!());
+            TrainingDataLanguageModel::from_text(lines, language, 1, char_class, &ahashmap!());
 
-        let bigram_model = Self::create_language_model(
+        let bigram_model = TrainingDataLanguageModel::from_text(
             lines,
             language,
             2,
@@ -126,10 +126,10 @@ impl LanguageModelFilesWriter {
             "fivegrams.json",
         )?; */
 
-        bigram_model.to_json()
+        bigram_model.to_match(output_directory_path, "bigrams.rs")
     }
 
-    fn create_language_model(
+    /* fn create_language_model(
         // input_file_path: &Path,
         lines_as_str: &[&str],
         language: &Language,
@@ -153,9 +153,9 @@ impl LanguageModelFilesWriter {
             char_class,
             lower_ngram_absolute_frequencies,
         )
-    }
+    } */
 
-    fn write_compressed_language_model(
+    /* fn write_compressed_language_model(
         model: &TrainingDataLanguageModel,
         output_directory_path: &Path,
         file_name: &str,
@@ -166,7 +166,7 @@ impl LanguageModelFilesWriter {
         let mut compressed_file = CompressorWriter::new(file, 4096, 11, 22);
         compressed_file.write_all(model.to_json().as_bytes())?;
         Ok(())
-    }
+    } */
 }
 
 impl TestDataFilesWriter {

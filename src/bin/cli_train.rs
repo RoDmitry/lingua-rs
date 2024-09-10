@@ -1,11 +1,18 @@
 use clap::Parser;
-use lingua::{DetectionResult, IsoCode639_1, Language, LanguageDetectorBuilder, LanguageModelFilesWriter};
+use lingua::{
+    DetectionResult, IsoCode639_1, Language, LanguageDetector, LanguageDetectorBuilder,
+    LanguageModelFilesWriter,
+};
 use std::io::{self, BufRead, Read};
+use std::path::Path;
 use std::str::FromStr;
 
 #[derive(Parser)]
 #[command(version, about)]
 struct Args {
+    #[arg(short = 'o', required = true)]
+    out: String,
+
     /// List of iso-639-1 language codes
     #[arg(
         short,
@@ -70,41 +77,49 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    if args.list {
+    /* if args.list {
         let mut languages: Vec<Language> = Language::all().into_iter().collect();
         languages.sort();
         for language in languages {
             println!("{} - {}", language.iso_code_639_1(), language);
         }
         std::process::exit(0);
-    }
+    } */
 
     // Select languages by ISO 639-1 code.
-    let languages: Vec<_> = args
-        .languages
-        .iter()
-        .map(|lang| {
-            IsoCode639_1::from_str(lang.as_str())
-                .expect("Supported iso639-1 language code expected")
-        })
-        .collect();
+    /* let languages: Vec<_> = args
+    .languages
+    .iter()
+    .map(|lang| {
+        IsoCode639_1::from_str(lang.as_str())
+            .expect("Supported iso639-1 language code expected")
+    })
+    .collect(); */
 
     let mut buf: Vec<u8> = Vec::new();
     io::stdin()
         .read_to_end(&mut buf)
         .expect("expected input via stdin");
     let text = String::from_utf8(buf).expect("Input should be valid utf-8");
-    let lines: Vec<_> = text
+
+    let lines_words: Vec<_> = text
         .lines()
-        // .map(|line| line.unwrap())
-        .filter(|line| !line.trim().is_empty()).collect();
+        .filter(|line| !line.trim().is_empty())
+        .map(|text| LanguageDetector::filter_text_to_words(text).into_iter())
+        .flatten()
+        .filter(|(_, wd)| wd.alphabets_count.contains_key(&Language::English))
+        .map(|(w, _)| w)
+        .collect();
+
+    let output_directory_path = Path::new(&args.out);
 
     let result = LanguageModelFilesWriter::create_and_write_language_model(
-        &lines,
+        output_directory_path,
+        &lines_words,
         &Language::English,
         "\\p{L}",
     );
-    println!("{}", result)
+    println!("{:?}", result)
 }
 
 #[inline]

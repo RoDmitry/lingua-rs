@@ -26,12 +26,39 @@ pub(crate) struct Fraction {
     denominator: u32,
 }
 
+/* impl Hash for Fraction {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.numerator.hash(state);
+        self.denominator.hash(state);
+    }
+}
+
+impl PartialEq for Fraction {
+    fn eq(&self, other: &Self) -> bool {
+        self.numerator.eq(&other.numerator) && self.denominator.eq(&other.denominator)
+    }
+}
+
+impl PartialOrd for Fraction {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(if self.val > other.val {
+            Ordering::Greater
+        } else if self.val < other.val {
+            Ordering::Less
+        } else {
+            Ordering::Equal
+        })
+    }
+} */
+
 impl Fraction {
     pub(crate) fn new(numerator: u32, denominator: u32) -> Self {
         let fraction = GenericFraction::<u32>::new(numerator, denominator);
+        let numerator = *fraction.numer().unwrap();
+        let denominator = *fraction.denom().unwrap();
         Self {
-            numerator: *fraction.numer().unwrap(),
-            denominator: *fraction.denom().unwrap(),
+            numerator,
+            denominator,
         }
     }
 

@@ -18,23 +18,44 @@ use crate::fraction::Fraction;
 use crate::ngram::{Ngram, NgramRef};
 use crate::Language;
 use ::std::collections::BTreeMap;
+use ::std::fs::File;
+use ::std::io;
+use ::std::io::Write;
+use ::std::path::Path;
 use ahash::{AHashMap, AHashSet};
 use compact_str::CompactString;
+use fraction::GenericFraction;
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-struct JsonLanguageModel {
+pub(crate) struct JsonLanguageModel {
     language: Language,
     ngrams: BTreeMap<Fraction, String>,
+}
+
+impl JsonLanguageModel {
+    pub(crate) fn from_json(json: &str) -> AHashMap<CompactString, f64> {
+        let json_language_model = serde_json::from_str::<Self>(json).unwrap();
+        let mut json_relative_frequencies = AHashMap::new();
+
+        for (fraction, ngrams) in json_language_model.ngrams {
+            let floating_point_value = fraction.to_f64();
+            for ngram in ngrams.split(' ') {
+                json_relative_frequencies.insert(CompactString::new(ngram), floating_point_value);
+            }
+        }
+
+        json_relative_frequencies
+    }
 }
 
 #[derive(Debug)]
 pub(crate) struct TrainingDataLanguageModel {
     language: Language,
     pub(crate) absolute_frequencies: Option<AHashMap<Ngram, u32>>,
-    relative_frequencies: Option<AHashMap<Ngram, Fraction>>,
+    relative_frequencies: Option<AHashMap<GenericFraction<u32>, Vec<Ngram>>>,
 }
 
 impl TrainingDataLanguageModel {
@@ -59,43 +80,6 @@ impl TrainingDataLanguageModel {
             absolute_frequencies: Some(absolute_frequencies),
             relative_frequencies: Some(relative_frequencies),
         }
-    }
-
-    pub(crate) fn from_json(json: &str) -> AHashMap<CompactString, f64> {
-        let json_language_model = serde_json::from_str::<JsonLanguageModel>(json).unwrap();
-        let mut json_relative_frequencies = AHashMap::new();
-
-        for (fraction, ngrams) in json_language_model.ngrams {
-            let floating_point_value = fraction.to_f64();
-            for ngram in ngrams.split(' ') {
-                json_relative_frequencies.insert(CompactString::new(ngram), floating_point_value);
-            }
-        }
-
-        json_relative_frequencies
-    }
-
-    pub(crate) fn to_json(&self) -> String {
-        let mut fractions_to_ngrams = AHashMap::new();
-        for (ngram, fraction) in self.relative_frequencies.as_ref().unwrap() {
-            let ngrams = fractions_to_ngrams.entry(fraction).or_insert_with(Vec::new);
-            ngrams.push(ngram);
-        }
-
-        let mut fractions_to_joined_ngrams = btreemap!();
-        for (fraction, ngrams) in fractions_to_ngrams {
-            fractions_to_joined_ngrams.insert(
-                *fraction,
-                ngrams.iter().map(|&it| &it.value).sorted().join(" "),
-            );
-        }
-
-        let model = JsonLanguageModel {
-            language: self.language,
-            ngrams: fractions_to_joined_ngrams,
-        };
-
-        serde_json::to_string(&model).unwrap()
     }
 
     fn compute_absolute_frequencies(
@@ -130,9 +114,9 @@ impl TrainingDataLanguageModel {
         ngram_length: usize,
         absolute_frequencies: &AHashMap<Ngram, u32>,
         lower_ngram_absolute_frequencies: &AHashMap<Ngram, u32>,
-    ) -> AHashMap<Ngram, Fraction> {
-        let mut ngram_probabilities = AHashMap::new();
+    ) -> AHashMap<GenericFraction<u32>, Vec<Ngram>> {
         let total_ngram_frequency = absolute_frequencies.values().sum::<u32>();
+        let mut ngram_probabilities: AHashMap<GenericFraction<u32>, Vec<Ngram>> = AHashMap::new();
 
         for (ngram, frequency) in absolute_frequencies {
             let denominator = if ngram_length == 1 || lower_ngram_absolute_frequencies.is_empty() {
@@ -150,10 +134,70 @@ impl TrainingDataLanguageModel {
                     .unwrap();
                 start_abs_fr.min(end_abs_fr)
             };
-            ngram_probabilities.insert(ngram.clone(), Fraction::new(*frequency, denominator));
+            let fract = GenericFraction::<u32>::new(*frequency, denominator);
+            ngram_probabilities
+                .entry(fract)
+                .or_default()
+                .push(ngram.clone());
         }
 
         ngram_probabilities
+    }
+
+    /* pub(crate) fn to_json(&self) -> String {
+        let mut fractions_to_ngrams = AHashMap::new();
+        for (ngram, fraction) in self.relative_frequencies.as_ref().unwrap() {
+            let ngrams = fractions_to_ngrams.entry(fraction).or_insert_with(Vec::new);
+            ngrams.push(ngram);
+        }
+
+        let mut fractions_to_joined_ngrams = btreemap!();
+        for (fraction, ngrams) in fractions_to_ngrams {
+            fractions_to_joined_ngrams.insert(
+                *fraction,
+                ngrams.iter().map(|&it| &it.value).sorted().join(" "),
+            );
+        }
+
+        let model = JsonLanguageModel {
+            language: self.language,
+            ngrams: fractions_to_joined_ngrams,
+        };
+
+        serde_json::to_string(&model).unwrap()
+    } */
+
+    pub(crate) fn to_match(self, output_directory_path: &Path, file_name: &str) -> io::Result<()> {
+        let mut sorted: Vec<_> = self.relative_frequencies.unwrap().into_iter().collect();
+        sorted.sort_unstable_by(|a, b| b.0.cmp(&a.0));
+
+        let file_path = output_directory_path.join(file_name);
+        let mut file = File::create(file_path)?;
+        file.write_all(b"pub fn prob(t: &str) -> f64 {\nmatch t {\n")?;
+
+        for (fraction, ngrams) in sorted {
+            file.write_all(b"\"")?;
+            file.write_all(
+                ngrams
+                    .into_iter()
+                    .map(|n| n.value)
+                    .join("\" | \"")
+                    .as_bytes(),
+            )?;
+            file.write_all(b"\" => ")?;
+
+            let numer = fraction.numer().unwrap();
+            let denom = fraction.denom().unwrap();
+            if numer == denom {
+                file.write_all(b"1.0,\n")?;
+            } else {
+                file.write_all(numer.to_string().as_bytes())?;
+                file.write_all(b".0 / ")?;
+                file.write_all(denom.to_string().as_bytes())?;
+                file.write_all(b".0,\n")?;
+            }
+        }
+        file.write_all(b"_ => 0.0,\n}\n}")
     }
 }
 
@@ -224,7 +268,7 @@ mod tests {
         By the way, they consist of 23 words in total.
     ";
 
-    mod json_data {
+    /* mod json_data {
         use super::*;
 
         #[test]
@@ -243,7 +287,7 @@ mod tests {
             let deserialized = serde_json::from_str::<JsonLanguageModel>(&serialized).unwrap();
             assert_eq!(deserialized, model);
         }
-    }
+    } */
 
     mod training_data {
         use super::*;
