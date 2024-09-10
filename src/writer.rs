@@ -57,7 +57,7 @@ impl LanguageModelFilesWriter {
     pub fn create_and_write_language_model(
         // input_file_path: &Path,
         output_directory_path: &Path,
-        lines: &[&str],
+        words: &[&str],
         language: &Language,
         char_class: &str,
     ) -> io::Result<()> {
@@ -65,16 +65,28 @@ impl LanguageModelFilesWriter {
         // check_output_directory_path(output_directory_path);
 
         let unigram_model =
-            TrainingDataLanguageModel::from_text(lines, language, 1, char_class, &ahashmap!());
+            TrainingDataLanguageModel::from_text(words, language, 1, char_class, &ahashmap!());
 
         let bigram_model = TrainingDataLanguageModel::from_text(
-            lines,
+            words,
             language,
             2,
             char_class,
             unigram_model.absolute_frequencies.as_ref().unwrap(),
         );
         // panic!("{:?}\n{:?}", unigram_model.absolute_frequencies, bigram_model);
+        unigram_model.to_match(output_directory_path, "unigrams.rs")?;
+
+        let trigram_model = TrainingDataLanguageModel::from_text(
+            words,
+            language,
+            3,
+            char_class,
+            bigram_model.absolute_frequencies.as_ref().unwrap(),
+        );
+        bigram_model.to_match(output_directory_path, "bigrams.rs")?;
+
+        trigram_model.to_match(output_directory_path, "trigrams.rs")
 
         /* let trigram_model = Self::create_language_model(
             input_file_path,
@@ -125,8 +137,6 @@ impl LanguageModelFilesWriter {
             output_directory_path,
             "fivegrams.json",
         )?; */
-
-        bigram_model.to_match(output_directory_path, "bigrams.rs")
     }
 
     /* fn create_language_model(

@@ -175,7 +175,7 @@ pub enum Alphabet {
     OdiaOriya,
     OjibweCanadianAboriginal,
     OldChurchSlavonicGlagolitic,
-    OldEnglish,
+    OldEnglishRunic,
     OldHungarian,
     OldIrishOgham,
     OldJavaneseKawi,
@@ -467,7 +467,7 @@ impl From<Alphabet> for &[Language] {
             OdiaOriya => &[Language::Odia],
             OjibweCanadianAboriginal => &[Language::Ojibwe],
             OldChurchSlavonicGlagolitic => &[Language::OldChurchSlavonic],
-            OldEnglish => &[Language::OldEnglish],
+            OldEnglishRunic => &[Language::OldEnglish],
             OldHungarian => &[Language::OldHungarian],
             OldIrishOgham => &[Language::OldIrish],
             OldJavaneseKawi => &[Language::OldJavanese],
@@ -976,6 +976,18 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         Script::Hebrew => alphabet_match!([(Alphabet::Hebrew, []), (Alphabet::YiddishHebrew, [])]),
         Script::Hiragana => alphabet_match!([(Alphabet::JapaneseHiragana, [])]),
         Script::ImperialAramaic => alphabet_match!([(Alphabet::AramaicImperial, [])]),
+        Script::Inherited => match ch {
+            /* '\u{307}' => &[
+                // Alphabet::ChechenLatin,
+                // Alphabet::OldIrishLatin,
+                Alphabet::LithuanianLatin,
+                // Alphabet::LivonianLatin,
+                // Alphabet::MalteseLatin,
+                // Alphabet::OldEnglishLatin,
+                Alphabet::PolishLatin,
+            ], */
+            _ => &[], // must be always empty
+        },
         Script::InscriptionalPahlavi => {
             alphabet_match!([(Alphabet::MiddlePersianInscriptionalPahlavi, [])])
         }
@@ -1556,7 +1568,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         Script::PsalterPahlavi => alphabet_match!([(Alphabet::MiddlePersianPsalterPahlavi, [])]),
         Script::Rejang => alphabet_match!([(Alphabet::Rejang, [])]),
         Script::Runic => {
-            alphabet_match!([(Alphabet::OldNorseRunic, []), (Alphabet::OldEnglish, [])])
+            alphabet_match!([(Alphabet::OldNorseRunic, []), (Alphabet::OldEnglishRunic, [])])
         }
         Script::Samaritan => alphabet_match!([(Alphabet::HebrewSamaritan, [])]),
         Script::Saurashtra => alphabet_match!([(Alphabet::Saurashtra, [])]),

@@ -86,7 +86,7 @@ pub const BY_NAME: &'static [(Script, &'static [(char, char)])] = &[
     (Script::Hebrew, HEBREW),
     (Script::Hiragana, HIRAGANA),
     (Script::ImperialAramaic, IMPERIAL_ARAMAIC),
-    // (Script::Inherited, INHERITED),
+    (Script::Inherited, INHERITED),
     (Script::InscriptionalPahlavi, INSCRIPTIONAL_PAHLAVI),
     (Script::InscriptionalParthian, INSCRIPTIONAL_PARTHIAN),
     (Script::Javanese, JAVANESE),

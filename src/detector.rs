@@ -1085,6 +1085,9 @@ impl LanguageDetector {
                 .take()
                 .or_else(|| Script::find(ch))
                 .unwrap_or(Script::Common);
+            if script == Script::Inherited {
+                continue;
+            }
             let alphabets = script_char_to_alphabets(script, ch);
 
             let ch_skip = if alphabets.is_empty() {
@@ -2937,6 +2940,10 @@ mod tests {
         case(
             "Weltweit    gibt es ungefähr 6.000 Sprachen.",
             ahashset!("Weltweit", "gibt", "es", "ungefähr", "Sprachen")
+        ),
+        case(
+            "Thi̇s is one word", // This = THİS with lowered İ
+            ahashset!("Thi̇s", "is", "one", "word")
         )
     )]
     fn test_filter_text_to_words(

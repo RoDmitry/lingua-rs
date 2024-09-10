@@ -102,7 +102,7 @@ fn main() {
         .expect("expected input via stdin");
     let text = String::from_utf8(buf).expect("Input should be valid utf-8");
 
-    let lines_words: Vec<_> = text
+    let words: Vec<_> = text
         .lines()
         .filter(|line| !line.trim().is_empty())
         .map(|text| LanguageDetector::filter_text_to_words(text).into_iter())
@@ -115,7 +115,7 @@ fn main() {
 
     let result = LanguageModelFilesWriter::create_and_write_language_model(
         output_directory_path,
-        &lines_words,
+        &words,
         &Language::English,
         "\\p{L}",
     );

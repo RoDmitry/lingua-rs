@@ -61,7 +61,7 @@ pub(crate) enum Script {
     Hebrew,
     Hiragana,
     ImperialAramaic,
-    // Inherited,
+    Inherited,
     InscriptionalPahlavi,
     InscriptionalParthian,
     Javanese,
