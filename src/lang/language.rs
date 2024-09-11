@@ -271,6 +271,7 @@ pub enum Language {
     #[strum(serialize = "kas")]
     Kashmiri,
     KayahLi,
+    #[strum(serialize = "kaz")]
     Kazakh,
     Khitan,
     #[strum(serialize = "khm")]

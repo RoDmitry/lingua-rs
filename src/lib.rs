@@ -442,7 +442,7 @@ mod writer;
 pub use builder::LanguageDetectorBuilder;
 pub use detector::LanguageDetector;
 pub use isocode::{IsoCode639_1, IsoCode639_3};
-pub use lang::{Alphabet, Language};
+pub use lang::{str_to_alphabets, Alphabet, Language};
 pub use result::DetectionResult;
 #[cfg(target_family = "wasm")]
 pub use wasm::{

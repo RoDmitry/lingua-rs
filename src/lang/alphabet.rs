@@ -1,4 +1,5 @@
 use super::{Language, Script};
+use ::std::fmt::{Debug, Display, Formatter, Result};
 use alphabet_match_macro::alphabet_match;
 use std::str::FromStr;
 use std::string::ToString;
@@ -240,6 +241,13 @@ pub enum Alphabet {
     Yezidi,
     Yi,
     ZanabazarSquare,
+}
+
+impl Display for Alphabet {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let debug_repr = format!("{self:?}");
+        write!(f, "{}", debug_repr)
+    }
 }
 
 impl From<Alphabet> for &[Language] {

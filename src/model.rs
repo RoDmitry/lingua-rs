@@ -18,6 +18,7 @@ use crate::fraction::Fraction;
 use crate::ngram::{Ngram, NgramRef};
 use crate::Language;
 use ::std::collections::BTreeMap;
+use std::fs::create_dir_all;
 use ::std::fs::File;
 use ::std::io;
 use ::std::io::Write;
@@ -178,6 +179,9 @@ impl TrainingDataLanguageModel {
         sorted.sort_unstable_by(|a, b| b.0.cmp(&a.0));
 
         let file_path = output_directory_path.join(file_name);
+        if let Some(parent) = file_path.parent() {
+            create_dir_all(parent)?;
+        }
         let mut file = File::create(file_path)?;
         file.write_all(b"pub fn prob(t: &str) -> f64 {\nmatch t {\n")?;
 

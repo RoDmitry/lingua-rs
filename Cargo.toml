@@ -30,7 +30,7 @@ readme = "README.md"
 edition = "2021"
 categories = ["text-processing"]
 keywords = ["language-processing", "language-detection", "language-recognition", "nlp"]
-default-run = "cli_train"
+default-run = "cli_train_files"
 
 [profile.dev]
 opt-level = 1
@@ -42,6 +42,9 @@ path = "src/lib.rs"
 
 [[bin]]
 name = "cli_train"
+
+[[bin]]
+name = "cli_train_files"
 
 [[bin]]
 name = "cli_detect"

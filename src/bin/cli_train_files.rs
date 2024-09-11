@@ -1,8 +1,9 @@
 use clap::Parser;
 use lingua::{
-    DetectionResult, IsoCode639_1, Language, LanguageDetector, LanguageDetectorBuilder,
-    LanguageModelFilesWriter,
+    str_to_alphabets, DetectionResult, IsoCode639_1, Language, LanguageDetector,
+    LanguageDetectorBuilder, LanguageModelFilesWriter,
 };
+use std::fs;
 use std::io::{self, BufRead, Read};
 use std::path::Path;
 use std::str::FromStr;
@@ -10,6 +11,9 @@ use std::str::FromStr;
 #[derive(Parser)]
 #[command(version, about)]
 struct Args {
+    #[arg(short = 'i', required = true)]
+    inp: String,
+
     #[arg(short = 'o', required = true)]
     out: String,
 
@@ -77,38 +81,46 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    /* if args.list {
-        let mut languages: Vec<Language> = Language::all().into_iter().collect();
-        languages.sort();
-        for language in languages {
-            println!("{} - {}", language.iso_code_639_1(), language);
+    let paths = fs::read_dir(&args.inp).unwrap();
+
+    for path in paths {
+        let path = path.unwrap();
+        let file_name = path.file_name().into_string().unwrap();
+        println!("Name: {}", file_name);
+        let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
+            unreachable!()
+        };
+
+        let Ok(lang) = Language::from_str(lang) else {
+            panic!("Not found lang: {}", lang);
+        };
+        if lang == Language::Japanese {
+            continue;
         }
-        std::process::exit(0);
-    } */
 
-    // Select languages by ISO 639-1 code.
-    /* let languages: Vec<_> = args
-    .languages
-    .iter()
-    .map(|lang| {
-        IsoCode639_1::from_str(lang.as_str())
-            .expect("Supported iso639-1 language code expected")
-    })
-    .collect(); */
+        let alphabets = str_to_alphabets(alph);
+        let Some(alphabet) = alphabets
+            .iter()
+            .find(|a| <&[Language]>::from(**a).contains(&lang))
+        else {
+            panic!("Not found alphabet for lang: {lang} in {:?}", alphabets);
+        };
+        println!("lang: {:?}", lang);
+        println!("alphabet: {:?}", alphabet);
 
-    /* let mut buf: Vec<u8> = Vec::new();
-    io::stdin()
-        .read_to_end(&mut buf)
-        .expect("expected input via stdin"); */
-    // let text = String::from_utf8(buf).expect("Input should be valid utf-8");
+        /* let lines = io::stdin()
+        .lines()
+        .map(|r| r.unwrap())
+        .filter(|line| !line.trim().is_empty()); */
+        let text = fs::read_to_string(path.path()).unwrap();
 
-    let output_directory_path = Path::new(&args.out);
-    let lines = io::stdin().lines().map(|r| r.unwrap()).filter(|line| !line.trim().is_empty());
-
-    let result = LanguageModelFilesWriter::create_and_write_language_model(
-        output_directory_path,
-        lines,
-        &Language::Japanese,
-    );
-    println!("{:?}", result)
+        let out_path = args.out.clone() + "/" + &lang.to_string() + "/" + &alphabet.to_string();
+        let output_directory_path = Path::new(&out_path);
+        let result = LanguageModelFilesWriter::create_and_write_language_model(
+            output_directory_path,
+            &text,
+            &lang,
+        );
+        println!("{:?}", result)
+    }
 }
