@@ -58,7 +58,7 @@ impl LanguageModelFilesWriter {
         // input_file_path: &Path,
         output_directory_path: &Path,
         // lines: Vec<&str>,
-        text: &str,
+        text: String,
         language: &Language,
     ) -> io::Result<()> {
         // check_input_file_path(input_file_path);
@@ -72,14 +72,16 @@ impl LanguageModelFilesWriter {
         // let chars: Vec<_> = chars.collect();
         // println!("{:?}", chars);
         let words = LanguageDetector::filter_text_to_words(text.char_indices());
-        let wrong_words: Vec<_> = words
+        drop(text);
+        /* let wrong_words: Vec<_> = words
             .iter()
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
             .collect();
-        println!("wrong_words {}", wrong_words.len());
+        println!("wrong_words {}", wrong_words.len()); */
         let word_chars: Vec<(Vec<char>, usize)> = words
             .into_iter()
-            .filter(|(_, wd)| wd.alphabets_count.contains_key(language))
+            // todo: uncomment filter
+            // .filter(|(_, wd)| wd.alphabets_count.contains_key(language))
             .map(|(w, wd)| (w.chars().collect::<Vec<_>>(), wd.text_indexes.len()))
             .collect();
         /* let words: Vec<Vec<char>> = lines

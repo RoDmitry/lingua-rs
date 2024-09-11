@@ -3,6 +3,7 @@ use lingua::{
     str_to_alphabets, DetectionResult, IsoCode639_1, Language, LanguageDetector,
     LanguageDetectorBuilder, LanguageModelFilesWriter,
 };
+use rayon::prelude::*;
 use std::fs;
 use std::io::{self, BufRead, Read};
 use std::path::Path;
@@ -82,45 +83,62 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let paths = fs::read_dir(&args.inp).unwrap();
+    /* let files: Vec<_> = paths
+    .into_iter()
+    .map(|p| p.unwrap())
+    .map(|path| (path.file_name().into_string().unwrap(), path.path()))
+    .collect(); */
+    let pool = threadpool::ThreadPool::new(8);
 
     for path in paths {
-        let path = path.unwrap();
-        let file_name = path.file_name().into_string().unwrap();
-        println!("Name: {}", file_name);
-        let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
-            unreachable!()
-        };
+        // files.into_par_iter().for_each(|(file_name, path)| {
+        let out_path = args.out.clone();
+        pool.execute(move || {
+            let path = path.unwrap();
+            let file_name = path.file_name().into_string().unwrap();
+            let thread_id: u8 = rand::random();
+            println!("*{}* Name: {}", thread_id, file_name);
+            let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
+                unreachable!()
+            };
 
-        let Ok(lang) = Language::from_str(lang) else {
-            panic!("Not found lang: {}", lang);
-        };
-        if lang == Language::Japanese {
-            continue;
-        }
+            let Ok(lang) = Language::from_str(lang) else {
+                panic!("*{}* Not found lang: {}", thread_id, lang);
+            };
+            if lang == Language::Japanese {
+                return;
+            }
 
-        let alphabets = str_to_alphabets(alph);
-        let Some(alphabet) = alphabets
-            .iter()
-            .find(|a| <&[Language]>::from(**a).contains(&lang))
-        else {
-            panic!("Not found alphabet for lang: {lang} in {:?}", alphabets);
-        };
-        println!("lang: {:?}", lang);
-        println!("alphabet: {:?}", alphabet);
+            let alphabets = str_to_alphabets(alph);
+            let Some(alphabet) = alphabets
+                .iter()
+                .find(|a| <&[Language]>::from(**a).contains(&lang))
+            else {
+                panic!(
+                    "*{}* Not found alphabet for lang: {lang} in {:?}",
+                    thread_id, alphabets
+                );
+            };
+            println!("*{}* lang: {:?}", thread_id, lang);
+            println!("*{}* alphabet: {:?}", thread_id, alphabet);
 
-        /* let lines = io::stdin()
-        .lines()
-        .map(|r| r.unwrap())
-        .filter(|line| !line.trim().is_empty()); */
-        let text = fs::read_to_string(path.path()).unwrap();
+            /* let lines = io::stdin()
+            .lines()
+            .map(|r| r.unwrap())
+            .filter(|line| !line.trim().is_empty()); */
+            let text = fs::read_to_string(path.path()).unwrap();
+            // let text = fs::read_to_string(path).unwrap();
 
-        let out_path = args.out.clone() + "/" + &lang.to_string() + "/" + &alphabet.to_string();
-        let output_directory_path = Path::new(&out_path);
-        let result = LanguageModelFilesWriter::create_and_write_language_model(
-            output_directory_path,
-            &text,
-            &lang,
-        );
-        println!("{:?}", result)
+            let out_path = out_path + "/" + &lang.to_string() + "/" + &alphabet.to_string();
+            let output_directory_path = Path::new(&out_path);
+            let result = LanguageModelFilesWriter::create_and_write_language_model(
+                output_directory_path,
+                text,
+                &lang,
+            );
+            println!("*{}* {:?}", thread_id, result);
+        });
     }
+
+    pool.join();
 }
