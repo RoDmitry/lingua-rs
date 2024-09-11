@@ -134,7 +134,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
             mapping.insert("İıĞğ", {
                 let mut languages = AHashSet::new();
                 if cfg!(feature = "azerbaijani") {
-                    languages.insert(Language::Azerbaijani);
+                    languages.insert(Language::AzerbaijaniNorth);
                 }
                 if cfg!(feature = "turkish") {
                     languages.insert(Language::Turkish);
@@ -147,7 +147,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
             mapping.insert("Әә", {
                 let mut languages = AHashSet::new();
                 if cfg!(feature = "azerbaijani") {
-                    languages.insert(Language::Azerbaijani);
+                    languages.insert(Language::AzerbaijaniNorth);
                 }
                 if cfg!(feature = "kazakh") {
                     languages.insert(Language::Kazakh);
@@ -228,7 +228,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
                     languages.insert(Language::Kazakh);
                 }
                 if cfg!(feature = "mongolian") {
-                    languages.insert(Language::Mongolian);
+                    languages.insert(Language::MongolianHalh);
                 }
                 languages
             });
@@ -255,7 +255,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
             mapping.insert("Şş", {
                 let mut languages = AHashSet::new();
                 if cfg!(feature = "azerbaijani") {
-                    languages.insert(Language::Azerbaijani);
+                    languages.insert(Language::AzerbaijaniNorth);
                 }
                 if cfg!(feature = "romanian") {
                     languages.insert(Language::Romanian);
@@ -397,7 +397,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
                     languages.insert(Language::Afrikaans);
                 }
                 if cfg!(feature = "albanian") {
-                    languages.insert(Language::Albanian);
+                    languages.insert(Language::AlbanianTosk);
                 }
                 if cfg!(feature = "dutch") {
                     languages.insert(Language::Dutch);
@@ -514,7 +514,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
                         languages.insert(Language::Kazakh);
                     }
                     if cfg!(feature = "mongolian") {
-                        languages.insert(Language::Mongolian);
+                        languages.insert(Language::MongolianHalh);
                     }
                     if cfg!(feature = "russian") {
                         languages.insert(Language::Russian);
@@ -537,7 +537,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
                         languages.insert(Language::Kazakh);
                     }
                     if cfg!(feature = "mongolian") {
-                        languages.insert(Language::Mongolian);
+                        languages.insert(Language::MongolianHalh);
                     }
                     if cfg!(feature = "russian") {
                         languages.insert(Language::Russian);
@@ -734,7 +734,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
                 mapping.insert("Üü", {
                     let mut languages = AHashSet::new();
                     if cfg!(feature = "azerbaijani") {
-                        languages.insert(Language::Azerbaijani);
+                        languages.insert(Language::AzerbaijaniNorth);
                     }
                     if cfg!(feature = "catalan") {
                         languages.insert(Language::Catalan);
@@ -804,10 +804,10 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
                 mapping.insert("Çç", {
                     let mut languages = AHashSet::new();
                     if cfg!(feature = "albanian") {
-                        languages.insert(Language::Albanian);
+                        languages.insert(Language::AlbanianTosk);
                     }
                     if cfg!(feature = "azerbaijani") {
-                        languages.insert(Language::Azerbaijani);
+                        languages.insert(Language::AzerbaijaniNorth);
                     }
                     if cfg!(feature = "basque") {
                         languages.insert(Language::Basque);
@@ -840,7 +840,7 @@ pub(crate) static CHARS_TO_LANGUAGES_MAPPING: Lazy<AHashMap<&'static str, AHashS
                 mapping.insert("Öö", {
                     let mut languages = AHashSet::new();
                     if cfg!(feature = "azerbaijani") {
-                        languages.insert(Language::Azerbaijani);
+                        languages.insert(Language::AzerbaijaniNorth);
                     }
                     if cfg!(feature = "estonian") {
                         languages.insert(Language::Estonian);

@@ -193,7 +193,7 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
         Language::Afrikaans => Some(AFRIKAANS_MODELS_DIRECTORY),
 
         #[cfg(feature = "albanian")]
-        Language::Albanian => Some(ALBANIAN_MODELS_DIRECTORY),
+        Language::AlbanianTosk => Some(ALBANIAN_MODELS_DIRECTORY),
 
         #[cfg(feature = "arabic")]
         Language::Arabic => Some(ARABIC_MODELS_DIRECTORY),
@@ -202,7 +202,7 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
         Language::Armenian => Some(ARMENIAN_MODELS_DIRECTORY),
 
         #[cfg(feature = "azerbaijani")]
-        Language::Azerbaijani => Some(AZERBAIJANI_MODELS_DIRECTORY),
+        Language::AzerbaijaniNorth => Some(AZERBAIJANI_MODELS_DIRECTORY),
 
         #[cfg(feature = "basque")]
         Language::Basque => Some(BASQUE_MODELS_DIRECTORY),
@@ -322,7 +322,7 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
         Language::Marathi => Some(MARATHI_MODELS_DIRECTORY),
 
         #[cfg(feature = "mongolian")]
-        Language::Mongolian => Some(MONGOLIAN_MODELS_DIRECTORY),
+        Language::MongolianHalh => Some(MONGOLIAN_MODELS_DIRECTORY),
 
         #[cfg(feature = "nynorsk")]
         Language::Nynorsk => Some(NYNORSK_MODELS_DIRECTORY),
@@ -337,7 +337,7 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
         Language::Portuguese => Some(PORTUGUESE_MODELS_DIRECTORY),
 
         #[cfg(feature = "punjabi")]
-        Language::Punjabi => Some(PUNJABI_MODELS_DIRECTORY),
+        Language::PunjabiEastern => Some(PUNJABI_MODELS_DIRECTORY),
 
         #[cfg(feature = "romanian")]
         Language::Romanian => Some(ROMANIAN_MODELS_DIRECTORY),

@@ -50,3 +50,5 @@ $RECYCLE.BIN/
 *.lnk
 Desktop.ini
 ehthumbs.db
+
+/models/

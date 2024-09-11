@@ -6,6 +6,7 @@ use strum_macros::EnumIter;
 use strum_macros::EnumString;
 use strum_macros::IntoStaticStr;
 
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
 pub enum Alphabet {
     Adlam,
@@ -406,6 +407,7 @@ impl From<Alphabet> for &[Language] {
                 Language::Asturian,
                 Language::AymaraCentral,
                 Language::Balinese,
+                Language::Bambara,
                 Language::Banjar,
                 Language::Bemba,
                 Language::Buginese,
@@ -437,15 +439,19 @@ impl From<Alphabet> for &[Language] {
                 Language::Kikuyu,
                 Language::Kimbundu,
                 Language::Kinyarwanda,
+                Language::KurdishNorthern,
                 Language::Latgalian,
                 Language::Ligurian,
                 Language::Limburgish,
+                Language::Lingala,
                 Language::Lombard,
                 Language::LubaKasai,
+                Language::Luo,
                 Language::Luxembourgish,
                 Language::MalgasyPlateau,
                 Language::Maltese,
                 Language::Minangkabau,
+                Language::Mizo,
                 Language::Mossi,
                 Language::Nuer,
                 Language::Nyanja,
@@ -475,8 +481,8 @@ impl From<Alphabet> for &[Language] {
                 Language::Wolof,
             ],
             LatinAfrikaans => &[Language::Afrikaans],
-            LatinAlbanian => &[Language::Albanian, Language::AlbanianTosk],
-            LatinAzerbaijani => &[Language::Azerbaijani, Language::AzerbaijaniNorth],
+            LatinAlbanian => &[Language::AlbanianTosk],
+            LatinAzerbaijani => &[Language::AzerbaijaniNorth],
             LatinBasque => &[Language::Basque],
             LatinBokmal => &[Language::Bokmal],
             LatinBosnian => &[Language::Bosnian],
@@ -623,7 +629,7 @@ impl From<Alphabet> for &[Language] {
             TuluTigalari => &[Language::Sanskrit, Language::Tulu, Language::Kannada],
             Ugaritic => &[Language::Ugaritic],
             Vai => &[Language::Vai],
-            Vithkuqi => &[Language::Albanian],
+            Vithkuqi => &[Language::AlbanianTosk],
             Wancho => &[Language::Wancho],
             WarangCiti => &[Language::Ho],
             Yezidi => &[Language::Kurdish],

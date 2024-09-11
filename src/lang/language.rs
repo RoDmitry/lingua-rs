@@ -38,7 +38,7 @@ use strum_macros::{EnumIter, EnumString};
     Deserialize,
     EnumIter,
     EnumString,
-    strum_macros::Display,
+    // strum_macros::Display,
 )]
 #[serde(rename_all(serialize = "UPPERCASE", deserialize = "UPPERCASE"))]
 #[strum(ascii_case_insensitive)]
@@ -53,7 +53,6 @@ pub enum Language {
     Afrikaans,
     Ahom,
     Akkadian,
-    Albanian,
     AlbanianHistorical,
     #[strum(serialize = "als")]
     AlbanianTosk,
@@ -91,7 +90,6 @@ pub enum Language {
     Awadhi,
     #[strum(serialize = "ayr")]
     AymaraCentral,
-    Azerbaijani,
     #[strum(serialize = "azj")]
     AzerbaijaniNorth,
     #[strum(serialize = "azb")]
@@ -570,12 +568,12 @@ pub enum Language {
     Zulu,
 }
 
-/* impl Display for Language {
+impl Display for Language {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let debug_repr = format!("{self:?}");
         write!(f, "{}", debug_repr)
     }
-} */
+}
 
 impl ExtraCheck for Language {
     #[inline]
@@ -680,10 +678,10 @@ impl Language {
         use Language::*;
         match self {
             Afrikaans => IsoCode639_1::AF,
-            Albanian => IsoCode639_1::SQ,
+            AlbanianTosk => IsoCode639_1::SQ, // invalid
             Arabic => IsoCode639_1::AR,
             Armenian => IsoCode639_1::HY,
-            Azerbaijani => IsoCode639_1::AZ,
+            AzerbaijaniNorth => IsoCode639_1::AZ,
             Basque => IsoCode639_1::EU,
             Belarusian => IsoCode639_1::BE,
             Bengali => IsoCode639_1::BN,
@@ -764,10 +762,10 @@ impl Language {
         use Language::*;
         match self {
             Afrikaans => IsoCode639_3::AFR,
-            Albanian => IsoCode639_3::SQI,
+            AlbanianTosk => IsoCode639_3::SQI,
             Arabic => IsoCode639_3::ARA,
             Armenian => IsoCode639_3::HYE,
-            Azerbaijani => IsoCode639_3::AZE,
+            AzerbaijaniNorth => IsoCode639_3::AZE,
             Basque => IsoCode639_3::EUS,
             Belarusian => IsoCode639_3::BEL,
             Bengali => IsoCode639_3::BEN,
@@ -846,8 +844,8 @@ impl Language {
     pub(crate) fn scripts(&self) -> &[Script] {
         match self {
             Language::Afrikaans => &[Script::Latin],
-            Language::Albanian => &[Script::Latin],
-            Language::Azerbaijani => &[Script::Latin],
+            Language::AlbanianTosk => &[Script::Latin],
+            Language::AzerbaijaniNorth => &[Script::Latin],
             Language::Basque => &[Script::Latin],
             Language::Bokmal => &[Script::Latin],
             Language::Bosnian => &[Script::Latin],
@@ -928,7 +926,7 @@ impl Language {
     pub(crate) fn unique_characters(&self) -> Option<&str> {
         match self {
             #[cfg(feature = "azerbaijani")]
-            Language::Azerbaijani => Some("Əə"),
+            Language::AzerbaijaniNorth => Some("Əə"),
             Language::Catalan => Some("Ïï"),
             Language::Czech => Some("ĚěŘřŮů"),
             Language::Esperanto => Some("ĈĉĜĝĤĥĴĵŜŝŬŭ"),
@@ -978,7 +976,7 @@ mod tests {
 
     #[test]
     fn test_from_str() {
-        let language = Language::from_str("english").unwrap();
+        let language = Language::from_str("eng").unwrap();
         assert_eq!(language, English);
     }
 
@@ -1188,8 +1186,8 @@ mod tests {
             Language::all_with_latin_script(),
             ahashset!(
                 Afrikaans,
-                Albanian,
-                Azerbaijani,
+                AlbanianTosk,
+                AzerbaijaniNorth,
                 Basque,
                 Bokmal,
                 Bosnian,
