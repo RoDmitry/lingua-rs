@@ -38,6 +38,7 @@ use strum_macros::{EnumIter, EnumString};
     Deserialize,
     EnumIter,
     EnumString,
+    strum_macros::Display,
 )]
 #[serde(rename_all(serialize = "UPPERCASE", deserialize = "UPPERCASE"))]
 #[strum(ascii_case_insensitive)]
@@ -46,214 +47,342 @@ use strum_macros::{EnumIter, EnumString};
     pyo3::prelude::pyclass(eq, eq_int, frozen, hash, ord, rename_all = "UPPERCASE")
 )]
 pub enum Language {
-    Acehnese,  // #[strum(serialize = "ace")]
-    Afrikaans, // #[strum(serialize = "afr")]
+    #[strum(serialize = "ace")]
+    Acehnese,
+    #[strum(serialize = "afr")]
+    Afrikaans,
     Ahom,
     Akkadian,
     Albanian,
     AlbanianHistorical,
-    AlbanianTosk, // #[strum(serialize = "als")]
-    Amharic,      // #[strum(serialize = "amh")]
+    #[strum(serialize = "als")]
+    AlbanianTosk,
+    #[strum(serialize = "amh")]
+    Amharic,
     AncientGreek,
     Angkola,
-    Arabic,               // #[strum(serialize = "arb")]
-    ArabicEgyptian,       // #[strum(serialize = "arz")]
-    ArabicMesopotamian,   // #[strum(serialize = "acm")]
-    ArabicMoroccan,       // #[strum(serialize = "ary")]
-    ArabicNajdi,          // #[strum(serialize = "ars")]
-    ArabicNorthLevantine, // #[strum(serialize = "apc")]
-    ArabicSouthernYemeni, // #[strum(serialize = "acq")]
-    ArabicSouthLevantine, // #[strum(serialize = "ajp")]
-    ArabicTunisian,       // #[strum(serialize = "aeb")]
+    #[strum(serialize = "arb")]
+    Arabic,
+    #[strum(serialize = "arz")]
+    ArabicEgyptian,
+    #[strum(serialize = "acm")]
+    ArabicMesopotamian,
+    #[strum(serialize = "ary")]
+    ArabicMoroccan,
+    #[strum(serialize = "ars")]
+    ArabicNajdi,
+    #[strum(serialize = "apc")]
+    ArabicNorthLevantine,
+    #[strum(serialize = "acq")]
+    ArabicSouthernYemeni,
+    #[strum(serialize = "ajp")]
+    ArabicSouthLevantine,
+    #[strum(serialize = "aeb")]
+    ArabicTunisian,
     Aramaic,
-    Armenian,      // #[strum(serialize = "hye")]
-    Assamese,      // #[strum(serialize = "asm")]
-    Asturian,      // #[strum(serialize = "ast")]
+    #[strum(serialize = "hye")]
+    Armenian,
+    #[strum(serialize = "asm")]
+    Assamese,
+    #[strum(serialize = "ast")]
+    Asturian,
     Avestan,
-    Awadhi,        // #[strum(serialize = "awa")]
-    AymaraCentral, // #[strum(serialize = "ayr")]
+    #[strum(serialize = "awa")]
+    Awadhi,
+    #[strum(serialize = "ayr")]
+    AymaraCentral,
     Azerbaijani,
-    AzerbaijaniNorth, // #[strum(serialize = "azj")]
-    AzerbaijaniSouth, // #[strum(serialize = "azb")]
-    Balinese, // #[strum(serialize = "ban")]
-    Bambara, // #[strum(serialize = "bam")]
+    #[strum(serialize = "azj")]
+    AzerbaijaniNorth,
+    #[strum(serialize = "azb")]
+    AzerbaijaniSouth,
+    #[strum(serialize = "ban")]
+    Balinese,
+    #[strum(serialize = "bam")]
+    Bambara,
     Bamum,
-    Banjar,     // #[strum(serialize = "bjn")]
+    #[strum(serialize = "bjn")]
+    Banjar,
     Bantawa,
-    Bashkir, // #[strum(serialize = "bak")]
-    Basque,  // #[strum(serialize = "eus")]
+    #[strum(serialize = "bak")]
+    Bashkir,
+    #[strum(serialize = "eus")]
+    Basque,
     Bassa,
-    Belarusian, // #[strum(serialize = "bel")]
-    Bemba, // #[strum(serialize = "bem")]
-    Bengali,    // #[strum(serialize = "ben")]
+    #[strum(serialize = "bel")]
+    Belarusian,
+    #[strum(serialize = "bem")]
+    Bemba,
+    #[strum(serialize = "ben")]
+    Bengali,
     Berber,
     Bhaiksuki,
-    Bhojpuri, // #[strum(serialize = "bho")]
+    #[strum(serialize = "bho")]
+    Bhojpuri,
     BishnupriyaManipuri,
-    Bokmal,  // #[strum(serialize = "nob")]
-    Bosnian, // #[strum(serialize = "bos")]
+    #[strum(serialize = "nob")]
+    Bokmal,
+    #[strum(serialize = "bos")]
+    Bosnian,
     Braille, // Any language adapted to Braille
     BuddhistMarchen,
-    Buginese, // #[strum(serialize = "bug")]
+    #[strum(serialize = "bug")]
+    Buginese,
     Buhid,
-    Bulgarian, // #[strum(serialize = "bul")]
-    Burmese,   // #[strum(serialize = "mya")]
+    #[strum(serialize = "bul")]
+    Bulgarian,
+    #[strum(serialize = "mya")]
+    Burmese,
     Carian,
-    Catalan, // #[strum(serialize = "cat")]
+    #[strum(serialize = "cat")]
+    Catalan,
     CaucasianAlbanian,
-    Cebuano, // #[strum(serialize = "ceb")]
+    #[strum(serialize = "ceb")]
+    Cebuano,
     Chakma,
     Cham,
     Cherokee,
-    Chhattisgarhi,    // #[strum(serialize = "hne")]
-    Chinese,          // #[strum(serialize = "zho")]
-    ChineseCantonese, // #[strum(serialize = "yue")]
+    #[strum(serialize = "hne")]
+    Chhattisgarhi,
+    #[strum(serialize = "zho")]
+    Chinese,
+    #[strum(serialize = "yue")]
+    ChineseCantonese,
     ChineseMandarin,
     ChineseTuhua,
-    Chokwe,        // #[strum(serialize = "cjk")]
+    #[strum(serialize = "cjk")]
+    Chokwe,
     Chorasmian,
     Coptic,
     Cree,
-    CreoleHaitian, // #[strum(serialize = "hat")]
-    Croatian,      // #[strum(serialize = "hrv")]
-    CyproMinoan,   // used in ancient Cyprus
-    Czech,         // #[strum(serialize = "ces")]
-    Danish,        // #[strum(serialize = "dan")]
-    Dari,              // #[strum(serialize = "prs")]
-    DinkaSouthwestern, // #[strum(serialize = "dik")]
+    #[strum(serialize = "hat")]
+    CreoleHaitian,
+    #[strum(serialize = "hrv")]
+    Croatian,
+    CyproMinoan, // used in ancient Cyprus
+    #[strum(serialize = "ces")]
+    Czech,
+    #[strum(serialize = "dan")]
+    Danish,
+    #[strum(serialize = "prs")]
+    Dari,
+    #[strum(serialize = "dik")]
+    DinkaSouthwestern,
     Dogri,
-    Dutch,             // #[strum(serialize = "nld")]
-    Dyula,             // #[strum(serialize = "dyu")]
-    Dzongkha,          // #[strum(serialize = "dzo")]
+    #[strum(serialize = "nld")]
+    Dutch,
+    #[strum(serialize = "dyu")]
+    Dyula,
+    #[strum(serialize = "dzo")]
+    Dzongkha,
     EgyptianHieroglyphs,
     Elymaic,
-    English,         // #[strum(serialize = "eng")]
+    #[strum(serialize = "eng")]
+    English,
     EnglishDuployan, //Shorthand systems for English
     EnglishMormon,
     EnglishPhonetic,
-    Esperanto, // #[strum(serialize = "epo")]
-    Estonian,  // #[strum(serialize = "est")]
+    #[strum(serialize = "epo")]
+    Esperanto,
+    #[strum(serialize = "est")]
+    Estonian,
     Etruscan,
-    Ewe,       // #[strum(serialize = "ewe")]
-    Faroese,          // #[strum(serialize = "fao")]
-    Fijian,           // #[strum(serialize = "fij")]
-    Finnish, // #[strum(serialize = "fin")]
-    Fon,              // #[strum(serialize = "fon")]
-    French,  // #[strum(serialize = "fra")]
+    #[strum(serialize = "ewe")]
+    Ewe,
+    #[strum(serialize = "fao")]
+    Faroese,
+    #[strum(serialize = "fij")]
+    Fijian,
+    #[strum(serialize = "fin")]
+    Finnish,
+    #[strum(serialize = "fon")]
+    Fon,
+    #[strum(serialize = "fra")]
+    French,
     FrenchDuployan,
-    Friulian,         // #[strum(serialize = "fur")]
+    #[strum(serialize = "fur")]
+    Friulian,
     Fulani,
-    FulfuldeNigerian, // #[strum(serialize = "fuv")]
-    GaelicScottish, // #[strum(serialize = "gla")]
-    Galician,       // #[strum(serialize = "glg")]
-    Ganda,            // #[strum(serialize = "lug")]
+    #[strum(serialize = "fuv")]
+    FulfuldeNigerian,
+    #[strum(serialize = "gla")]
+    GaelicScottish,
+    #[strum(serialize = "glg")]
+    Galician,
+    #[strum(serialize = "lug")]
+    Ganda,
     Gandhari,
     Geez,
-    Georgian, // #[strum(serialize = "kat")]
-    German,   // #[strum(serialize = "deu")]
+    #[strum(serialize = "kat")]
+    Georgian,
+    #[strum(serialize = "deu")]
+    German,
     Gondi,
     Gothic,
-    Greek,    // #[strum(serialize = "ell")]
-    Guarani,        // #[strum(serialize = "grn")]
-    Gujarati, // #[strum(serialize = "guj")]
+    #[strum(serialize = "ell")]
+    Greek,
+    #[strum(serialize = "grn")]
+    Guarani,
+    #[strum(serialize = "guj")]
+    Gujarati,
     Gurung,
     Hanunoo,
-    Hausa,  // #[strum(serialize = "hau")]
-    Hebrew, // #[strum(serialize = "heb")]
-    Hindi,  // #[strum(serialize = "hin")]
+    #[strum(serialize = "hau")]
+    Hausa,
+    #[strum(serialize = "heb")]
+    Hebrew,
+    #[strum(serialize = "hin")]
+    Hindi,
     Hittite,
     Hmong,
     Ho,
-    Hungarian,  // #[strum(serialize = "hun")]
-    Icelandic,  // #[strum(serialize = "isl")]
-    Igbo,     // #[strum(serialize = "ibo")]
-    Ilocano,  // #[strum(serialize = "ilo")]
-    Indonesian, // #[strum(serialize = "ind")]
+    #[strum(serialize = "hun")]
+    Hungarian,
+    #[strum(serialize = "isl")]
+    Icelandic,
+    #[strum(serialize = "ibo")]
+    Igbo,
+    #[strum(serialize = "ilo")]
+    Ilocano,
+    #[strum(serialize = "ind")]
+    Indonesian,
     Inuktitut,
-    Irish,    // #[strum(serialize = "gle")]
-    Italian,  // #[strum(serialize = "ita")]
-    Japanese, // #[strum(serialize = "jpn")]
-    Javanese, // #[strum(serialize = "jav")]
-    Jingpho,  // #[strum(serialize = "kac")]
-    Kabiye, // #[strum(serialize = "kbp")]
-    Kabuverdianu, // #[strum(serialize = "kea")]
-    Kabyle,   // #[strum(serialize = "kab")]
-    Kamba,  // #[strum(serialize = "kam")]
-    Kannada,  // #[strum(serialize = "kan")]
-    KanuriCentral,   // #[strum(serialize = "knc")]
+    #[strum(serialize = "gle")]
+    Irish,
+    #[strum(serialize = "ita")]
+    Italian,
+    #[strum(serialize = "jpn")]
+    Japanese,
+    #[strum(serialize = "jav")]
+    Javanese,
+    #[strum(serialize = "kac")]
+    Jingpho,
+    #[strum(serialize = "kbp")]
+    Kabiye,
+    #[strum(serialize = "kea")]
+    Kabuverdianu,
+    #[strum(serialize = "kab")]
+    Kabyle,
+    #[strum(serialize = "kam")]
+    Kamba,
+    #[strum(serialize = "kan")]
+    Kannada,
+    #[strum(serialize = "knc")]
+    KanuriCentral,
     Karo,
-    Kashmiri, // #[strum(serialize = "kas")]
+    #[strum(serialize = "kas")]
+    Kashmiri,
     KayahLi,
     Kazakh,
     Khitan,
-    Khmer,       // #[strum(serialize = "khm")]
+    #[strum(serialize = "khm")]
+    Khmer,
     Khoja,
-    Kikongo,         // #[strum(serialize = "kon")]
-    Kikuyu,      // #[strum(serialize = "kik")]
-    Kimbundu,    // #[strum(serialize = "kmb")]
-    Kinyarwanda, // #[strum(serialize = "kin")]
-    Korean, // #[strum(serialize = "kor")]
+    #[strum(serialize = "kon")]
+    Kikongo,
+    #[strum(serialize = "kik")]
+    Kikuyu,
+    #[strum(serialize = "kmb")]
+    Kimbundu,
+    #[strum(serialize = "kin")]
+    Kinyarwanda,
+    #[strum(serialize = "kor")]
+    Korean,
     Kurdish,
-    KurdishCentral,  // #[strum(serialize = "ckb")]
-    KurdishNorthern, // #[strum(serialize = "kmr")]
-    Kyrgyz,      // #[strum(serialize = "kir")]
-    Lao,             // #[strum(serialize = "lao")]
-    Latgalian,     // #[strum(serialize = "ltg")]
+    #[strum(serialize = "ckb")]
+    KurdishCentral,
+    #[strum(serialize = "kmr")]
+    KurdishNorthern,
+    #[strum(serialize = "kir")]
+    Kyrgyz,
+    #[strum(serialize = "lao")]
+    Lao,
+    #[strum(serialize = "ltg")]
+    Latgalian,
     Latin,
-    Latvian, // #[strum(serialize = "lvs")]
+    #[strum(serialize = "lvs")]
+    Latvian,
     Lepcha,
-    Ligurian,   // #[strum(serialize = "lij")]
+    #[strum(serialize = "lij")]
+    Ligurian,
     Limbu,
-    Limburgish, // #[strum(serialize = "lim")]
-    Lingala,    // #[strum(serialize = "lin")]
+    #[strum(serialize = "lim")]
+    Limburgish,
+    #[strum(serialize = "lin")]
+    Lingala,
     Lisu,
-    Lithuanian,    // #[strum(serialize = "lit")]
-    Lombard,       // #[strum(serialize = "lmo")]
-    LubaKasai,     // #[strum(serialize = "lua")]
-    Luo,           // #[strum(serialize = "luo")]
+    #[strum(serialize = "lit")]
+    Lithuanian,
+    #[strum(serialize = "lmo")]
+    Lombard,
+    #[strum(serialize = "lua")]
+    LubaKasai,
+    #[strum(serialize = "luo")]
+    Luo,
     Luwian,
-    Luxembourgish, // #[strum(serialize = "ltz")]
+    #[strum(serialize = "ltz")]
+    Luxembourgish,
     Lycian,
     Lydian,
-    Macedonian, // #[strum(serialize = "mkd")]
-    Magahi,     // #[strum(serialize = "mag")]
-    Maithili,   // #[strum(serialize = "mai")]
+    #[strum(serialize = "mkd")]
+    Macedonian,
+    #[strum(serialize = "mag")]
+    Magahi,
+    #[strum(serialize = "mai")]
+    Maithili,
     Makasar,
     Makassarese,
     Malay,
-    Malayalam,     // #[strum(serialize = "mal")]
-    MalayStandard, // #[strum(serialize = "zsm")]
+    #[strum(serialize = "mal")]
+    Malayalam,
+    #[strum(serialize = "zsm")]
+    MalayStandard,
     MaldivianDhivehi,
-    MalgasyPlateau, // #[strum(serialize = "plt")]
-    Maltese,    // #[strum(serialize = "mlt")]
+    #[strum(serialize = "plt")]
+    MalgasyPlateau,
+    #[strum(serialize = "mlt")]
+    Maltese,
     Mandaic,
     Mandailing,
     Mande,
     ManipuriMeetei,
-    Maori,       // #[strum(serialize = "mri")]
-    Marathi,     // #[strum(serialize = "mar")]
+    #[strum(serialize = "mri")]
+    Maori,
+    #[strum(serialize = "mar")]
+    Marathi,
     Marwari,
     Medefaidrin,
-    Meitei,      // #[strum(serialize = "mni")]
+    #[strum(serialize = "mni")]
+    Meitei,
     Mende,
     Meroitic,
     MiddlePersian,
-    Minangkabau, // #[strum(serialize = "min")]
+    #[strum(serialize = "min")]
+    Minangkabau,
     Minoan,
-    Mizo,           // #[strum(serialize = "lus")]
-    MongolianHalh,  // #[strum(serialize = "khk")]
-    Mossi,          // #[strum(serialize = "mos")]
+    #[strum(serialize = "lus")]
+    Mizo,
+    #[strum(serialize = "khk")]
+    MongolianHalh,
+    #[strum(serialize = "mos")]
+    Mossi,
     Mro,
     Mundari,
     MycenaeanGreek,
-    Nepali, // #[strum(serialize = "npi")]
+    #[strum(serialize = "npi")]
+    Nepali,
     Newari,
     NorthernThai,
-    Nuer,   // #[strum(serialize = "nus")]
-    Nyanja,  // #[strum(serialize = "nya")]
-    Nynorsk, // #[strum(serialize = "nno")]
-    Occitan,          // #[strum(serialize = "oci")]
-    Odia,    // #[strum(serialize = "ory")]
+    #[strum(serialize = "nus")]
+    Nuer,
+    #[strum(serialize = "nya")]
+    Nyanja,
+    #[strum(serialize = "nno")]
+    Nynorsk,
+    #[strum(serialize = "oci")]
+    Occitan,
+    #[strum(serialize = "ory")]
+    Odia,
     Ojibwe,
     OldChurchSlavonic,
     OldEnglish,
@@ -269,118 +398,184 @@ pub enum Language {
     OldTurkic,
     OldUyghur,
     Oromo,
-    OromoWestCentral, // #[strum(serialize = "gaz")]
+    #[strum(serialize = "gaz")]
+    OromoWestCentral,
     Osage,
     Oscan,
     Pakpak,
-    Pangasinan, // #[strum(serialize = "pag")]
-    Papiamento,     // #[strum(serialize = "pap")]
+    #[strum(serialize = "pag")]
+    Pangasinan,
+    #[strum(serialize = "pap")]
+    Papiamento,
     Parthian,
     Pashto,
-    PastoSouthern,  // #[strum(serialize = "pbt")]
+    #[strum(serialize = "pbt")]
+    PastoSouthern,
     Persian,
-    PersianWestern, // #[strum(serialize = "pes")]
+    #[strum(serialize = "pes")]
+    PersianWestern,
     Phoenician,
-    Polish,     // #[strum(serialize = "pol")]
-    Portuguese, // #[strum(serialize = "por")]
+    #[strum(serialize = "pol")]
+    Polish,
+    #[strum(serialize = "por")]
+    Portuguese,
     Prakrit,
     Pular,
-    PunjabiEastern, // #[strum(serialize = "pan")]
-    QuechuaAyacucho, // #[strum(serialize = "quy")]
+    #[strum(serialize = "pan")]
+    PunjabiEastern,
+    #[strum(serialize = "quy")]
+    QuechuaAyacucho,
     Rejang,
     Rohingya,
-    Romanian, // #[strum(serialize = "ron")]
-    Rundi,    // #[strum(serialize = "run")]
-    Russian,  // #[strum(serialize = "rus")]
-    Samoan,  // #[strum(serialize = "smo")]
-    Sango,    // #[strum(serialize = "sag")]
-    Sanskrit, // #[strum(serialize = "san")]
-    Santali,  // #[strum(serialize = "sat")]
+    #[strum(serialize = "ron")]
+    Romanian,
+    #[strum(serialize = "run")]
+    Rundi,
+    #[strum(serialize = "rus")]
+    Russian,
+    #[strum(serialize = "smo")]
+    Samoan,
+    #[strum(serialize = "sag")]
+    Sango,
+    #[strum(serialize = "san")]
+    Sanskrit,
+    #[strum(serialize = "sat")]
+    Santali,
     Saraiki,
-    Sardinian,  // #[strum(serialize = "srd")]
+    #[strum(serialize = "srd")]
+    Sardinian,
     Saurashtra,
-    Sepedi,     // #[strum(serialize = "nso")]
-    Serbian,    // #[strum(serialize = "srp")]
-    Sesotho,    // #[strum(serialize = "sot")]
-    Shan,       // #[strum(serialize = "shn")]
-    Shona,      // #[strum(serialize = "sna")]
-    Sicilian, // #[strum(serialize = "scn")]
+    #[strum(serialize = "nso")]
+    Sepedi,
+    #[strum(serialize = "srp")]
+    Serbian,
+    #[strum(serialize = "sot")]
+    Sesotho,
+    #[strum(serialize = "shn")]
+    Shan,
+    #[strum(serialize = "sna")]
+    Shona,
+    #[strum(serialize = "scn")]
+    Sicilian,
     Signlanguages,
-    Silesian, // #[strum(serialize = "szl")]
+    #[strum(serialize = "szl")]
+    Silesian,
     Simalungun,
-    Sindhi,  // #[strum(serialize = "snd")]
-    Sinhala, // #[strum(serialize = "sin")]
-    Slovak,  // #[strum(serialize = "slk")]
-    Slovene, // #[strum(serialize = "slv")]
+    #[strum(serialize = "snd")]
+    Sindhi,
+    #[strum(serialize = "sin")]
+    Sinhala,
+    #[strum(serialize = "slk")]
+    Slovak,
+    #[strum(serialize = "slv")]
+    Slovene,
     Sogdian,
-    Somali, // #[strum(serialize = "som")]
+    #[strum(serialize = "som")]
+    Somali,
     Sora,
-    Spanish,  // #[strum(serialize = "spa")]
+    #[strum(serialize = "spa")]
+    Spanish,
     Sumerian,
-    Sundanese, // #[strum(serialize = "sun")]
+    #[strum(serialize = "sun")]
+    Sundanese,
     Sunuwar,
-    Swahili, // #[strum(serialize = "swh")]
-    Swati,    // #[strum(serialize = "ssw")]
-    Swedish, // #[strum(serialize = "swe")]
+    #[strum(serialize = "swh")]
+    Swahili,
+    #[strum(serialize = "ssw")]
+    Swati,
+    #[strum(serialize = "swe")]
+    Swedish,
     Sylheti,
     Syriac,
-    Tagalog, // #[strum(serialize = "tgl")]
+    #[strum(serialize = "tgl")]
+    Tagalog,
     Tagbanwa,
     TaiDam,
     TaiDon,
     TaiLe,
     TaiLue,
-    Tajik,    // #[strum(serialize = "tgk")]
-    Tamasheq, // #[strum(serialize = "taq")]
-    TamazightCentralAtlas, // #[strum(serialize = "tzm")]
-    Tamil,    // #[strum(serialize = "tam")]
+    #[strum(serialize = "tgk")]
+    Tajik,
+    #[strum(serialize = "taq")]
+    Tamasheq,
+    #[strum(serialize = "tzm")]
+    TamazightCentralAtlas,
+    #[strum(serialize = "tam")]
+    Tamil,
     Tangsa,
     Tangut,
-    Tatar,         // #[strum(serialize = "tat")]
-    TatarCrimean,  // #[strum(serialize = "crh")]
-    Telugu,          // #[strum(serialize = "tel")]
-    Thai,            // #[strum(serialize = "tha")]
-    Tibetan,         // #[strum(serialize = "bod")]
-    Tigrinya,        // #[strum(serialize = "tir")]
+    #[strum(serialize = "tat")]
+    Tatar,
+    #[strum(serialize = "crh")]
+    TatarCrimean,
+    #[strum(serialize = "tel")]
+    Telugu,
+    #[strum(serialize = "tha")]
+    Thai,
+    #[strum(serialize = "bod")]
+    Tibetan,
+    #[strum(serialize = "tir")]
+    Tigrinya,
     Toba,
-    TokPisin,        // #[strum(serialize = "tpi")]
+    #[strum(serialize = "tpi")]
+    TokPisin,
     Toto,
-    Tsonga,  // #[strum(serialize = "tso")]
-    Tswana,  // #[strum(serialize = "tsn")]
+    #[strum(serialize = "tso")]
+    Tsonga,
+    #[strum(serialize = "tsn")]
+    Tswana,
     Tulu,
-    Tumbuka, // #[strum(serialize = "tum")]
-    Turkish,               // #[strum(serialize = "tur")]
-    Turkmen, // #[strum(serialize = "tuk")]
-    Twi,                   // #[strum(serialize = "twi")]
+    #[strum(serialize = "tum")]
+    Tumbuka,
+    #[strum(serialize = "tur")]
+    Turkish,
+    #[strum(serialize = "tuk")]
+    Turkmen,
+    #[strum(serialize = "twi")]
+    Twi,
     Ugaritic,
-    Ukrainian, // #[strum(serialize = "ukr")]
+    #[strum(serialize = "ukr")]
+    Ukrainian,
     Umbrian,
-    Umbundu,   // #[strum(serialize = "umb")]
-    Urdu,          // #[strum(serialize = "urd")]
-    Uyghur,        // #[strum(serialize = "uig")]
-    UzbekNorthern, // #[strum(serialize = "uzn")]
+    #[strum(serialize = "umb")]
+    Umbundu,
+    #[strum(serialize = "urd")]
+    Urdu,
+    #[strum(serialize = "uig")]
+    Uyghur,
+    #[strum(serialize = "uzn")]
+    UzbekNorthern,
     Vai,
-    Venetian,      // #[strum(serialize = "vec")]
-    Vietnamese, // #[strum(serialize = "vie")]
+    #[strum(serialize = "vec")]
+    Venetian,
+    #[strum(serialize = "vie")]
+    Vietnamese,
     Wancho,
-    Waray, // #[strum(serialize = "war")]
-    Welsh, // #[strum(serialize = "cym")]
-    Wolof, // #[strum(serialize = "wol")]
-    Xhosa, // #[strum(serialize = "xho")]
+    #[strum(serialize = "war")]
+    Waray,
+    #[strum(serialize = "cym")]
+    Welsh,
+    #[strum(serialize = "wol")]
+    Wolof,
+    #[strum(serialize = "xho")]
+    Xhosa,
     Yi,
     Yiddish,
-    YiddishEastern, // #[strum(serialize = "ydd")]
-    Yoruba,         // #[strum(serialize = "yor")]
+    #[strum(serialize = "ydd")]
+    YiddishEastern,
+    #[strum(serialize = "yor")]
+    Yoruba,
     ZoLanguages,
-    Zulu, // #[strum(serialize = "zul")]
+    #[strum(serialize = "zul")]
+    Zulu,
 }
 
-impl Display for Language {
+/* impl Display for Language {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         let debug_repr = format!("{self:?}");
         write!(f, "{}", debug_repr)
     }
-}
+} */
 
 impl ExtraCheck for Language {
     #[inline]
