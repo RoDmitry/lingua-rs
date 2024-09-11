@@ -174,6 +174,7 @@ pub enum Alphabet {
     NynorskLatin,
     OdiaOriya,
     OjibweCanadianAboriginal,
+    OldChurchSlavonicCyrillic,
     OldChurchSlavonicGlagolitic,
     OldEnglishRunic,
     OldHungarian,
@@ -466,6 +467,7 @@ impl From<Alphabet> for &[Language] {
             NynorskLatin => &[Language::Nynorsk],
             OdiaOriya => &[Language::Odia],
             OjibweCanadianAboriginal => &[Language::Ojibwe],
+            OldChurchSlavonicCyrillic => &[Language::OldChurchSlavonic],
             OldChurchSlavonicGlagolitic => &[Language::OldChurchSlavonic],
             OldEnglishRunic => &[Language::OldEnglish],
             OldHungarian => &[Language::OldHungarian],
@@ -754,6 +756,17 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                     'Ө', 'ө', 'П', 'п', 'Р', 'р', 'С', 'с', 'Т', 'т', 'У', 'у', 'Ү', 'ү', 'Ф', 'ф',
                     'Х', 'х', 'Ц', 'ц', 'Ч', 'ч', 'Ш', 'ш', 'Щ', 'щ', 'Ъ', 'ъ', 'Ы', 'ы', 'Ь', 'ь',
                     'Э', 'э', 'Ю', 'ю', 'Я', 'я',
+                ]
+            ),
+            (
+                Alphabet::OldChurchSlavonicCyrillic,
+                [
+                    'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Є', 'є', 'Ж', 'ж', 'Ѕ', 'ѕ',
+                    'З', 'з', 'Ꙁ', 'ꙁ', 'И', 'и', 'І', 'і', 'Ї', 'ї', 'К', 'к', 'Л', 'л', 'М', 'м',
+                    'Н', 'н', 'О', 'о', 'П', 'п', 'Р', 'р', 'С', 'с', 'Т', 'т', 'Ѹ', 'ѹ', 'Ꙋ', 'ꙋ',
+                    'Ф', 'ф', 'Х', 'х', 'Ѡ', 'ѡ', 'Ѿ', 'ѿ', 'Ц', 'ц', 'Ч', 'ч', 'Ш', 'ш', 'Щ', 'щ',
+                    'Ъ', 'ъ', 'Ꙑ', 'ꙑ', 'Ь', 'ь', 'Ѣ', 'ѣ', 'Ꙗ', 'ꙗ', 'Ѥ', 'ѥ', 'Ю', 'ю', 'Ѫ', 'ѫ',
+                    'Ѭ', 'ѭ', 'Ѧ', 'ѧ', 'Ѩ', 'ѩ', 'Ѯ', 'ѯ', 'Ѱ', 'ѱ', 'Ѳ', 'ѳ', 'Ѵ', 'ѵ', 'Ҁ', 'ҁ',
                 ]
             ),
             (

@@ -2717,7 +2717,6 @@ mod tests {
         case("įrengus", Some(Lithuanian)),
         case("slegiamų", Some(Lithuanian)),
         case("припаѓа", Some(Macedonian)),
-        case("ѕидови", Some(Macedonian)),
         case("ќерка", Some(Macedonian)),
         case("zmieniły", Some(Polish)),
         case("państwowych", Some(Polish)),
@@ -2731,7 +2730,6 @@ mod tests {
         case("mŕtvych", Some(Slovak)),
         case("ґрунтовому", Some(Ukrainian)),
         case("пропонує", Some(Ukrainian)),
-        case("пристрої", Some(Ukrainian)),
         case("cằm", Some(Vietnamese)),
         case("thần", Some(Vietnamese)),
         case("chẳng", Some(Vietnamese)),
@@ -2830,16 +2828,18 @@ mod tests {
         ),
         case::ru2("этот", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
         case::ru3("огнём", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
+        case::ukr1("пристрої", ahashset!(Ukrainian, OldChurchSlavonic)),
         case::bel1("раскрывае", ahashset!(Belarusian, Kazakh, Mongolian, Russian)),
         case::bel2("павінен", ahashset!(Belarusian, Kazakh, Ukrainian)),
-        case::bul1("плаваща", ahashset!(Mongolian, Bulgarian, Russian, Kazakh, Ukrainian)),
-        case::bul2("довършат", ahashset!(Bulgarian, Kazakh, Mongolian, Russian)),
+        case::bul1("плаваща", ahashset!(Kazakh, Bulgarian, OldChurchSlavonic, Russian, Mongolian, Ukrainian)),
+        case::bul2("довършат", ahashset!(Russian, Kazakh, Bulgarian, OldChurchSlavonic, Mongolian)),
         case::mon1("үндсэн", ahashset!(Kazakh, Mongolian)),
         case::mon2("дөхөж", ahashset!(Kazakh, Mongolian)),
         case::mac1("затоплување", ahashset!(Macedonian, Serbian)),
         case::mac2("ректасцензија", ahashset!(Macedonian, Serbian)),
         case::mac3("набљудувач", ahashset!(Macedonian, Serbian)),
         case::mac4("џамиите", ahashset!(Macedonian, Serbian)),
+        case::mac5("ѕидови", ahashset!(OldChurchSlavonic, Macedonian)),
         case::latv1("aizklātā", ahashset!(Latin, Latvian)),
         case::latv2("sistēmas", ahashset!(Latin, Latvian)),
         case::latv3("palīdzi", ahashset!(Latin, Latvian)),
@@ -2921,7 +2921,7 @@ mod tests {
             "höher",
             ahashset!(Azerbaijani, Estonian, Finnish, German, Hungarian, Icelandic, Swedish, Turkish)
         ),
-        case::en(
+        case::en1(
             "house",
             ahashset!(
                 Sepedi, Finnish, Vietnamese, Spanish, Azerbaijani, Latin, Slovene, Danish, Bokmal,
@@ -2931,9 +2931,9 @@ mod tests {
                 Swahili, Malay, French, Catalan, Xhosa, Esperanto, Latvian, Welsh, Zulu, Bosnian, Estonian
             )
         ),
-        case::marat("मिळते", ahashset!(Marathi, Hindi, Nepali, Sanskrit)),
-        case::ben("জানাতে", ahashset!(Assamese, BishnupriyaManipuri, Bengali)),
-        case::heb("בתחרויות", ahashset!(Yiddish, Hebrew)),
+        case::marat1("मिळते", ahashset!(Marathi, Hindi, Nepali, Sanskrit)),
+        case::ben1("জানাতে", ahashset!(Assamese, BishnupriyaManipuri, Bengali)),
+        case::heb1("בתחרויות", ahashset!(Yiddish, Hebrew)),
         case("nebûtu", ahashset!(Welsh, French)),
         case("viòiem", ahashset!(Vietnamese, Catalan, Italian)),
         case("labâk", ahashset!(Vietnamese, Albanian, Romanian, French, Portuguese)),
