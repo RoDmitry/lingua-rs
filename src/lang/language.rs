@@ -53,143 +53,207 @@ pub enum Language {
     Albanian,
     AlbanianHistorical,
     AlbanianTosk, // #[strum(serialize = "als")]
-    Amharic,
+    Amharic,      // #[strum(serialize = "amh")]
     AncientGreek,
     Angkola,
-    Arabic,
+    Arabic,               // #[strum(serialize = "arb")]
+    ArabicEgyptian,       // #[strum(serialize = "arz")]
     ArabicMesopotamian,   // #[strum(serialize = "acm")]
+    ArabicMoroccan,       // #[strum(serialize = "ary")]
+    ArabicNajdi,          // #[strum(serialize = "ars")]
+    ArabicNorthLevantine, // #[strum(serialize = "apc")]
     ArabicSouthernYemeni, // #[strum(serialize = "acq")]
     ArabicSouthLevantine, // #[strum(serialize = "ajp")]
     ArabicTunisian,       // #[strum(serialize = "aeb")]
     Aramaic,
-    Armenian,
-    Assamese,
+    Armenian,      // #[strum(serialize = "hye")]
+    Assamese,      // #[strum(serialize = "asm")]
+    Asturian,      // #[strum(serialize = "ast")]
     Avestan,
+    Awadhi,        // #[strum(serialize = "awa")]
+    AymaraCentral, // #[strum(serialize = "ayr")]
     Azerbaijani,
-    Balinese,
+    AzerbaijaniNorth, // #[strum(serialize = "azj")]
+    AzerbaijaniSouth, // #[strum(serialize = "azb")]
+    Balinese, // #[strum(serialize = "ban")]
+    Bambara, // #[strum(serialize = "bam")]
     Bamum,
+    Banjar,     // #[strum(serialize = "bjn")]
     Bantawa,
-    Basque,
+    Bashkir, // #[strum(serialize = "bak")]
+    Basque,  // #[strum(serialize = "eus")]
     Bassa,
-    Belarusian,
-    Bengali,
+    Belarusian, // #[strum(serialize = "bel")]
+    Bemba, // #[strum(serialize = "bem")]
+    Bengali,    // #[strum(serialize = "ben")]
     Berber,
     Bhaiksuki,
-    Bhojpuri,
+    Bhojpuri, // #[strum(serialize = "bho")]
     BishnupriyaManipuri,
-    Bokmal,
-    Bosnian,
+    Bokmal,  // #[strum(serialize = "nob")]
+    Bosnian, // #[strum(serialize = "bos")]
     Braille, // Any language adapted to Braille
     BuddhistMarchen,
-    Buginese,
+    Buginese, // #[strum(serialize = "bug")]
     Buhid,
-    Bulgarian,
-    Burmese,
+    Bulgarian, // #[strum(serialize = "bul")]
+    Burmese,   // #[strum(serialize = "mya")]
     Carian,
-    Catalan,
+    Catalan, // #[strum(serialize = "cat")]
     CaucasianAlbanian,
+    Cebuano, // #[strum(serialize = "ceb")]
     Chakma,
     Cham,
     Cherokee,
-    Chinese,
-    ChineseCantonese,
+    Chhattisgarhi,    // #[strum(serialize = "hne")]
+    Chinese,          // #[strum(serialize = "zho")]
+    ChineseCantonese, // #[strum(serialize = "yue")]
     ChineseMandarin,
     ChineseTuhua,
+    Chokwe,        // #[strum(serialize = "cjk")]
     Chorasmian,
     Coptic,
     Cree,
-    Croatian,
-    CyproMinoan, // used in ancient Cyprus
-    Czech,
-    Danish,
+    CreoleHaitian, // #[strum(serialize = "hat")]
+    Croatian,      // #[strum(serialize = "hrv")]
+    CyproMinoan,   // used in ancient Cyprus
+    Czech,         // #[strum(serialize = "ces")]
+    Danish,        // #[strum(serialize = "dan")]
+    Dari,              // #[strum(serialize = "prs")]
+    DinkaSouthwestern, // #[strum(serialize = "dik")]
     Dogri,
-    Dutch,
+    Dutch,             // #[strum(serialize = "nld")]
+    Dyula,             // #[strum(serialize = "dyu")]
+    Dzongkha,          // #[strum(serialize = "dzo")]
     EgyptianHieroglyphs,
     Elymaic,
-    English,
+    English,         // #[strum(serialize = "eng")]
     EnglishDuployan, //Shorthand systems for English
     EnglishMormon,
     EnglishPhonetic,
-    Esperanto,
-    Estonian,
+    Esperanto, // #[strum(serialize = "epo")]
+    Estonian,  // #[strum(serialize = "est")]
     Etruscan,
-    Finnish,
-    French,
+    Ewe,       // #[strum(serialize = "ewe")]
+    Faroese,          // #[strum(serialize = "fao")]
+    Fijian,           // #[strum(serialize = "fij")]
+    Finnish, // #[strum(serialize = "fin")]
+    Fon,              // #[strum(serialize = "fon")]
+    French,  // #[strum(serialize = "fra")]
     FrenchDuployan,
+    Friulian,         // #[strum(serialize = "fur")]
     Fulani,
-    Ganda,
+    FulfuldeNigerian, // #[strum(serialize = "fuv")]
+    GaelicScottish, // #[strum(serialize = "gla")]
+    Galician,       // #[strum(serialize = "glg")]
+    Ganda,            // #[strum(serialize = "lug")]
     Gandhari,
     Geez,
-    Georgian,
-    German,
+    Georgian, // #[strum(serialize = "kat")]
+    German,   // #[strum(serialize = "deu")]
     Gondi,
     Gothic,
-    Greek,
-    Gujarati,
+    Greek,    // #[strum(serialize = "ell")]
+    Guarani,        // #[strum(serialize = "grn")]
+    Gujarati, // #[strum(serialize = "guj")]
     Gurung,
     Hanunoo,
-    Hebrew,
-    Hindi,
+    Hausa,  // #[strum(serialize = "hau")]
+    Hebrew, // #[strum(serialize = "heb")]
+    Hindi,  // #[strum(serialize = "hin")]
     Hittite,
     Hmong,
     Ho,
-    Hungarian,
-    Icelandic,
-    Indonesian,
+    Hungarian,  // #[strum(serialize = "hun")]
+    Icelandic,  // #[strum(serialize = "isl")]
+    Igbo,     // #[strum(serialize = "ibo")]
+    Ilocano,  // #[strum(serialize = "ilo")]
+    Indonesian, // #[strum(serialize = "ind")]
     Inuktitut,
-    Irish,
-    Italian,
-    Japanese,
-    Javanese,
-    Kannada,
+    Irish,    // #[strum(serialize = "gle")]
+    Italian,  // #[strum(serialize = "ita")]
+    Japanese, // #[strum(serialize = "jpn")]
+    Javanese, // #[strum(serialize = "jav")]
+    Jingpho,  // #[strum(serialize = "kac")]
+    Kabiye, // #[strum(serialize = "kbp")]
+    Kabuverdianu, // #[strum(serialize = "kea")]
+    Kabyle,   // #[strum(serialize = "kab")]
+    Kamba,  // #[strum(serialize = "kam")]
+    Kannada,  // #[strum(serialize = "kan")]
+    KanuriCentral,   // #[strum(serialize = "knc")]
     Karo,
-    Kashmiri,
+    Kashmiri, // #[strum(serialize = "kas")]
     KayahLi,
     Kazakh,
     Khitan,
-    Khmer,
+    Khmer,       // #[strum(serialize = "khm")]
     Khoja,
-    Korean,
+    Kikongo,         // #[strum(serialize = "kon")]
+    Kikuyu,      // #[strum(serialize = "kik")]
+    Kimbundu,    // #[strum(serialize = "kmb")]
+    Kinyarwanda, // #[strum(serialize = "kin")]
+    Korean, // #[strum(serialize = "kor")]
     Kurdish,
-    Lao,
+    KurdishCentral,  // #[strum(serialize = "ckb")]
+    KurdishNorthern, // #[strum(serialize = "kmr")]
+    Kyrgyz,      // #[strum(serialize = "kir")]
+    Lao,             // #[strum(serialize = "lao")]
+    Latgalian,     // #[strum(serialize = "ltg")]
     Latin,
-    Latvian,
+    Latvian, // #[strum(serialize = "lvs")]
     Lepcha,
+    Ligurian,   // #[strum(serialize = "lij")]
     Limbu,
+    Limburgish, // #[strum(serialize = "lim")]
+    Lingala,    // #[strum(serialize = "lin")]
     Lisu,
-    Lithuanian,
+    Lithuanian,    // #[strum(serialize = "lit")]
+    Lombard,       // #[strum(serialize = "lmo")]
+    LubaKasai,     // #[strum(serialize = "lua")]
+    Luo,           // #[strum(serialize = "luo")]
     Luwian,
+    Luxembourgish, // #[strum(serialize = "ltz")]
     Lycian,
     Lydian,
-    Macedonian,
-    Magahi,
-    Maithili,
+    Macedonian, // #[strum(serialize = "mkd")]
+    Magahi,     // #[strum(serialize = "mag")]
+    Maithili,   // #[strum(serialize = "mai")]
     Makasar,
     Makassarese,
     Malay,
-    Malayalam,
+    Malayalam,     // #[strum(serialize = "mal")]
+    MalayStandard, // #[strum(serialize = "zsm")]
     MaldivianDhivehi,
+    MalgasyPlateau, // #[strum(serialize = "plt")]
+    Maltese,    // #[strum(serialize = "mlt")]
     Mandaic,
     Mandailing,
     Mande,
     ManipuriMeetei,
-    Maori,
-    Marathi,
+    Maori,       // #[strum(serialize = "mri")]
+    Marathi,     // #[strum(serialize = "mar")]
     Marwari,
     Medefaidrin,
+    Meitei,      // #[strum(serialize = "mni")]
     Mende,
     Meroitic,
     MiddlePersian,
+    Minangkabau, // #[strum(serialize = "min")]
     Minoan,
-    Mongolian,
+    Mizo,           // #[strum(serialize = "lus")]
+    MongolianHalh,  // #[strum(serialize = "khk")]
+    Mossi,          // #[strum(serialize = "mos")]
     Mro,
     Mundari,
     MycenaeanGreek,
-    Nepali,
+    Nepali, // #[strum(serialize = "npi")]
     Newari,
     NorthernThai,
-    Nynorsk,
-    Odia,
+    Nuer,   // #[strum(serialize = "nus")]
+    Nyanja,  // #[strum(serialize = "nya")]
+    Nynorsk, // #[strum(serialize = "nno")]
+    Occitan,          // #[strum(serialize = "oci")]
+    Odia,    // #[strum(serialize = "ory")]
     Ojibwe,
     OldChurchSlavonic,
     OldEnglish,
@@ -205,83 +269,110 @@ pub enum Language {
     OldTurkic,
     OldUyghur,
     Oromo,
+    OromoWestCentral, // #[strum(serialize = "gaz")]
     Osage,
     Oscan,
     Pakpak,
+    Pangasinan, // #[strum(serialize = "pag")]
+    Papiamento,     // #[strum(serialize = "pap")]
     Parthian,
     Pashto,
+    PastoSouthern,  // #[strum(serialize = "pbt")]
     Persian,
+    PersianWestern, // #[strum(serialize = "pes")]
     Phoenician,
-    Polish,
-    Portuguese,
+    Polish,     // #[strum(serialize = "pol")]
+    Portuguese, // #[strum(serialize = "por")]
     Prakrit,
     Pular,
-    Punjabi,
+    PunjabiEastern, // #[strum(serialize = "pan")]
+    QuechuaAyacucho, // #[strum(serialize = "quy")]
     Rejang,
     Rohingya,
-    Romanian,
-    Russian,
-    Sanskrit,
-    Santali,
+    Romanian, // #[strum(serialize = "ron")]
+    Rundi,    // #[strum(serialize = "run")]
+    Russian,  // #[strum(serialize = "rus")]
+    Samoan,  // #[strum(serialize = "smo")]
+    Sango,    // #[strum(serialize = "sag")]
+    Sanskrit, // #[strum(serialize = "san")]
+    Santali,  // #[strum(serialize = "sat")]
     Saraiki,
+    Sardinian,  // #[strum(serialize = "srd")]
     Saurashtra,
-    Sepedi,
-    Serbian,
-    Sesotho,
-    Shan,
-    Shona,
+    Sepedi,     // #[strum(serialize = "nso")]
+    Serbian,    // #[strum(serialize = "srp")]
+    Sesotho,    // #[strum(serialize = "sot")]
+    Shan,       // #[strum(serialize = "shn")]
+    Shona,      // #[strum(serialize = "sna")]
+    Sicilian, // #[strum(serialize = "scn")]
     Signlanguages,
+    Silesian, // #[strum(serialize = "szl")]
     Simalungun,
-    Sindhi,
-    Sinhala,
-    Slovak,
-    Slovene,
+    Sindhi,  // #[strum(serialize = "snd")]
+    Sinhala, // #[strum(serialize = "sin")]
+    Slovak,  // #[strum(serialize = "slk")]
+    Slovene, // #[strum(serialize = "slv")]
     Sogdian,
-    Somali,
+    Somali, // #[strum(serialize = "som")]
     Sora,
-    Spanish,
+    Spanish,  // #[strum(serialize = "spa")]
     Sumerian,
-    Sundanese,
+    Sundanese, // #[strum(serialize = "sun")]
     Sunuwar,
-    Swahili,
-    Swedish,
+    Swahili, // #[strum(serialize = "swh")]
+    Swati,    // #[strum(serialize = "ssw")]
+    Swedish, // #[strum(serialize = "swe")]
     Sylheti,
     Syriac,
-    Tagalog,
+    Tagalog, // #[strum(serialize = "tgl")]
     Tagbanwa,
     TaiDam,
     TaiDon,
     TaiLe,
     TaiLue,
-    Tamil,
+    Tajik,    // #[strum(serialize = "tgk")]
+    Tamasheq, // #[strum(serialize = "taq")]
+    TamazightCentralAtlas, // #[strum(serialize = "tzm")]
+    Tamil,    // #[strum(serialize = "tam")]
     Tangsa,
     Tangut,
-    Telugu,
-    Thai,
-    Tibetan,
-    Tigrinya,
+    Tatar,         // #[strum(serialize = "tat")]
+    TatarCrimean,  // #[strum(serialize = "crh")]
+    Telugu,          // #[strum(serialize = "tel")]
+    Thai,            // #[strum(serialize = "tha")]
+    Tibetan,         // #[strum(serialize = "bod")]
+    Tigrinya,        // #[strum(serialize = "tir")]
     Toba,
+    TokPisin,        // #[strum(serialize = "tpi")]
     Toto,
-    Tsonga,
-    Tswana,
+    Tsonga,  // #[strum(serialize = "tso")]
+    Tswana,  // #[strum(serialize = "tsn")]
     Tulu,
-    Turkish,
+    Tumbuka, // #[strum(serialize = "tum")]
+    Turkish,               // #[strum(serialize = "tur")]
+    Turkmen, // #[strum(serialize = "tuk")]
+    Twi,                   // #[strum(serialize = "twi")]
     Ugaritic,
-    Ukrainian,
+    Ukrainian, // #[strum(serialize = "ukr")]
     Umbrian,
-    Urdu,
-    Uyghur,
+    Umbundu,   // #[strum(serialize = "umb")]
+    Urdu,          // #[strum(serialize = "urd")]
+    Uyghur,        // #[strum(serialize = "uig")]
+    UzbekNorthern, // #[strum(serialize = "uzn")]
     Vai,
-    Vietnamese,
+    Venetian,      // #[strum(serialize = "vec")]
+    Vietnamese, // #[strum(serialize = "vie")]
     Wancho,
-    Welsh,
-    Wolof,
-    Xhosa,
+    Waray, // #[strum(serialize = "war")]
+    Welsh, // #[strum(serialize = "cym")]
+    Wolof, // #[strum(serialize = "wol")]
+    Xhosa, // #[strum(serialize = "xho")]
     Yi,
     Yiddish,
-    Yoruba,
+    YiddishEastern, // #[strum(serialize = "ydd")]
+    Yoruba,         // #[strum(serialize = "yor")]
     ZoLanguages,
-    Zulu,
+    Zulu, // #[strum(serialize = "zul")]
 }
 
 impl Display for Language {
@@ -437,12 +528,12 @@ impl Language {
             Malay => IsoCode639_1::MS,
             Maori => IsoCode639_1::MI,
             Marathi => IsoCode639_1::MR,
-            Mongolian => IsoCode639_1::MN,
+            MongolianHalh => IsoCode639_1::MN,
             Nynorsk => IsoCode639_1::NN,
             Persian => IsoCode639_1::FA,
             Polish => IsoCode639_1::PL,
             Portuguese => IsoCode639_1::PT,
-            Punjabi => IsoCode639_1::PA,
+            PunjabiEastern => IsoCode639_1::PA,
             Romanian => IsoCode639_1::RO,
             Russian => IsoCode639_1::RU,
             Serbian => IsoCode639_1::SR,
@@ -521,12 +612,12 @@ impl Language {
             Malay => IsoCode639_3::MSA,
             Maori => IsoCode639_3::MRI,
             Marathi => IsoCode639_3::MAR,
-            Mongolian => IsoCode639_3::MON,
+            MongolianHalh => IsoCode639_3::MON,
             Nynorsk => IsoCode639_3::NNO,
             Persian => IsoCode639_3::FAS,
             Polish => IsoCode639_3::POL,
             Portuguese => IsoCode639_3::POR,
-            Punjabi => IsoCode639_3::PAN,
+            PunjabiEastern => IsoCode639_3::PAN,
             Romanian => IsoCode639_3::RON,
             Russian => IsoCode639_3::RUS,
             Serbian => IsoCode639_3::SRP,
@@ -612,7 +703,7 @@ impl Language {
             Language::Bulgarian => &[Script::Cyrillic],
             Language::Kazakh => &[Script::Cyrillic],
             Language::Macedonian => &[Script::Cyrillic],
-            Language::Mongolian => &[Script::Cyrillic],
+            Language::MongolianHalh => &[Script::Cyrillic],
             Language::Russian => &[Script::Cyrillic],
             Language::Serbian => &[Script::Cyrillic],
             Language::Ukrainian => &[Script::Cyrillic],
@@ -630,7 +721,7 @@ impl Language {
             Language::Hebrew => &[Script::Hebrew],
             Language::Japanese => &[Script::Hiragana, Script::Katakana, Script::Han],
             Language::Korean => &[Script::Hangul],
-            Language::Punjabi => &[Script::Gurmukhi],
+            Language::PunjabiEastern => &[Script::Gurmukhi],
             Language::Tamil => &[Script::Tamil],
             Language::Telugu => &[Script::Telugu],
             Language::Thai => &[Script::Thai],
@@ -876,7 +967,14 @@ mod tests {
         assert_eq!(
             Language::all_with_cyrillic_script(),
             ahashset!(
-                Belarusian, Bulgarian, Kazakh, Macedonian, Mongolian, Russian, Serbian, Ukrainian
+                Belarusian,
+                Bulgarian,
+                Kazakh,
+                Macedonian,
+                MongolianHalh,
+                Russian,
+                Serbian,
+                Ukrainian
             )
         );
     }
