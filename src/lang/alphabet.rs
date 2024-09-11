@@ -144,6 +144,66 @@ pub enum Alphabet {
     LatinXhosa,
     LatinYoruba,
     LatinZulu,
+    LatinAcehnese,
+    LatinAsturian,
+    LatinAymaraCentral,
+    LatinBalinese,
+    LatinBambara,
+    LatinBanjar,
+    LatinBemba,
+    LatinBuginese,
+    LatinCebuano,
+    LatinChokwe,
+    LatinCreoleHaitian,
+    LatinDinkaSouthwestern,
+    LatinDyula,
+    LatinEwe,
+    LatinFaroese,
+    LatinFijian,
+    LatinFon,
+    LatinFriulian,
+    LatinFulfuldeNigerian,
+    LatinGaelicScottish,
+    LatinGalician,
+    LatinGuarani,
+    LatinHausa,
+    LatinIgbo,
+    LatinIlocano,
+    LatinJavanese,
+    LatinJingpho,
+    LatinKabiye,
+    LatinKabuverdianu,
+    LatinKabyle,
+    LatinKamba,
+    LatinKanuriCentral,
+    LatinKikongo,
+    LatinKikuyu,
+    LatinKimbundu,
+    LatinKinyarwanda,
+    LatinKurdishNorthern,
+    LatinLatgalian,
+    LatinLigurian,
+    LatinLimburgish,
+    LatinLingala,
+    LatinLombard,
+    LatinLubaKasai,
+    LatinLuo,
+    LatinLuxembourgish,
+    LatinMalgasyPlateau,
+    LatinMaltese,
+    LatinMinangkabau,
+    LatinMizo,
+    LatinMossi,
+    LatinNuer,
+    LatinNyanja,
+    LatinOccitan,
+    LatinOromoWestCentral,
+    LatinPangasinan,
+    LatinPapiamento,
+    LatinQuechuaAyacucho,
+    LatinRundi,
+    LatinSamoan,
+    LatinSango,
     Lepcha,
     Limbu,
     LinearA,
@@ -410,66 +470,6 @@ impl From<Alphabet> for &[Language] {
             KoreanHanja => &[Language::Korean],
             Lao => &[Language::Lao],
             Latin => &[
-                Language::Acehnese,
-                Language::Asturian,
-                Language::AymaraCentral,
-                Language::Balinese,
-                Language::Bambara,
-                Language::Banjar,
-                Language::Bemba,
-                Language::Buginese,
-                Language::Cebuano,
-                Language::Chokwe,
-                Language::CreoleHaitian,
-                Language::DinkaSouthwestern,
-                Language::Dyula,
-                Language::Ewe,
-                Language::Faroese,
-                Language::Fijian,
-                Language::Fon,
-                Language::Friulian,
-                Language::FulfuldeNigerian,
-                Language::GaelicScottish,
-                Language::Galician,
-                Language::Guarani,
-                Language::Hausa,
-                Language::Igbo,
-                Language::Ilocano,
-                Language::Javanese,
-                Language::Jingpho,
-                Language::Kabiye,
-                Language::Kabuverdianu,
-                Language::Kabyle,
-                Language::Kamba,
-                Language::KanuriCentral,
-                Language::Kikongo,
-                Language::Kikuyu,
-                Language::Kimbundu,
-                Language::Kinyarwanda,
-                Language::KurdishNorthern,
-                Language::Latgalian,
-                Language::Ligurian,
-                Language::Limburgish,
-                Language::Lingala,
-                Language::Lombard,
-                Language::LubaKasai,
-                Language::Luo,
-                Language::Luxembourgish,
-                Language::MalgasyPlateau,
-                Language::Maltese,
-                Language::Minangkabau,
-                Language::Mizo,
-                Language::Mossi,
-                Language::Nuer,
-                Language::Nyanja,
-                Language::Occitan,
-                Language::OromoWestCentral,
-                Language::Pangasinan,
-                Language::Papiamento,
-                Language::QuechuaAyacucho,
-                Language::Rundi,
-                Language::Samoan,
-                Language::Sango,
                 Language::Sardinian,
                 Language::Sicilian,
                 Language::Silesian,
@@ -487,6 +487,66 @@ impl From<Alphabet> for &[Language] {
                 Language::Waray,
                 Language::Wolof,
             ],
+            LatinAcehnese => &[Language::Acehnese],
+            LatinAsturian => &[Language::Asturian],
+            LatinAymaraCentral => &[Language::AymaraCentral],
+            LatinBalinese => &[Language::Balinese],
+            LatinBambara => &[Language::Bambara],
+            LatinBanjar => &[Language::Banjar],
+            LatinBemba => &[Language::Bemba],
+            LatinBuginese => &[Language::Buginese],
+            LatinCebuano => &[Language::Cebuano],
+            LatinChokwe => &[Language::Chokwe],
+            LatinCreoleHaitian => &[Language::CreoleHaitian],
+            LatinDinkaSouthwestern => &[Language::DinkaSouthwestern],
+            LatinDyula => &[Language::Dyula],
+            LatinEwe => &[Language::Ewe],
+            LatinFaroese => &[Language::Faroese],
+            LatinFijian => &[Language::Fijian],
+            LatinFon => &[Language::Fon],
+            LatinFriulian => &[Language::Friulian],
+            LatinFulfuldeNigerian => &[Language::FulfuldeNigerian],
+            LatinGaelicScottish => &[Language::GaelicScottish],
+            LatinGalician => &[Language::Galician],
+            LatinGuarani => &[Language::Guarani],
+            LatinHausa => &[Language::Hausa],
+            LatinIgbo => &[Language::Igbo],
+            LatinIlocano => &[Language::Ilocano],
+            LatinJavanese => &[Language::Javanese],
+            LatinJingpho => &[Language::Jingpho],
+            LatinKabiye => &[Language::Kabiye],
+            LatinKabuverdianu => &[Language::Kabuverdianu],
+            LatinKabyle => &[Language::Kabyle],
+            LatinKamba => &[Language::Kamba],
+            LatinKanuriCentral => &[Language::KanuriCentral],
+            LatinKikongo => &[Language::Kikongo],
+            LatinKikuyu => &[Language::Kikuyu],
+            LatinKimbundu => &[Language::Kimbundu],
+            LatinKinyarwanda => &[Language::Kinyarwanda],
+            LatinKurdishNorthern => &[Language::KurdishNorthern],
+            LatinLatgalian => &[Language::Latgalian],
+            LatinLigurian => &[Language::Ligurian],
+            LatinLimburgish => &[Language::Limburgish],
+            LatinLingala => &[Language::Lingala],
+            LatinLombard => &[Language::Lombard],
+            LatinLubaKasai => &[Language::LubaKasai],
+            LatinLuo => &[Language::Luo],
+            LatinLuxembourgish => &[Language::Luxembourgish],
+            LatinMalgasyPlateau => &[Language::MalgasyPlateau],
+            LatinMaltese => &[Language::Maltese],
+            LatinMinangkabau => &[Language::Minangkabau],
+            LatinMizo => &[Language::Mizo],
+            LatinMossi => &[Language::Mossi],
+            LatinNuer => &[Language::Nuer],
+            LatinNyanja => &[Language::Nyanja],
+            LatinOccitan => &[Language::Occitan],
+            LatinOromoWestCentral => &[Language::OromoWestCentral],
+            LatinPangasinan => &[Language::Pangasinan],
+            LatinPapiamento => &[Language::Papiamento],
+            LatinQuechuaAyacucho => &[Language::QuechuaAyacucho],
+            LatinRundi => &[Language::Rundi],
+            LatinSamoan => &[Language::Samoan],
+            LatinSango => &[Language::Sango],
             LatinAfrikaans => &[Language::Afrikaans],
             LatinAlbanian => &[Language::AlbanianTosk],
             LatinAzerbaijani => &[Language::AzerbaijaniNorth],
@@ -716,6 +776,66 @@ pub fn str_to_alphabets(s: &str) -> &[Alphabet] {
         "Laoo" => &[Lao],
         "Latn" => &[
             Latin,
+            LatinAcehnese,
+            LatinAsturian,
+            LatinAymaraCentral,
+            LatinBalinese,
+            LatinBambara,
+            LatinBanjar,
+            LatinBemba,
+            LatinBuginese,
+            LatinCebuano,
+            LatinChokwe,
+            LatinCreoleHaitian,
+            LatinDinkaSouthwestern,
+            LatinDyula,
+            LatinEwe,
+            LatinFaroese,
+            LatinFijian,
+            LatinFon,
+            LatinFriulian,
+            LatinFulfuldeNigerian,
+            LatinGaelicScottish,
+            LatinGalician,
+            LatinGuarani,
+            LatinHausa,
+            LatinIgbo,
+            LatinIlocano,
+            LatinJavanese,
+            LatinJingpho,
+            LatinKabiye,
+            LatinKabuverdianu,
+            LatinKabyle,
+            LatinKamba,
+            LatinKanuriCentral,
+            LatinKikongo,
+            LatinKikuyu,
+            LatinKimbundu,
+            LatinKinyarwanda,
+            LatinKurdishNorthern,
+            LatinLatgalian,
+            LatinLigurian,
+            LatinLimburgish,
+            LatinLingala,
+            LatinLombard,
+            LatinLubaKasai,
+            LatinLuo,
+            LatinLuxembourgish,
+            LatinMalgasyPlateau,
+            LatinMaltese,
+            LatinMinangkabau,
+            LatinMizo,
+            LatinMossi,
+            LatinNuer,
+            LatinNyanja,
+            LatinOccitan,
+            LatinOromoWestCentral,
+            LatinPangasinan,
+            LatinPapiamento,
+            LatinQuechuaAyacucho,
+            LatinRundi,
+            LatinSamoan,
+            LatinSango,
             LatinAfrikaans,
             LatinAlbanian,
             LatinAzerbaijani,
@@ -866,7 +986,11 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         // example2: `word1' word2` for all langs will be parsed as two words without `'`,
         //   because next char after `'` is space, which is not a char of any language
         Script::Common => match ch {
-            '\'' => &[Alphabet::CyrillicBelarusian, Alphabet::LatinEnglish],
+            '\'' => &[
+                Alphabet::CyrillicBelarusian,
+                Alphabet::LatinEnglish,
+                Alphabet::LatinMalgasyPlateau,
+            ],
             '¡' => &[Alphabet::LatinSpanish],
             '¿' => &[Alphabet::LatinSpanish],
             _ => &[], // must be always empty
@@ -1646,6 +1770,511 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                     'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
                     'Y', 'y', 'Z', 'z'
                 ]
+            ),
+            (
+                Alphabet::LatinAcehnese,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x', 'Y', 'y',
+                    'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinAsturian,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
+                    'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w',
+                    'X', 'x', 'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinAymaraCentral,
+                [
+                    'A', 'a', 'B', 'b', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'F',
+                    'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l',
+                    /* 'Ll', 'll', */ 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o', 'P', 'p', 'Q',
+                    'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinBalinese,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinBambara,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
+                    'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinBanjar,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinBemba,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinBuginese,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinCebuano,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
+                    /* 'Ng', 'ng', */ 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U',
+                    'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinChokwe,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinCreoleHaitian,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinDinkaSouthwestern,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinDyula,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
+                    'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinEwe,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Ɔ', 'ɔ', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x', 'Y', 'y',
+                    'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinFaroese,
+                [
+                    'A', 'a', 'Á', 'á', 'B', 'b', 'D', 'd', 'Ð', 'ð', 'E', 'e', 'F', 'f', 'G', 'g',
+                    'H', 'h', 'I', 'i', 'Í', 'í', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
+                    'O', 'o', 'Ó', 'ó', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'Ú', 'ú',
+                    'V', 'v', 'Y', 'y', 'Ý', 'ý'
+                ]
+            ),
+            (
+                Alphabet::LatinFijian,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinFon,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Ɔ', 'ɔ', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinFriulian,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
+                    'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinFulfuldeNigerian,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
+                    'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ],
+            ),
+            (
+                Alphabet::LatinGaelicScottish,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
+                    'T', 't', 'U', 'u'
+                ],
+            ),
+            (
+                Alphabet::LatinGalician,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
+                    'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w',
+                    'X', 'x', 'Y', 'y', 'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinGuarani,
+                [
+                    'A', 'a', 'B', 'b', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'G',
+                    'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ',
+                    'ñ', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'Y',
+                    'y'
+                ],
+            ),
+            (
+                Alphabet::LatinHausa,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'R', 'r',
+                    'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y', 'Ɓ', 'ɓ', 'Ɗ', 'ɗ', 'Ƙ', 'ƙ'
+                ],
+            ),
+            (
+                Alphabet::LatinIgbo,
+                [
+                    'A', 'a', 'B', 'b', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'F',
+                    'f', 'G', 'g', /* 'Gb', 'gb', 'Gh', 'gh', */ 'H', 'h', 'I', 'i', 'Ị', 'ị',
+                    'J', 'j', 'K', 'k', /* 'Kw', 'kw', */ 'L', 'l', 'M', 'm', 'N', 'n',
+                    /* 'Nw', 'nw', */ 'O', 'o', 'Ọ', 'ọ', 'P', 'p', 'R', 'r', 'S', 's', 'T',
+                    't', 'U', 'u', 'Ụ', 'ụ', 'V', 'v', 'W', 'w', 'Y', 'y', 'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinIlocano,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l',
+                    'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
+                    'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinJavanese,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinJingpho,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinKabiye,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinKabuverdianu,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'X', 'x', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinKabyle,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinKamba,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'S', 's',
+                    'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinKanuriCentral,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinKikongo,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
+                    'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinKikuyu,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
+                    'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinKimbundu,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'S', 's', 'T', 't',
+                    'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinKinyarwanda,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinKurdishNorthern,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'Ê', 'ê', 'F', 'f',
+                    'G', 'g', 'H', 'h', 'I', 'i', 'Î', 'î', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
+                    'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'Ş', 'ş', 'T', 't',
+                    'U', 'u', 'Û', 'û', 'V', 'v', 'X', 'x', 'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinLatgalian,
+                [
+                    'A', 'a', 'Ā', 'ā', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'Ē', 'ē',
+                    'F', 'f', 'G', 'g', 'Ģ', 'ģ', 'H', 'h', 'I', 'i', 'Ī', 'ī', 'J', 'j', 'K', 'k',
+                    'Ķ', 'ķ', 'L', 'l', 'Ļ', 'ļ', 'M', 'm', 'N', 'n', 'Ņ', 'ņ', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'Š', 'š', 'T', 't', 'U', 'u', 'Ū', 'ū', 'V', 'v', 'Z', 'z',
+                    'Ž', 'ž'
+                ]
+            ),
+            (
+                Alphabet::LatinLigurian,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinLimburgish,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinLingala,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
+                    'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinLombard,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinLubaKasai,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinLuo,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ]
+            ),
+            (
+                Alphabet::LatinLuxembourgish,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ]
+            ),
+            (
+                Alphabet::LatinMalgasyPlateau,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
+                    'S', 's', 'T', 't', 'V', 'v', 'Y', 'y', 'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinMaltese,
+                [
+                    'A', 'a', 'B', 'b', 'Ċ', 'ċ', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
+                    /* 'Għ', 'għ', */ 'H', 'h', 'Ħ', 'ħ', 'I', 'i',
+                    /* 'Ie', 'ie', */ 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O',
+                    'o', 'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W',
+                    'w', 'X', 'x', 'Ż', 'ż', 'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinMinangkabau,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinMizo,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
+                    'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinMossi,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
+                    'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ],
+            ),
+            (
+                Alphabet::LatinNuer,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g',
+                    'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ŋ', 'ŋ',
+                    'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ],
+            ),
+            (
+                Alphabet::LatinNyanja,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y', 'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinOccitan,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x',
+                    'Y', 'y', 'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinOromoWestCentral,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'X', 'x', 'Y', 'y'
+                ],
+            ),
+            (
+                Alphabet::LatinPangasinan,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l',
+                    'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
+                    'W', 'w', 'Y', 'y'
+                ],
+            ),
+            (
+                Alphabet::LatinPapiamento,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x', 'Y', 'y',
+                    'Z', 'z'
+                ],
+            ),
+            (
+                Alphabet::LatinQuechuaAyacucho,
+                [
+                    'A', 'a', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'H', 'h', 'I',
+                    'i', 'K', 'k', 'L', 'l', /* 'Ll', 'll', */ 'M', 'm', 'N', 'n', 'Ñ', 'ñ',
+                    'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y'
+                ],
+            ),
+            (
+                Alphabet::LatinRundi,
+                [
+                    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
+                    'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
+                    'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y'
+                ],
+            ),
+            (
+                Alphabet::LatinSamoan,
+                [
+                    'A', 'a', 'E', 'e', 'F', 'f', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm',
+                    'N', 'n', 'O', 'o', 'P', 'p', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v'
+                ],
+            ),
+            (
+                Alphabet::LatinSango,
+                [
+                    'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
+                    'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
+                    'T', 't', 'U', 'u', 'V', 'v', 'W', 'w', 'Y', 'y', 'Z', 'z'
+                ],
             ),
         ]),
         Script::Lepcha => alphabet_match!([(Alphabet::Lepcha, [])]),
