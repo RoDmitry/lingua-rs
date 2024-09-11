@@ -6,7 +6,6 @@ use strum_macros::EnumIter;
 use strum_macros::EnumString;
 use strum_macros::IntoStaticStr;
 
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
 pub enum Alphabet {
     Adlam,
@@ -640,6 +639,137 @@ impl From<Alphabet> for &[Language] {
                 Language::Tibetan,
             ],
         }
+    }
+}
+
+/*
+ace_Arab
+hye_Armn
+asm_Beng
+bak_Cyrl
+awa_Deva
+amh_Ethi
+kat_Geor
+ell_Grek
+guj_Gujr
+pan_Guru
+kor_Hang
+zho_Hans
+yue_Hant
+heb_Hebr
+jpn_Jpan
+khm_Khmr
+kan_Knda
+lao_Laoo
+ace_Latn
+mal_Mlym
+mya_Mymr
+sat_Olck
+ory_Orya
+sin_Sinh
+tam_Taml
+tel_Telu
+taq_Tfng
+tha_Thai
+bod_Tibt
+*/
+
+pub fn str_to_alphabets(s: &str) -> &[Alphabet] {
+    use Alphabet::*;
+    match s {
+        "Arab" => &[Arabic],
+        "Armn" => &[Armenian],
+        "Beng" => &[Bengali],
+        "Cyrl" => &[
+            Cyrillic,
+            CyrillicBelarusian,
+            CyrillicBulgarian,
+            CyrillicKazakh,
+            CyrillicMacedonian,
+            CyrillicMongolianHalh,
+            CyrillicOldChurchSlavonic,
+            CyrillicRussian,
+            CyrillicSerbian,
+            CyrillicUkrainian,
+        ],
+        "Deva" => &[Devanagari],
+        "Ethi" => &[Ethiopic],
+        "Geor" => &[Georgian],
+        "Grek" => &[Greek],
+        "Gujr" => &[Gujarati],
+        "Guru" => &[Gurmukhi],
+        "Hang" => &[Hangul],
+        "Hans" => &[ChineseSimplified],
+        "Hant" => &[ChineseTraditional],
+        "Hebr" => &[Hebrew],
+        "JpanKanji" => &[JapaneseKanji],
+        "Khmr" => &[Khmer],
+        "Knda" => &[Kannada],
+        "Laoo" => &[Lao],
+        "Latn" => &[
+            Latin,
+            LatinAfrikaans,
+            LatinAlbanian,
+            LatinAzerbaijani,
+            LatinBasque,
+            LatinBokmal,
+            LatinBosnian,
+            LatinCatalan,
+            LatinCroatian,
+            LatinCzech,
+            LatinDanish,
+            LatinDutch,
+            LatinEnglish,
+            LatinEsperanto,
+            LatinEstonian,
+            LatinFinnish,
+            LatinFrench,
+            LatinGanda,
+            LatinGerman,
+            LatinHungarian,
+            LatinIcelandic,
+            LatinIndonesian,
+            LatinIrish,
+            LatinItalian,
+            LatinLatin,
+            LatinLatvian,
+            LatinLithuanian,
+            LatinMalay,
+            LatinMaori,
+            LatinNynorsk,
+            LatinPolish,
+            LatinPortuguese,
+            LatinRomanian,
+            LatinSepedi,
+            LatinSesotho,
+            LatinShona,
+            LatinSlovak,
+            LatinSlovene,
+            LatinSomali,
+            LatinSpanish,
+            LatinSwahili,
+            LatinSwedish,
+            LatinTagalog,
+            LatinTsonga,
+            LatinTswana,
+            LatinTurkish,
+            LatinVietnamese,
+            LatinWelsh,
+            LatinXhosa,
+            LatinYoruba,
+            LatinZulu,
+        ],
+        "Mlym" => &[Malayalam],
+        "Mymr" => &[Myanmar],
+        "Olck" => &[OlChiki],
+        "Orya" => &[Oriya],
+        "Sinh" => &[Sinhala],
+        "Taml" => &[Tamil],
+        "Telu" => &[Telugu],
+        "Tfng" => &[Tifinagh],
+        "Thai" => &[Thai],
+        "Tibt" => &[Tibetan],
+        _ => &[],
     }
 }
 
