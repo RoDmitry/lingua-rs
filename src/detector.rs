@@ -1082,6 +1082,7 @@ impl LanguageDetector {
         let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
         let mut not_saved_word_end_index: usize = 0;
         let mut prev_char_script: Script = Script::Common;
+        let mut prev_char_langs: AHashSet<Language> = Default::default();
         // let mut next_char_script: Option<Script> = None;
         let mut word_buf = String::new();
         let mut script_alphabets_iter = text
@@ -1111,6 +1112,15 @@ impl LanguageDetector {
                 continue;
             } */
             // let alphabets = script_char_to_alphabets(script, ch);
+            // println!("{}", ch);
+
+            let langs: AHashSet<Language> = alphabets
+                .iter()
+                .map(|&a| <&[Language]>::from(a))
+                .flatten()
+                .copied()
+                .collect();
+            // println!("{:?}", langs);
 
             let ch_skip = if alphabets.is_empty() {
                 true
@@ -1118,7 +1128,9 @@ impl LanguageDetector {
                 if prev_char_script == Script::Common {
                     true
                 } else {
-                    if let Some((_, next_char_script, _, _)) = script_alphabets_iter.peek() {
+                    if prev_char_langs.intersection(&langs).next().is_none() {
+                        true
+                    } else if let Some((_, next_char_script, _, _)) = script_alphabets_iter.peek() {
                         // if let Some(next_ch) = script_alphabets[ch_idx + ch.len_utf8()] {
                         // next_char_script = Script::find(next_ch);
                         next_char_script == &Script::Common
@@ -1129,12 +1141,41 @@ impl LanguageDetector {
             } else {
                 false
             };
+            // println!("{}", ch_skip);
 
-            if ch_skip {
-                if word_start_index == ch_idx {
-                    word_start_index = ch_idx + ch.len_utf8();
+            if ch_skip
+                || !prev_char_langs.is_empty()
+                    && prev_char_script != script
+                    && prev_char_langs.intersection(&langs).next().is_none()
+            {
+                if !word_buf.is_empty() {
+                    // checks if word needs saving
+                    //word_start_index < not_saved_word_end_index {
+                    // saves word
+                    // let orig_word = &text[word_start_index..not_saved_word_end_index];
+                    if let Some(w) = words.get_mut(&word_buf) {
+                        w.text_indexes
+                            .push((word_start_index, not_saved_word_end_index));
+                    } else {
+                        let alphabets_count = Self::process_alphabets_count(word_alphabets_count);
+                        if alphabets_count.is_empty() {
+                            println!("empty: {}", word_buf);
+                        }
+                        let word_data = WordData {
+                            alphabets_count,
+                            text_indexes: vec![(word_start_index, not_saved_word_end_index)],
+                        };
+                        words.insert(word_buf, word_data);
+                    }
+
+                    // reset temp variables
+                    word_buf = Default::default();
+                    word_alphabets_count = Default::default();
                 }
-            } else {
+                word_start_index = ch_idx + ch.len_utf8();
+            }
+
+            if !ch_skip {
                 for alphabet in alphabets {
                     let cnt_entry = word_alphabets_count.entry((script, *alphabet));
                     match cnt_entry {
@@ -1154,33 +1195,8 @@ impl LanguageDetector {
                 not_saved_word_end_index = ch_idx + ch.len_utf8();
                 word_buf.push(ch.to_lowercase().next().unwrap()); // maybe check each char?
             }
-
-            // checks if word needs saving
-            if ch_skip && !word_buf.is_empty() {
-                //word_start_index < not_saved_word_end_index {
-                // saves word
-                // let orig_word = &text[word_start_index..not_saved_word_end_index];
-                if let Some(w) = words.get_mut(&word_buf) {
-                    w.text_indexes
-                        .push((word_start_index, not_saved_word_end_index));
-                } else {
-                    let alphabets_count = Self::process_alphabets_count(word_alphabets_count);
-                    /* if alphabets_count.is_empty() {
-                        println!("{}", word_buf);
-                    } */
-                    let word_data = WordData {
-                        alphabets_count,
-                        text_indexes: vec![(word_start_index, not_saved_word_end_index)],
-                    };
-                    words.insert(word_buf, word_data);
-                }
-
-                // reset temp variables
-                word_start_index = ch_idx + ch.len_utf8();
-                word_buf = Default::default();
-                word_alphabets_count = Default::default();
-            }
             prev_char_script = script;
+            prev_char_langs = langs;
         }
         // println!("{} {:?}", text, words);
 
@@ -2968,7 +2984,13 @@ mod tests {
         case(
             "Thi̇s is one word", // This = THİS with lowered İ
             ahashset!("this", "is", "one", "word")
-        )
+        ),
+        case("This,is ok", ahashset!("this", "is", "ok")),
+        case::chinese2("中,文", ahashset!("中", "文")),
+        case::chinese3("和little", ahashset!("和", "little")),
+        // case::japanese("ㄹ語幹に付く態転換接尾辞に", ahashset!("ㄹ", "語幹に付く態転換接尾辞に")),
+        // case::japanese2("ㅈ語幹用言に付く場合には", ahashset!("ㅈ", "語幹用言に付く場合には")),
+        // case::japanese3("現代朝鮮語にも存在する上昇二重母音ㅑ", ahashset!("現代朝鮮語にも存在する上昇二重母音", "ㅑ")),
     )]
     fn test_filter_text_to_words(
         detector_for_all_languages: LanguageDetector,
@@ -2989,7 +3011,7 @@ mod tests {
         text,
         expected_language,
         case::kanji("昨日、東京で大切な友達に会いました。", Japanese), // Kanji (Han) + Hiragana
-        case("也有越來越多的人開始飼養寵物", Chinese),
+        case::chinese("也有越來越多的人開始飼養寵物", Chinese),
     )]
     fn assert_language_detection_with_rules_text_works_correctly(
         detector_for_all_languages: LanguageDetector,
