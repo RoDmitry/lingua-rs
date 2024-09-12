@@ -2689,110 +2689,97 @@ mod tests {
         word,
         expected_language,
         // words with unique characters
-        case("məhərrəm", Some(AzerbaijaniNorth)),
-        case("rozdělit", Some(Czech)),
-        case("tvořen", Some(Czech)),
-        case("subjektů", Some(Czech)),
-        case("nesufiĉecon", Some(Esperanto)),
-        case("intermiksiĝis", Some(Esperanto)),
-        case("monaĥinoj", Some(Esperanto)),
-        case("kreitaĵoj", Some(Esperanto)),
-        case("ŝpinante", Some(Esperanto)),
-        case("apenaŭ", Some(Esperanto)),
-        case("groß", Some(German)),
-        case("σχέδια", Some(Greek)),
-        case("fekvő", Some(Hungarian)),
-        case("meggyűrűzni", Some(Hungarian)),
-        case("ヴェダイヤモンド", Some(Japanese)),
-        case("әлем", Some(Kazakh)),
-        case("шаруашылығы", Some(Kazakh)),
-        case("ақын", Some(Kazakh)),
-        case("оның", Some(Kazakh)),
-        case("шұрайлы", Some(Kazakh)),
-        case("teoloģiska", Some(Latvian)),
-        case("blaķene", Some(Latvian)),
-        case("ceļojumiem", Some(Latvian)),
-        case("numuriņu", Some(Latvian)),
-        case("mergelės", Some(Lithuanian)),
-        case("įrengus", Some(Lithuanian)),
-        case("slegiamų", Some(Lithuanian)),
-        case("припаѓа", Some(Macedonian)),
-        case("ќерка", Some(Macedonian)),
-        case("zmieniły", Some(Polish)),
-        case("państwowych", Some(Polish)),
-        case("mniejszości", Some(Polish)),
-        case("groźne", Some(Polish)),
-        case("ialomiţa", Some(Romanian)),
-        case("наслеђивања", Some(Serbian)),
-        case("неисквареношћу", Some(Serbian)),
-        case("podĺa", Some(Slovak)),
-        case("pohľade", Some(Slovak)),
-        case("mŕtvych", Some(Slovak)),
-        case("ґрунтовому", Some(Ukrainian)),
-        case("пропонує", Some(Ukrainian)),
-        case("cằm", Some(Vietnamese)),
-        case("thần", Some(Vietnamese)),
-        case("chẳng", Some(Vietnamese)),
-        case("quẩy", Some(Vietnamese)),
-        case("sẵn", Some(Vietnamese)),
-        case("nhẫn", Some(Vietnamese)),
-        case("dắt", Some(Vietnamese)),
-        case("chất", Some(Vietnamese)),
-        case("đạp", Some(Vietnamese)),
-        case("mặn", Some(Vietnamese)),
-        case("hậu", Some(Vietnamese)),
-        case("hiền", Some(Vietnamese)),
-        case("lẻn", Some(Vietnamese)),
-        case("biểu", Some(Vietnamese)),
-        case("kẽm", Some(Vietnamese)),
-        case("diễm", Some(Vietnamese)),
-        case("phế", Some(Vietnamese)),
-        case("việc", Some(Vietnamese)),
-        case("chỉnh", Some(Vietnamese)),
-        case("trĩ", Some(Vietnamese)),
-        case("ravị", Some(Vietnamese)),
-        case("thơ", Some(Vietnamese)),
-        case("nguồn", Some(Vietnamese)),
-        case("thờ", Some(Vietnamese)),
-        case("sỏi", Some(Vietnamese)),
-        case("tổng", Some(Vietnamese)),
-        case("nhở", Some(Vietnamese)),
-        case("mỗi", Some(Vietnamese)),
-        case("bỡi", Some(Vietnamese)),
-        case("tốt", Some(Vietnamese)),
-        case("giới", Some(Vietnamese)),
-        case("một", Some(Vietnamese)),
-        case("hợp", Some(Vietnamese)),
-        case("hưng", Some(Vietnamese)),
-        case("từng", Some(Vietnamese)),
-        case("của", Some(Vietnamese)),
-        case("sử", Some(Vietnamese)),
-        case("cũng", Some(Vietnamese)),
-        case("những", Some(Vietnamese)),
-        case("chức", Some(Vietnamese)),
-        case("dụng", Some(Vietnamese)),
-        case("thực", Some(Vietnamese)),
-        case("kỳ", Some(Vietnamese)),
-        case("kỷ", Some(Vietnamese)),
-        case("mỹ", Some(Vietnamese)),
-        case("mỵ", Some(Vietnamese)),
-        case("aṣiwèrè", Some(Yoruba)),
-        case("ṣaaju", Some(Yoruba)),
+        case::Czech("rozdělit", Some(Czech)),
+        case::Czech("subjektů", Some(Czech)),
+        case::Esperanto("nesufiĉecon", Some(Esperanto)),
+        case::Esperanto("intermiksiĝis", Some(Esperanto)),
+        case::Esperanto("monaĥinoj", Some(Esperanto)),
+        case::Esperanto("kreitaĵoj", Some(Esperanto)),
+        case::Esperanto("ŝpinante", Some(Esperanto)),
+        case::Esperanto("apenaŭ", Some(Esperanto)),
+        case::German("groß", Some(German)),
+        case::Greek("σχέδια", Some(Greek)),
+        case::Hungarian("fekvő", Some(Hungarian)),
+        case::Hungarian("meggyűrűzni", Some(Hungarian)),
+        case::Japanese("ヴェダイヤモンド", Some(Japanese)),
+        case::Kazakh("әлем", Some(Kazakh)),
+        case::Kazakh("шаруашылығы", Some(Kazakh)),
+        case::Kazakh("ақын", Some(Kazakh)),
+        case::Kazakh("оның", Some(Kazakh)),
+        case::Kazakh("шұрайлы", Some(Kazakh)),
+        case::Lithuanian("mergelės", Some(Lithuanian)),
+        case::Lithuanian("įrengus", Some(Lithuanian)),
+        case::Lithuanian("slegiamų", Some(Lithuanian)),
+        case::Macedonian("припаѓа", Some(Macedonian)),
+        case::Macedonian("ќерка", Some(Macedonian)),
+        case::Polish("państwowych", Some(Polish)),
+        case::Polish("mniejszości", Some(Polish)),
+        case::Polish("groźne", Some(Polish)),
+        case::Romanian("ialomiţa", Some(Romanian)),
+        case::Serbian("наслеђивања", Some(Serbian)),
+        case::Serbian("неисквареношћу", Some(Serbian)),
+        case::Slovak("podĺa", Some(Slovak)),
+        case::Slovak("pohľade", Some(Slovak)),
+        case::Slovak("mŕtvych", Some(Slovak)),
+        case::Ukrainian("ґрунтовому", Some(Ukrainian)),
+        case::Ukrainian("пропонує", Some(Ukrainian)),
+        case::Vietnamese("cằm", Some(Vietnamese)),
+        case::Vietnamese("thần", Some(Vietnamese)),
+        case::Vietnamese("chẳng", Some(Vietnamese)),
+        case::Vietnamese("quẩy", Some(Vietnamese)),
+        case::Vietnamese("sẵn", Some(Vietnamese)),
+        case::Vietnamese("nhẫn", Some(Vietnamese)),
+        case::Vietnamese("dắt", Some(Vietnamese)),
+        case::Vietnamese("chất", Some(Vietnamese)),
+        case::Vietnamese("đạp", Some(Vietnamese)),
+        case::Vietnamese("mặn", Some(Vietnamese)),
+        case::Vietnamese("hậu", Some(Vietnamese)),
+        case::Vietnamese("hiền", Some(Vietnamese)),
+        case::Vietnamese("lẻn", Some(Vietnamese)),
+        case::Vietnamese("biểu", Some(Vietnamese)),
+        case::Vietnamese("diễm", Some(Vietnamese)),
+        case::Vietnamese("phế", Some(Vietnamese)),
+        case::Vietnamese("việc", Some(Vietnamese)),
+        case::Vietnamese("chỉnh", Some(Vietnamese)),
+        case::Vietnamese("thơ", Some(Vietnamese)),
+        case::Vietnamese("nguồn", Some(Vietnamese)),
+        case::Vietnamese("thờ", Some(Vietnamese)),
+        case::Vietnamese("sỏi", Some(Vietnamese)),
+        case::Vietnamese("tổng", Some(Vietnamese)),
+        case::Vietnamese("nhở", Some(Vietnamese)),
+        case::Vietnamese("mỗi", Some(Vietnamese)),
+        case::Vietnamese("bỡi", Some(Vietnamese)),
+        case::Vietnamese("tốt", Some(Vietnamese)),
+        case::Vietnamese("giới", Some(Vietnamese)),
+        case::Vietnamese("một", Some(Vietnamese)),
+        case::Vietnamese("hợp", Some(Vietnamese)),
+        case::Vietnamese("hưng", Some(Vietnamese)),
+        case::Vietnamese("từng", Some(Vietnamese)),
+        case::Vietnamese("của", Some(Vietnamese)),
+        case::Vietnamese("sử", Some(Vietnamese)),
+        case::Vietnamese("những", Some(Vietnamese)),
+        case::Vietnamese("chức", Some(Vietnamese)),
+        case::Vietnamese("thực", Some(Vietnamese)),
+        case::Vietnamese("kỳ", Some(Vietnamese)),
+        case::Vietnamese("kỷ", Some(Vietnamese)),
+        case::Vietnamese("mỵ", Some(Vietnamese)),
+        case::Yoruba("aṣiwèrè", Some(Yoruba)),
+        case::Yoruba("ṣaaju", Some(Yoruba)),
         case("والموضوع", None),
         case("сопротивление", None),
         case("house", None),
 
         // words with unique script
-        case("ունենա", Some(Armenian)),
-        case("გარეუბან", Some(Georgian)),
-        case("σταμάτησε", Some(Greek)),
-        case("ઉપકરણોની", Some(Gujarati)),
-        case("びさ", Some(Japanese)),
-        case("대결구도가", Some(Korean)),
-        case("ਮੋਟਰਸਾਈਕਲਾਂ", Some(PunjabiEastern)),
-        case("துன்பங்களை", Some(Tamil)),
-        case("కృష్ణదేవరాయలు", Some(Telugu)),
-        case("ในทางหลวงหมายเลข", Some(Thai)),
+        case::Armenian("ունենա", Some(Armenian)),
+        case::Georgian("გარეუბან", Some(Georgian)),
+        case::Greek("σταμάτησε", Some(Greek)),
+        case::Gujarati("ઉપકરણોની", Some(Gujarati)),
+        case::Japanese("びさ", Some(Japanese)),
+        case::Korean("대결구도가", Some(Korean)),
+        case::PunjabiEastern("ਮੋਟਰਸਾਈਕਲਾਂ", Some(PunjabiEastern)),
+        case::Tamil("துன்பங்களை", Some(Tamil)),
+        case::Telugu("కృష్ణదేవరాయలు", Some(Telugu)),
+        case::Thai("ในทางหลวงหมายเลข", Some(Thai)),
     )]
     fn assert_language_detection_with_rules_works_correctly(
         detector_for_all_languages: LanguageDetector,
@@ -2821,13 +2808,26 @@ mod tests {
     }
 
     #[rstest(word, expected_languages,
+        case::AzerbaijaniNorth("məhərrəm", ahashset!(TatarCrimean, AzerbaijaniNorth)),
+        case::Czech("tvořen", ahashset!(Silesian, Czech)),
+        case::Latvian("teoloģiska", ahashset!(Latvian, Latgalian)),
+        case::Latvian("blaķene", ahashset!(Latvian, Latgalian)),
+        case::Latvian("ceļojumiem", ahashset!(Latgalian, Latvian)),
+        case::Latvian("numuriņu", ahashset!(Latgalian, Latvian)),
+        case::Polish("zmieniły", ahashset!(Silesian, Polish)),
+        case::Vietnamese("kẽm", ahashset!(Guarani, Vietnamese)),
+        case::Vietnamese("trĩ", ahashset!(Guarani, Vietnamese)),
+        case::Vietnamese("ravị", ahashset!(Vietnamese, Igbo)),
+        case::Vietnamese("cũng", ahashset!(Guarani, Vietnamese)),
+        case::Vietnamese("dụng", ahashset!(Vietnamese, Igbo)),
+        case::Vietnamese("mỹ", ahashset!(Vietnamese, Guarani)),
         case::arab(
             "والموضوع", 
             ahashset!(
                 Uyghur, PersianWestern, ArabicSouthLevantine, Arabic, ArabicSouthernYemeni, Persian,
                 AzerbaijaniSouth, Kashmiri, KurdishCentral, Dari, KanuriCentral, Kurdish, Acehnese,
-                ArabicEgyptian, ArabicMesopotamian, Pashto, Urdu, ArabicMoroccan, Banjar, ArabicNorthLevantine,
-                ArabicNajdi, ArabicTunisian, PastoSouthern, Sindhi
+                ArabicEgyptian, ArabicMesopotamian, Pashto, Urdu, ArabicMoroccan, Banjar,
+                ArabicNorthLevantine, ArabicNajdi, ArabicTunisian, PastoSouthern, Sindhi
             )),
         case::ru1(
             "сопротивление",
@@ -2838,7 +2838,10 @@ mod tests {
         case::ukr1("пристрої", ahashset!(Ukrainian, OldChurchSlavonic)),
         case::bel1("раскрывае", ahashset!(Belarusian, Kazakh, MongolianHalh, Russian)),
         case::bel2("павінен", ahashset!(Belarusian, Kazakh, Ukrainian)),
-        case::bul1("плаваща", ahashset!(Kazakh, Bulgarian, OldChurchSlavonic, Russian, MongolianHalh, Ukrainian)),
+        case::bul1(
+            "плаваща",
+            ahashset!(Kazakh, Bulgarian, OldChurchSlavonic, Russian, MongolianHalh, Ukrainian)
+        ),
         case::bul2("довършат", ahashset!(Russian, Kazakh, Bulgarian, OldChurchSlavonic, MongolianHalh)),
         case::mon1("үндсэн", ahashset!(Kazakh, MongolianHalh)),
         case::mon2("дөхөж", ahashset!(Kazakh, MongolianHalh)),
@@ -2847,96 +2850,181 @@ mod tests {
         case::mac3("набљудувач", ahashset!(Macedonian, Serbian)),
         case::mac4("џамиите", ahashset!(Macedonian, Serbian)),
         case::mac5("ѕидови", ahashset!(OldChurchSlavonic, Macedonian)),
-        case::latv1("aizklātā", ahashset!(Latin, Latvian)),
-        case::latv2("sistēmas", ahashset!(Latin, Latvian)),
-        case::latv3("palīdzi", ahashset!(Latin, Latvian)),
+        case::latv1("aizklātā", ahashset!(Latgalian, Latin, Latvian)),
+        case::latv2("sistēmas", ahashset!(Latgalian, Latvian, Latin)),
+        case::latv3("palīdzi", ahashset!(Latin, Latvian, Latgalian)),
         case::viet1("nhẹn", ahashset!(Vietnamese, Yoruba)),
-        case::viet2("chọn", ahashset!(Vietnamese)),
+        case::viet2("chọn", ahashset!(Vietnamese, Igbo)),
         case::croat1("prihvaćanju", ahashset!(Croatian, Bosnian)),
         case::croat2("nađete", ahashset!(Bosnian, Croatian, Vietnamese)),
-        case::port1("visão", ahashset!(Portuguese, Vietnamese)),
+        case::port1("visão", ahashset!(Portuguese, Vietnamese, Guarani)),
         case::port2(
             "catedráticos",
-            ahashset!(Vietnamese, Irish, Slovak, Hungarian, Portuguese, Spanish, Shona)
+            ahashset!(
+                Friulian, Papiamento, Asturian, Cebuano, Lombard, Galician, Vietnamese, Igbo, Irish,
+                Slovak, Portuguese, GaelicScottish, Guarani, Occitan, Kabuverdianu, Shona, Spanish,
+                Hungarian, Limburgish
+            )
         ),
         case::port3(
             "política",
-            ahashset!(Spanish, Irish, Hungarian, Portuguese, Vietnamese, Czech, Slovak, Shona)
+            ahashset!(
+                Kabuverdianu, Kikuyu, Hungarian, Shona, Guarani, Sardinian, Igbo, Lombard, Irish,
+                Galician, Czech, Kinyarwanda, Vietnamese, Occitan, Friulian, Spanish, Limburgish,
+                Asturian, Portuguese, Slovak, Cebuano
+            )
         ),
         case::port4(
             "música",
-            ahashset!(Slovak, Spanish, Portuguese, Czech, Vietnamese, Irish, Shona, Hungarian)
+            ahashset!(
+                Igbo, Guarani, Sardinian, Limburgish, Cebuano, Shona, Vietnamese, Czech, Lombard,
+                Hungarian, Kinyarwanda, Portuguese, Kabuverdianu, Irish, Friulian, Spanish, Kikuyu,
+                Papiamento, Slovak, Galician, Occitan, Asturian
+            )
         ),
         case::pol1("wystąpią", ahashset!(Polish)),
         case::pol2("budowę", ahashset!(Polish)),
-        case::pol3("kradzieżami", ahashset!(Polish)),
-        case::lith1("nebūsime", ahashset!(Latvian, Latin, Lithuanian)),
-        case::rom1("afişate", ahashset!(AzerbaijaniNorth, Turkish)),
-        case::rom2("înviat", ahashset!(French, Romanian)),
+        case::pol3("kradzieżami", ahashset!(Maltese, Polish)),
+        case::lith1("nebūsime", ahashset!(Lithuanian, Latgalian, Latin, Latvian)),
+        case::rom1("afişate", ahashset!(TatarCrimean, Turkish, KurdishNorthern, AzerbaijaniNorth)),
+        case::rom2("înviat", ahashset!(French, Limburgish, KurdishNorthern, Romanian)),
         case::rom3("pregătire", ahashset!(Romanian, Vietnamese)),
-        case::it1("venerdì", ahashset!(Vietnamese, Italian)),
-        case::es1("años", ahashset!(Basque, Spanish)),
-        case::slov1("rozohňuje", ahashset!(Czech, Slovak)),
+        case::it1(
+            "venerdì",
+            ahashset!(Sardinian, Italian, Limburgish, Lombard, Venetian, Sicilian, Vietnamese)
+        ),
+        case::es1(
+            "años", 
+            ahashset!(
+                Cebuano, Guarani, AymaraCentral, Ilocano, Galician, FulfuldeNigerian, Waray, Basque,
+                Friulian, Spanish, Asturian, Papiamento, Wolof
+            )
+        ),
+        case::slov1("rozohňuje", ahashset!(Silesian, Czech, Slovak)),
         case::cz1("rtuť", ahashset!(Czech, Slovak)),
         case::cz2("jeďte", ahashset!(Slovak, Czech)),
-        case::cz3("vývoj", ahashset!(Czech, Icelandic, Slovak)),
-        case::cz4("zaručen", ahashset!(Bosnian, Czech, Croatian, Latvian, Lithuanian, Slovak, Slovene)),
+        case::cz3("vývoj", ahashset!(Faroese, Slovak, Icelandic, Czech)),
+        case::cz4(
+            "zaručen",
+            ahashset!(Latgalian, Czech, Slovene, Slovak, Silesian, Latvian, Bosnian, Kabyle, Croatian, Lithuanian)
+        ),
         case::cz5(
             "zkouškou", 
-            ahashset!(Slovene, Lithuanian, Slovak, Bosnian, Czech, Sepedi, Finnish, Croatian, Latvian, Estonian)
+            ahashset!(
+                Latvian, Croatian, Latgalian, Sepedi, Slovene, Finnish, Czech, Estonian, Slovak, Silesian,
+                Bosnian, Lithuanian
+            )
         ),
-        case::cz6("navržen", ahashset!(Lithuanian, Bosnian, Latvian, Finnish, Czech, Slovene, Slovak, Croatian, Estonian)),
-        case::ic1("minjaverðir", ahashset!(Icelandic)),
+        case::cz6(
+            "navržen",
+            ahashset!(
+                Slovak, Slovene, Finnish, Latvian, Silesian, Czech, Lithuanian, Estonian, Bosnian,
+                Croatian, Latgalian
+            )
+        ),
+        case::ic1("minjaverðir", ahashset!(Icelandic, Faroese)),
         case::ic2("þagnarskyldu", ahashset!(Icelandic)),
-        case::alb1("hashemidëve", ahashset!(AlbanianTosk, Catalan, Dutch, Afrikaans, French)),
-        case::fr1("forêt", ahashset!(Portuguese, AlbanianTosk, Welsh, Sepedi, French, Danish)),
-        case::fr2("succèdent", ahashset!(Vietnamese, Italian, Catalan, Ganda, French)),
-        case::fr3("où", ahashset!(French, Italian, Vietnamese, Yoruba)),
-        case::fr4("contrôle", ahashset!(Afrikaans, Vietnamese, Welsh, Portuguese, French, Danish, Sepedi, Slovak)),
+        case::alb1(
+            "hashemidëve",
+            ahashset!(French, Afrikaans, AlbanianTosk, Luxembourgish, Catalan, Dutch, Limburgish)
+        ),
+        case::fr1(
+            "forêt",
+            ahashset!(Kabuverdianu, French, Danish, KurdishNorthern, Portuguese, AlbanianTosk, Welsh, Sepedi)
+        ),
+        case::fr2(
+            "succèdent",
+            ahashset!(
+                French, Sardinian, Italian, CreoleHaitian, Acehnese, Occitan, Sicilian, Venetian, Ganda,
+                Limburgish, Catalan, GaelicScottish, Lombard, Papiamento, Vietnamese
+            )
+        ),
+        case::fr3(
+            "où",
+            ahashset!(
+                Yoruba, Lombard, Italian, Limburgish, CreoleHaitian, Vietnamese, GaelicScottish,
+                Venetian, Sardinian, French, Sicilian
+            )
+        ),
+        case::fr4(
+            "contrôle",
+            ahashset!(Vietnamese, Afrikaans, Sepedi, Welsh, Limburgish, French, Danish, Portuguese, Slovak)
+        ),
         case::fr5(
             "façonnage",
             ahashset!(
-                Afrikaans, AzerbaijaniNorth, Croatian, Portuguese, Bosnian, Danish, Catalan, French,
-                Turkish, Basque, Bokmal, Dutch, AlbanianTosk
+                Friulian, AlbanianTosk, Venetian, KurdishNorthern, Croatian, AzerbaijaniNorth, Bokmal,
+                Danish, Catalan, Afrikaans, Turkish, Occitan, Dutch, French, TatarCrimean, Kabuverdianu,
+                Ligurian, Portuguese, Basque, Turkmen, Bosnian
             )
         ),
-        case::est1("tõeliseks", ahashset!(Vietnamese, Estonian, Portuguese)),
-        case::est2("päralt", ahashset!(Estonian, Finnish, German, Slovak, Swedish)),
-        case::dan1("direktør", ahashset!(Bokmal, Danish, Nynorsk)),
-        case::dan2("indebærer", ahashset!(Bokmal, Danish, Icelandic, Nynorsk, French, Latin)),
+        case::est1(
+            "tõeliseks",
+            ahashset!(Vietnamese, Portuguese, Kabuverdianu, Guarani, Estonian)
+        ),
+        case::est2(
+            "päralt",
+            ahashset!(Slovak, Limburgish, Swedish, Finnish, German, Turkmen, Luxembourgish, Estonian)
+        ),
+        case::dan1("direktør", ahashset!(Nynorsk, Danish, Bokmal, Faroese)),
+        case::dan2("indebærer", ahashset!(Latin, Faroese, Nynorsk, Danish, Bokmal, Icelandic, French)),
         case::dan3("måned", ahashset!(Bokmal, Danish, Nynorsk, Swedish)),
-        case::cat1("pràctiques", ahashset!(Catalan, French, Italian, Portuguese, Vietnamese)),
+        case::cat1(
+            "pràctiques",
+            ahashset!(Sardinian, Italian, Portuguese, French, Catalan, Venetian, Vietnamese, Sicilian)
+        ),
         case::cat2(
             "contradicció",
             ahashset!(
-                Irish, Catalan, Czech, Portuguese, Polish, Spanish, Shona, Slovak, Hungarian, Vietnamese
+                GaelicScottish, Kabuverdianu, Occitan, Sicilian, Irish, Guarani, Friulian, Shona,
+                Igbo, Polish, Spanish, Cebuano, Galician, Hungarian, Catalan, Slovak, Sardinian,
+                Vietnamese, Luxembourgish, Asturian, Venetian, Portuguese, Limburgish, Czech,
+                Papiamento, Lombard
             )
         ),
         case::cat3(
             "només",
             ahashset!(
-                Yoruba, French, Hungarian, Italian, Danish, Afrikaans, Bokmal, Ganda, Czech,
-                Irish, Portuguese, Slovak, Shona, Vietnamese, Icelandic, Spanish, Catalan, Dutch
+                Bokmal, Friulian, Venetian, Afrikaans, Czech, French, Kabuverdianu, Lombard,
+                Icelandic, Papiamento, Hungarian, Italian, Occitan, Sicilian, Acehnese, Igbo,
+                Guarani, Danish, Shona, Spanish, Waray, Galician, Irish, Yoruba, GaelicScottish,
+                Vietnamese, Sardinian, Cebuano, CreoleHaitian, Ganda, Ilocano, Catalan, Dutch,
+                Asturian, Limburgish, Ligurian, Luxembourgish, Portuguese, Slovak
             )
         ),
         case::cat4("substituïts", ahashset!(Afrikaans, Dutch, Catalan, French)),
         case::ge1(
             "überrascht",
-            ahashset!(Portuguese, Catalan, Hungarian, Turkish, French, Spanish, German, Dutch, AzerbaijaniNorth)
+            ahashset!(
+                Limburgish, AzerbaijaniNorth, Spanish, Papiamento, Galician, TatarCrimean, Turkish,
+                French, Portuguese, German, Catalan, Asturian, Hungarian, Dutch, Luxembourgish
+            )
         ),
         case::ge2(
             "höher",
-            ahashset!(AzerbaijaniNorth, Estonian, Finnish, German, Hungarian, Icelandic, Swedish, Turkish)
+            ahashset!(
+                Swedish, TatarCrimean, Luxembourgish, Turkish, German, Hungarian, Icelandic, Estonian,
+                AzerbaijaniNorth, Limburgish, Turkmen, Finnish
+            )
         ),
         case::en1(
             "house",
             ahashset!(
-                Sesotho, Somali, Tswana, Vietnamese, Latvian, Hungarian, Afrikaans, Slovak, Spanish,
-                Shona, Ganda, Bosnian, Polish, Swahili, Tsonga, Croatian, Welsh, Danish, Finnish, Xhosa,
-                Malay, Indonesian, Basque, Estonian, Slovene, English, Dutch, Bokmal, Sepedi, Romanian,
-                Esperanto, MalayStandard, Czech, Latin, French, Icelandic, German, Turkish, Nynorsk,
-                Portuguese, Swedish, Irish, Italian, Yoruba, AzerbaijaniNorth, Tagalog, Catalan,
-                Lithuanian, AlbanianTosk, Zulu
+                Latvian, German, Dyula, Swati, UzbekNorthern, Sardinian, Lithuanian, Papiamento,
+                CreoleHaitian, Slovak, Lingala, Kinyarwanda, English, Irish, Hungarian, TokPisin,
+                Kabyle, Faroese, Swahili, Malay, Spanish, Welsh, Bosnian, Mossi, Minangkabau, Shona,
+                Wolof, Occitan, Dutch, Banjar, Turkmen, Friulian, Mizo, OromoWestCentral, Bambara,
+                Ligurian, Asturian, Fijian, Somali, Polish, Nuer, Esperanto, Slovene, Basque,
+                Latgalian, Icelandic, Luxembourgish, Chokwe, Kabuverdianu, Umbundu, GaelicScottish,
+                Kikuyu, Kamba, Romanian, Luo, Cebuano, Fon, Nynorsk, Kabiye, AzerbaijaniNorth,
+                Indonesian, Sango, Lombard, Twi, Sepedi, Venetian, Tsonga, Galician, Maltese, Czech,
+                Kikongo, Vietnamese, MalayStandard, AlbanianTosk, Tagalog, AymaraCentral, Jingpho,
+                Catalan, French, Hausa, KurdishNorthern, Estonian, Guarani, Ganda, Xhosa, Turkish,
+                Ewe, Nyanja, Bokmal, Acehnese, LubaKasai, Sesotho, Croatian, Tamasheq, Waray,
+                Italian, Latin, Buginese, Kimbundu, Silesian, Tswana, Zulu, Sundanese, Tumbuka,
+                Bemba, DinkaSouthwestern, Portuguese, TatarCrimean, Finnish, KanuriCentral, Yoruba,
+                Afrikaans, Swedish, Javanese, Igbo, Balinese, Danish, Sicilian, FulfuldeNigerian,
+                Limburgish, Rundi
             )
         ),
         case::marat1(
@@ -2945,8 +3033,11 @@ mod tests {
         ),
         case::ben1("জানাতে", ahashset!(Assamese, BishnupriyaManipuri, Bengali, Meitei)),
         case::heb1("בתחרויות", ahashset!(YiddishEastern, Yiddish, Hebrew)),
-        case("nebûtu", ahashset!(Welsh, French)),
-        case("viòiem", ahashset!(Vietnamese, Catalan, Italian)),
+        case("nebûtu", ahashset!(Welsh, KurdishNorthern, French, Limburgish)),
+        case(
+            "viòiem",
+            ahashset!(Sardinian, Italian, Limburgish, Catalan, Occitan, CreoleHaitian, Vietnamese, Lombard)
+        ),
         case("labâk", ahashset!(Vietnamese, AlbanianTosk, Romanian, French, Portuguese)),
     )]
     fn assert_language_filtering_with_rules_works_correctly(
