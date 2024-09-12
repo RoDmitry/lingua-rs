@@ -3,11 +3,59 @@ use ::std::fmt::{Debug, Display, Formatter, Result};
 use alphabet_match_macro::alphabet_match;
 use std::str::FromStr;
 use std::string::ToString;
+use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use strum_macros::EnumString;
 use strum_macros::IntoStaticStr;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
+/* macro_rules! alphabets_expander {
+    ($var:ident,$inner:ident) => {
+        $($inner::ALPHABETS[..]),*
+    };
+    ($var:ident,) => {
+        $var
+    }
+} */
+/* macro_rules! alphabet {
+    (
+        $( #[$meta:meta] )*
+        $vis:vis enum $name:ident {
+            $($var:ident$(($inner:ident))?),* $(,)?
+        }
+    ) => {
+        $( #[$meta] )*
+        $vis enum $name {
+            $($var$(($inner))?,)*
+        }
+        impl $name {
+            pub const ALL: &'static [Alphabet] = {
+                use $name::*;
+                &[ 
+                    /* for $i in $($inner)?::ALPHABETS {
+
+                    } */
+                    $(
+                        // If $inner exists, expand $inner::ALL; otherwise, use $var
+                        $(
+                            $inner::ALPHABETS
+                        )?
+                        /* $(
+                            $name::$var
+                        )? */
+                    )*
+                    /* $(
+                        // If $inner is present, use it; otherwise, just the variant
+                        // $name::$var$(( $inner::ALPHABETS ))?
+                        alphabets_expander!($var,$($inner)?)
+                    ),* */
+                ]
+            };
+        }
+    };
+} */
+
+// alphabet!(
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Alphabet {
     Adlam,
     Ahom,
@@ -93,81 +141,55 @@ pub enum Alphabet {
     KiratRai,
     KoreanHanja,
     Lao,
-    LatinLatin,
+    Latin(LatinAlphabet),
+    /* LatinAcehnese,
     LatinAfrikaans,
     LatinAlbanian,
-    LatinAzerbaijani,
-    LatinBasque,
-    LatinBokmal,
-    LatinBosnian,
-    LatinCatalan,
-    LatinCroatian,
-    LatinCzech,
-    LatinDanish,
-    LatinDutch,
-    LatinEnglish,
-    LatinEsperanto,
-    LatinEstonian,
-    LatinFinnish,
-    LatinFrench,
-    LatinGanda,
-    LatinGerman,
-    LatinHungarian,
-    LatinIcelandic,
-    LatinIndonesian,
-    LatinIrish,
-    LatinItalian,
-    LatinLatvian,
-    LatinLithuanian,
-    LatinMalay,
-    LatinMaori,
-    LatinNynorsk,
-    LatinPolish,
-    LatinPortuguese,
-    LatinRomanian,
-    LatinSepedi,
-    LatinSesotho,
-    LatinShona,
-    LatinSlovak,
-    LatinSlovene,
-    LatinSomali,
-    LatinSpanish,
-    LatinSwahili,
-    LatinSwedish,
-    LatinTagalog,
-    LatinTsonga,
-    LatinTswana,
-    LatinTurkish,
-    LatinVietnamese,
-    LatinWelsh,
-    LatinXhosa,
-    LatinYoruba,
-    LatinZulu,
-    LatinAcehnese,
     LatinAsturian,
     LatinAymaraCentral,
+    LatinAzerbaijani,
     LatinBalinese,
     LatinBambara,
     LatinBanjar,
+    LatinBasque,
     LatinBemba,
+    LatinBokmal,
+    LatinBosnian,
     LatinBuginese,
+    LatinCatalan,
     LatinCebuano,
     LatinChokwe,
     LatinCreoleHaitian,
+    LatinCroatian,
+    LatinCzech,
+    LatinDanish,
     LatinDinkaSouthwestern,
+    LatinDutch,
     LatinDyula,
+    LatinEnglish,
+    LatinEsperanto,
+    LatinEstonian,
     LatinEwe,
     LatinFaroese,
     LatinFijian,
+    LatinFinnish,
     LatinFon,
+    LatinFrench,
     LatinFriulian,
     LatinFulfuldeNigerian,
     LatinGaelicScottish,
     LatinGalician,
+    LatinGanda,
+    LatinGerman,
     LatinGuarani,
     LatinHausa,
+    LatinHungarian,
+    LatinIcelandic,
     LatinIgbo,
     LatinIlocano,
+    LatinIndonesian,
+    LatinIrish,
+    LatinItalian,
     LatinJavanese,
     LatinJingpho,
     LatinKabiye,
@@ -181,44 +203,71 @@ pub enum Alphabet {
     LatinKinyarwanda,
     LatinKurdishNorthern,
     LatinLatgalian,
+    LatinLatin,
+    LatinLatvian,
     LatinLigurian,
     LatinLimburgish,
     LatinLingala,
+    LatinLithuanian,
     LatinLombard,
     LatinLubaKasai,
     LatinLuo,
     LatinLuxembourgish,
+    LatinMalay,
     LatinMalgasyPlateau,
     LatinMaltese,
+    LatinMaori,
     LatinMinangkabau,
     LatinMizo,
     LatinMossi,
     LatinNuer,
     LatinNyanja,
+    LatinNynorsk,
     LatinOccitan,
     LatinOromoWestCentral,
     LatinPangasinan,
     LatinPapiamento,
+    LatinPolish,
+    LatinPortuguese,
     LatinQuechuaAyacucho,
+    LatinRomanian,
     LatinRundi,
     LatinSamoan,
     LatinSango,
     LatinSardinian,
+    LatinSepedi,
+    LatinSesotho,
+    LatinShona,
     LatinSicilian,
     LatinSilesian,
+    LatinSlovak,
+    LatinSlovene,
+    LatinSomali,
+    LatinSpanish,
     LatinSundanese,
+    LatinSwahili,
     LatinSwati,
+    LatinSwedish,
+    LatinTagalog,
     LatinTamasheq,
     LatinTatarCrimean,
     LatinTokPisin,
+    LatinTsonga,
+    LatinTswana,
     LatinTumbuka,
+    LatinTurkish,
     LatinTurkmen,
     LatinTwi,
     LatinUmbundu,
     LatinUzbekNorthern,
     LatinVenetian,
+    LatinVietnamese,
     LatinWaray,
+    LatinWelsh,
     LatinWolof,
+    LatinXhosa,
+    LatinYoruba,
+    LatinZulu, */
     Lepcha,
     Limbu,
     LinearA,
@@ -317,6 +366,7 @@ pub enum Alphabet {
     Yi,
     ZanabazarSquare,
 }
+// );
 
 impl Display for Alphabet {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
@@ -484,31 +534,185 @@ impl From<Alphabet> for &[Language] {
             KiratRai => &[Language::Bantawa],
             KoreanHanja => &[Language::Korean],
             Lao => &[Language::Lao],
+            Latin(la) => {
+                use LatinAlphabet::*;
+                match la {
+                    Acehnese => &[Language::Acehnese],
+                    Afrikaans => &[Language::Afrikaans],
+                    Albanian => &[Language::AlbanianTosk],
+                    Asturian => &[Language::Asturian],
+                    AymaraCentral => &[Language::AymaraCentral],
+                    Azerbaijani => &[Language::AzerbaijaniNorth],
+                    Balinese => &[Language::Balinese],
+                    Bambara => &[Language::Bambara],
+                    Banjar => &[Language::Banjar],
+                    Basque => &[Language::Basque],
+                    Bemba => &[Language::Bemba],
+                    Bokmal => &[Language::Bokmal],
+                    Bosnian => &[Language::Bosnian],
+                    Buginese => &[Language::Buginese],
+                    Catalan => &[Language::Catalan],
+                    Cebuano => &[Language::Cebuano],
+                    Chokwe => &[Language::Chokwe],
+                    CreoleHaitian => &[Language::CreoleHaitian],
+                    Croatian => &[Language::Croatian],
+                    Czech => &[Language::Czech],
+                    Danish => &[Language::Danish],
+                    DinkaSouthwestern => &[Language::DinkaSouthwestern],
+                    Dutch => &[Language::Dutch],
+                    Dyula => &[Language::Dyula],
+                    English => &[Language::English],
+                    Esperanto => &[Language::Esperanto],
+                    Estonian => &[Language::Estonian],
+                    Ewe => &[Language::Ewe],
+                    Faroese => &[Language::Faroese],
+                    Fijian => &[Language::Fijian],
+                    Finnish => &[Language::Finnish],
+                    Fon => &[Language::Fon],
+                    French => &[Language::French],
+                    Friulian => &[Language::Friulian],
+                    FulfuldeNigerian => &[Language::FulfuldeNigerian],
+                    GaelicScottish => &[Language::GaelicScottish],
+                    Galician => &[Language::Galician],
+                    Ganda => &[Language::Ganda],
+                    German => &[Language::German],
+                    Guarani => &[Language::Guarani],
+                    Hausa => &[Language::Hausa],
+                    Hungarian => &[Language::Hungarian],
+                    Icelandic => &[Language::Icelandic],
+                    Igbo => &[Language::Igbo],
+                    Ilocano => &[Language::Ilocano],
+                    Indonesian => &[Language::Indonesian],
+                    Irish => &[Language::Irish],
+                    Italian => &[Language::Italian],
+                    Javanese => &[Language::Javanese],
+                    Jingpho => &[Language::Jingpho],
+                    Kabiye => &[Language::Kabiye],
+                    Kabuverdianu => &[Language::Kabuverdianu],
+                    Kabyle => &[Language::Kabyle],
+                    Kamba => &[Language::Kamba],
+                    KanuriCentral => &[Language::KanuriCentral],
+                    Kikongo => &[Language::Kikongo],
+                    Kikuyu => &[Language::Kikuyu],
+                    Kimbundu => &[Language::Kimbundu],
+                    Kinyarwanda => &[Language::Kinyarwanda],
+                    KurdishNorthern => &[Language::KurdishNorthern],
+                    Latgalian => &[Language::Latgalian],
+                    Latin => &[Language::Latin],
+                    Latvian => &[Language::Latvian],
+                    Ligurian => &[Language::Ligurian],
+                    Limburgish => &[Language::Limburgish],
+                    Lingala => &[Language::Lingala],
+                    Lithuanian => &[Language::Lithuanian],
+                    Lombard => &[Language::Lombard],
+                    LubaKasai => &[Language::LubaKasai],
+                    Luo => &[Language::Luo],
+                    Luxembourgish => &[Language::Luxembourgish],
+                    Malay => &[Language::Malay, Language::MalayStandard],
+                    MalgasyPlateau => &[Language::MalgasyPlateau],
+                    Maltese => &[Language::Maltese],
+                    Maori => &[Language::Maori],
+                    Minangkabau => &[Language::Minangkabau],
+                    Mizo => &[Language::Mizo],
+                    Mossi => &[Language::Mossi],
+                    Nuer => &[Language::Nuer],
+                    Nyanja => &[Language::Nyanja],
+                    Nynorsk => &[Language::Nynorsk],
+                    Occitan => &[Language::Occitan],
+                    OromoWestCentral => &[Language::OromoWestCentral],
+                    Pangasinan => &[Language::Pangasinan],
+                    Papiamento => &[Language::Papiamento],
+                    Polish => &[Language::Polish],
+                    Portuguese => &[Language::Portuguese],
+                    QuechuaAyacucho => &[Language::QuechuaAyacucho],
+                    Romanian => &[Language::Romanian],
+                    Rundi => &[Language::Rundi],
+                    Samoan => &[Language::Samoan],
+                    Sango => &[Language::Sango],
+                    Sardinian => &[Language::Sardinian],
+                    Sepedi => &[Language::Sepedi],
+                    Sesotho => &[Language::Sesotho],
+                    Shona => &[Language::Shona],
+                    Sicilian => &[Language::Sicilian],
+                    Silesian => &[Language::Silesian],
+                    Slovak => &[Language::Slovak],
+                    Slovene => &[Language::Slovene],
+                    Somali => &[Language::Somali],
+                    Spanish => &[Language::Spanish],
+                    Sundanese => &[Language::Sundanese],
+                    Swahili => &[Language::Swahili],
+                    Swati => &[Language::Swati],
+                    Swedish => &[Language::Swedish],
+                    Tagalog => &[Language::Tagalog],
+                    Tamasheq => &[Language::Tamasheq],
+                    TatarCrimean => &[Language::TatarCrimean],
+                    TokPisin => &[Language::TokPisin],
+                    Tsonga => &[Language::Tsonga],
+                    Tswana => &[Language::Tswana],
+                    Tumbuka => &[Language::Tumbuka],
+                    Turkish => &[Language::Turkish],
+                    Turkmen => &[Language::Turkmen],
+                    Twi => &[Language::Twi],
+                    Umbundu => &[Language::Umbundu],
+                    UzbekNorthern => &[Language::UzbekNorthern],
+                    Venetian => &[Language::Venetian],
+                    Vietnamese => &[Language::Vietnamese],
+                    Waray => &[Language::Waray],
+                    Welsh => &[Language::Welsh],
+                    Wolof => &[Language::Wolof],
+                    Xhosa => &[Language::Xhosa],
+                    Yoruba => &[Language::Yoruba],
+                    Zulu => &[Language::Zulu],
+                }
+            } /*
             LatinAcehnese => &[Language::Acehnese],
+            LatinAfrikaans => &[Language::Afrikaans],
+            LatinAlbanian => &[Language::AlbanianTosk],
             LatinAsturian => &[Language::Asturian],
             LatinAymaraCentral => &[Language::AymaraCentral],
+            LatinAzerbaijani => &[Language::AzerbaijaniNorth],
             LatinBalinese => &[Language::Balinese],
             LatinBambara => &[Language::Bambara],
             LatinBanjar => &[Language::Banjar],
+            LatinBasque => &[Language::Basque],
             LatinBemba => &[Language::Bemba],
+            LatinBokmal => &[Language::Bokmal],
+            LatinBosnian => &[Language::Bosnian],
             LatinBuginese => &[Language::Buginese],
+            LatinCatalan => &[Language::Catalan],
             LatinCebuano => &[Language::Cebuano],
             LatinChokwe => &[Language::Chokwe],
             LatinCreoleHaitian => &[Language::CreoleHaitian],
+            LatinCroatian => &[Language::Croatian],
+            LatinCzech => &[Language::Czech],
+            LatinDanish => &[Language::Danish],
             LatinDinkaSouthwestern => &[Language::DinkaSouthwestern],
+            LatinDutch => &[Language::Dutch],
             LatinDyula => &[Language::Dyula],
+            LatinEnglish => &[Language::English],
+            LatinEsperanto => &[Language::Esperanto],
+            LatinEstonian => &[Language::Estonian],
             LatinEwe => &[Language::Ewe],
             LatinFaroese => &[Language::Faroese],
             LatinFijian => &[Language::Fijian],
+            LatinFinnish => &[Language::Finnish],
             LatinFon => &[Language::Fon],
+            LatinFrench => &[Language::French],
             LatinFriulian => &[Language::Friulian],
             LatinFulfuldeNigerian => &[Language::FulfuldeNigerian],
             LatinGaelicScottish => &[Language::GaelicScottish],
             LatinGalician => &[Language::Galician],
+            LatinGanda => &[Language::Ganda],
+            LatinGerman => &[Language::German],
             LatinGuarani => &[Language::Guarani],
             LatinHausa => &[Language::Hausa],
+            LatinHungarian => &[Language::Hungarian],
+            LatinIcelandic => &[Language::Icelandic],
             LatinIgbo => &[Language::Igbo],
             LatinIlocano => &[Language::Ilocano],
+            LatinIndonesian => &[Language::Indonesian],
+            LatinIrish => &[Language::Irish],
+            LatinItalian => &[Language::Italian],
             LatinJavanese => &[Language::Javanese],
             LatinJingpho => &[Language::Jingpho],
             LatinKabiye => &[Language::Kabiye],
@@ -522,94 +726,71 @@ impl From<Alphabet> for &[Language] {
             LatinKinyarwanda => &[Language::Kinyarwanda],
             LatinKurdishNorthern => &[Language::KurdishNorthern],
             LatinLatgalian => &[Language::Latgalian],
+            LatinLatin => &[Language::Latin],
+            LatinLatvian => &[Language::Latvian],
             LatinLigurian => &[Language::Ligurian],
             LatinLimburgish => &[Language::Limburgish],
             LatinLingala => &[Language::Lingala],
+            LatinLithuanian => &[Language::Lithuanian],
             LatinLombard => &[Language::Lombard],
             LatinLubaKasai => &[Language::LubaKasai],
             LatinLuo => &[Language::Luo],
             LatinLuxembourgish => &[Language::Luxembourgish],
+            LatinMalay => &[Language::Malay, Language::MalayStandard],
             LatinMalgasyPlateau => &[Language::MalgasyPlateau],
             LatinMaltese => &[Language::Maltese],
+            LatinMaori => &[Language::Maori],
             LatinMinangkabau => &[Language::Minangkabau],
             LatinMizo => &[Language::Mizo],
             LatinMossi => &[Language::Mossi],
             LatinNuer => &[Language::Nuer],
             LatinNyanja => &[Language::Nyanja],
+            LatinNynorsk => &[Language::Nynorsk],
             LatinOccitan => &[Language::Occitan],
             LatinOromoWestCentral => &[Language::OromoWestCentral],
             LatinPangasinan => &[Language::Pangasinan],
             LatinPapiamento => &[Language::Papiamento],
+            LatinPolish => &[Language::Polish],
+            LatinPortuguese => &[Language::Portuguese],
             LatinQuechuaAyacucho => &[Language::QuechuaAyacucho],
+            LatinRomanian => &[Language::Romanian],
             LatinRundi => &[Language::Rundi],
             LatinSamoan => &[Language::Samoan],
             LatinSango => &[Language::Sango],
             LatinSardinian => &[Language::Sardinian],
+            LatinSepedi => &[Language::Sepedi],
+            LatinSesotho => &[Language::Sesotho],
+            LatinShona => &[Language::Shona],
             LatinSicilian => &[Language::Sicilian],
             LatinSilesian => &[Language::Silesian],
+            LatinSlovak => &[Language::Slovak],
+            LatinSlovene => &[Language::Slovene],
+            LatinSomali => &[Language::Somali],
+            LatinSpanish => &[Language::Spanish],
             LatinSundanese => &[Language::Sundanese],
+            LatinSwahili => &[Language::Swahili],
             LatinSwati => &[Language::Swati],
+            LatinSwedish => &[Language::Swedish],
+            LatinTagalog => &[Language::Tagalog],
             LatinTamasheq => &[Language::Tamasheq],
             LatinTatarCrimean => &[Language::TatarCrimean],
             LatinTokPisin => &[Language::TokPisin],
+            LatinTsonga => &[Language::Tsonga],
+            LatinTswana => &[Language::Tswana],
             LatinTumbuka => &[Language::Tumbuka],
+            LatinTurkish => &[Language::Turkish],
             LatinTurkmen => &[Language::Turkmen],
             LatinTwi => &[Language::Twi],
             LatinUmbundu => &[Language::Umbundu],
             LatinUzbekNorthern => &[Language::UzbekNorthern],
             LatinVenetian => &[Language::Venetian],
-            LatinWaray => &[Language::Waray],
-            LatinWolof => &[Language::Wolof],
-            LatinAfrikaans => &[Language::Afrikaans],
-            LatinAlbanian => &[Language::AlbanianTosk],
-            LatinAzerbaijani => &[Language::AzerbaijaniNorth],
-            LatinBasque => &[Language::Basque],
-            LatinBokmal => &[Language::Bokmal],
-            LatinBosnian => &[Language::Bosnian],
-            LatinCatalan => &[Language::Catalan],
-            LatinCroatian => &[Language::Croatian],
-            LatinCzech => &[Language::Czech],
-            LatinDanish => &[Language::Danish],
-            LatinDutch => &[Language::Dutch],
-            LatinEnglish => &[Language::English],
-            LatinEsperanto => &[Language::Esperanto],
-            LatinEstonian => &[Language::Estonian],
-            LatinFinnish => &[Language::Finnish],
-            LatinFrench => &[Language::French],
-            LatinGanda => &[Language::Ganda],
-            LatinGerman => &[Language::German],
-            LatinHungarian => &[Language::Hungarian],
-            LatinIcelandic => &[Language::Icelandic],
-            LatinIndonesian => &[Language::Indonesian],
-            LatinIrish => &[Language::Irish],
-            LatinItalian => &[Language::Italian],
-            LatinLatin => &[Language::Latin],
-            LatinLatvian => &[Language::Latvian],
-            LatinLithuanian => &[Language::Lithuanian],
-            LatinMalay => &[Language::Malay, Language::MalayStandard],
-            LatinMaori => &[Language::Maori],
-            LatinNynorsk => &[Language::Nynorsk],
-            LatinPolish => &[Language::Polish],
-            LatinPortuguese => &[Language::Portuguese],
-            LatinRomanian => &[Language::Romanian],
-            LatinSepedi => &[Language::Sepedi],
-            LatinSesotho => &[Language::Sesotho],
-            LatinShona => &[Language::Shona],
-            LatinSlovak => &[Language::Slovak],
-            LatinSlovene => &[Language::Slovene],
-            LatinSomali => &[Language::Somali],
-            LatinSpanish => &[Language::Spanish],
-            LatinSwahili => &[Language::Swahili],
-            LatinSwedish => &[Language::Swedish],
-            LatinTagalog => &[Language::Tagalog],
-            LatinTsonga => &[Language::Tsonga],
-            LatinTswana => &[Language::Tswana],
-            LatinTurkish => &[Language::Turkish],
             LatinVietnamese => &[Language::Vietnamese],
+            LatinWaray => &[Language::Waray],
             LatinWelsh => &[Language::Welsh],
+            LatinWolof => &[Language::Wolof],
             LatinXhosa => &[Language::Xhosa],
             LatinYoruba => &[Language::Yoruba],
-            LatinZulu => &[Language::Zulu],
+            LatinZulu => &[Language::Zulu], */
             Lepcha => &[Language::Lepcha],
             Limbu => &[Language::Limbu],
             LinearA => &[Language::Minoan],
@@ -723,6 +904,162 @@ impl From<Alphabet> for &[Language] {
     }
 }
 
+macro_rules! alphabet_wrapper {
+    (
+        $( #[$meta:meta] )*
+        $vis:vis enum $name:ident in $parent:ident {
+            $($var:ident),* $(,)?
+        }
+    ) => {
+        $( #[$meta] )*
+        $vis enum $name {
+            $($var,)*
+        }
+        impl $name {
+            /* pub const ALL: &'static [Self] = {
+                use $name::*;
+                &[ $($var),* ]
+            }; */
+            pub const ALPHABETS: &'static [Alphabet] = {
+                use $name::*;
+                &[ $(Alphabet::$parent($var)),* ]
+            };
+        }
+    };
+}
+
+alphabet_wrapper!(
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+pub enum LatinAlphabet in Latin {
+    Acehnese,
+    Afrikaans,
+    Albanian,
+    Asturian,
+    AymaraCentral,
+    Azerbaijani,
+    Balinese,
+    Bambara,
+    Banjar,
+    Basque,
+    Bemba,
+    Bokmal,
+    Bosnian,
+    Buginese,
+    Catalan,
+    Cebuano,
+    Chokwe,
+    CreoleHaitian,
+    Croatian,
+    Czech,
+    Danish,
+    DinkaSouthwestern,
+    Dutch,
+    Dyula,
+    English,
+    Esperanto,
+    Estonian,
+    Ewe,
+    Faroese,
+    Fijian,
+    Finnish,
+    Fon,
+    French,
+    Friulian,
+    FulfuldeNigerian,
+    GaelicScottish,
+    Galician,
+    Ganda,
+    German,
+    Guarani,
+    Hausa,
+    Hungarian,
+    Icelandic,
+    Igbo,
+    Ilocano,
+    Indonesian,
+    Irish,
+    Italian,
+    Javanese,
+    Jingpho,
+    Kabiye,
+    Kabuverdianu,
+    Kabyle,
+    Kamba,
+    KanuriCentral,
+    Kikongo,
+    Kikuyu,
+    Kimbundu,
+    Kinyarwanda,
+    KurdishNorthern,
+    Latgalian,
+    Latin,
+    Latvian,
+    Ligurian,
+    Limburgish,
+    Lingala,
+    Lithuanian,
+    Lombard,
+    LubaKasai,
+    Luo,
+    Luxembourgish,
+    Malay,
+    MalgasyPlateau,
+    Maltese,
+    Maori,
+    Minangkabau,
+    Mizo,
+    Mossi,
+    Nuer,
+    Nyanja,
+    Nynorsk,
+    Occitan,
+    OromoWestCentral,
+    Pangasinan,
+    Papiamento,
+    Polish,
+    Portuguese,
+    QuechuaAyacucho,
+    Romanian,
+    Rundi,
+    Samoan,
+    Sango,
+    Sardinian,
+    Sepedi,
+    Sesotho,
+    Shona,
+    Sicilian,
+    Silesian,
+    Slovak,
+    Slovene,
+    Somali,
+    Spanish,
+    Sundanese,
+    Swahili,
+    Swati,
+    Swedish,
+    Tagalog,
+    Tamasheq,
+    TatarCrimean,
+    TokPisin,
+    Tsonga,
+    Tswana,
+    Tumbuka,
+    Turkish,
+    Turkmen,
+    Twi,
+    Umbundu,
+    UzbekNorthern,
+    Venetian,
+    Vietnamese,
+    Waray,
+    Welsh,
+    Wolof,
+    Xhosa,
+    Yoruba,
+    Zulu,
+}
+);
+
 /*
 ace_Arab
 hye_Armn
@@ -754,6 +1091,8 @@ taq_Tfng
 tha_Thai
 bod_Tibt
 */
+
+// static ASD: Vec<Alphabet> = LatinAlphabet::iter().map(|la| Alphabet::Latin(la)).collect::<Vec<_>>();
 
 pub fn str_to_alphabets(s: &str) -> &[Alphabet] {
     use Alphabet::*;
@@ -787,118 +1126,7 @@ pub fn str_to_alphabets(s: &str) -> &[Alphabet] {
         "Khmr" => &[Khmer],
         "Knda" => &[Kannada],
         "Laoo" => &[Lao],
-        "Latn" => &[
-            LatinAcehnese,
-            LatinAsturian,
-            LatinAymaraCentral,
-            LatinBalinese,
-            LatinBambara,
-            LatinBanjar,
-            LatinBemba,
-            LatinBuginese,
-            LatinCebuano,
-            LatinChokwe,
-            LatinCreoleHaitian,
-            LatinDinkaSouthwestern,
-            LatinDyula,
-            LatinEwe,
-            LatinFaroese,
-            LatinFijian,
-            LatinFon,
-            LatinFriulian,
-            LatinFulfuldeNigerian,
-            LatinGaelicScottish,
-            LatinGalician,
-            LatinGuarani,
-            LatinHausa,
-            LatinIgbo,
-            LatinIlocano,
-            LatinJavanese,
-            LatinJingpho,
-            LatinKabiye,
-            LatinKabuverdianu,
-            LatinKabyle,
-            LatinKamba,
-            LatinKanuriCentral,
-            LatinKikongo,
-            LatinKikuyu,
-            LatinKimbundu,
-            LatinKinyarwanda,
-            LatinKurdishNorthern,
-            LatinLatgalian,
-            LatinLigurian,
-            LatinLimburgish,
-            LatinLingala,
-            LatinLombard,
-            LatinLubaKasai,
-            LatinLuo,
-            LatinLuxembourgish,
-            LatinMalgasyPlateau,
-            LatinMaltese,
-            LatinMinangkabau,
-            LatinMizo,
-            LatinMossi,
-            LatinNuer,
-            LatinNyanja,
-            LatinOccitan,
-            LatinOromoWestCentral,
-            LatinPangasinan,
-            LatinPapiamento,
-            LatinQuechuaAyacucho,
-            LatinRundi,
-            LatinSamoan,
-            LatinSango,
-            LatinAfrikaans,
-            LatinAlbanian,
-            LatinAzerbaijani,
-            LatinBasque,
-            LatinBokmal,
-            LatinBosnian,
-            LatinCatalan,
-            LatinCroatian,
-            LatinCzech,
-            LatinDanish,
-            LatinDutch,
-            LatinEnglish,
-            LatinEsperanto,
-            LatinEstonian,
-            LatinFinnish,
-            LatinFrench,
-            LatinGanda,
-            LatinGerman,
-            LatinHungarian,
-            LatinIcelandic,
-            LatinIndonesian,
-            LatinIrish,
-            LatinItalian,
-            LatinLatin,
-            LatinLatvian,
-            LatinLithuanian,
-            LatinMalay,
-            LatinMaori,
-            LatinNynorsk,
-            LatinPolish,
-            LatinPortuguese,
-            LatinRomanian,
-            LatinSepedi,
-            LatinSesotho,
-            LatinShona,
-            LatinSlovak,
-            LatinSlovene,
-            LatinSomali,
-            LatinSpanish,
-            LatinSwahili,
-            LatinSwedish,
-            LatinTagalog,
-            LatinTsonga,
-            LatinTswana,
-            LatinTurkish,
-            LatinVietnamese,
-            LatinWelsh,
-            LatinXhosa,
-            LatinYoruba,
-            LatinZulu,
-        ],
+        "Latn" => LatinAlphabet::ALPHABETS,
         "Mlym" => &[Malayalam],
         "Mymr" => &[Myanmar],
         "Olck" => &[OlChiki],
@@ -1000,12 +1228,12 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         Script::Common => match ch {
             '\'' => &[
                 Alphabet::CyrillicBelarusian,
-                Alphabet::LatinEnglish,
-                Alphabet::LatinMalgasyPlateau,
+                Alphabet::Latin(LatinAlphabet::English),
+                Alphabet::Latin(LatinAlphabet::MalgasyPlateau),
             ],
-            '¡' => &[Alphabet::LatinSpanish],
-            '¿' => &[Alphabet::LatinSpanish],
-            'ʻ' => &[Alphabet::LatinUzbekNorthern],
+            '¡' => &[Alphabet::Latin(LatinAlphabet::Spanish)],
+            '¿' => &[Alphabet::Latin(LatinAlphabet::Spanish)],
+            'ʻ' => &[Alphabet::Latin(LatinAlphabet::UzbekNorthern)],
             _ => &[], // must be always empty
         },
         Script::Coptic => alphabet_match!([(Alphabet::Coptic, [])]),
@@ -1308,7 +1536,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         Script::Lao => alphabet_match!([(Alphabet::Lao, [])]),
         Script::Latin => alphabet_match!([
             (
-                Alphabet::LatinAfrikaans,
+                Alphabet::Latin(LatinAlphabet::Afrikaans),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1317,7 +1545,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinAlbanian,
+                Alphabet::Latin(LatinAlphabet::Albanian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', /* 'Dh', 'dh', */ 'E',
                     'e', 'Ë', 'ë', 'F', 'f', 'G', 'g', /* 'Gj', 'gj', */ 'H', 'h', 'I', 'i',
@@ -1330,7 +1558,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinAzerbaijani,
+                Alphabet::Latin(LatinAlphabet::Azerbaijani),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'Ə', 'ə', 'F', 'f',
                     'G', 'g', 'Ğ', 'ğ', 'H', 'h', 'I', 'ı', 'İ', 'i', 'J', 'j', 'K', 'k', 'Q', 'q',
@@ -1339,7 +1567,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinBasque,
+                Alphabet::Latin(LatinAlphabet::Basque),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -1347,7 +1575,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinBokmal,
+                Alphabet::Latin(LatinAlphabet::Bokmal),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1356,7 +1584,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinBosnian,
+                Alphabet::Latin(LatinAlphabet::Bosnian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'Ć', 'ć', 'D', 'd', 'Đ', 'đ', 'E', 'e',
                     'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l',
@@ -1366,7 +1594,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinCatalan,
+                Alphabet::Latin(LatinAlphabet::Catalan),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1376,7 +1604,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinCroatian,
+                Alphabet::Latin(LatinAlphabet::Croatian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'Ć', 'ć', 'D', 'd', 'Đ', 'đ', 'E', 'e',
                     'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l',
@@ -1386,7 +1614,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinCzech,
+                Alphabet::Latin(LatinAlphabet::Czech),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'Ď', 'ď', 'E', 'e', 'É', 'é',
                     'Ě', 'ě', 'F', 'f', 'G', 'g', 'H', 'h', /* 'Ch', 'ch', */ 'I', 'i', 'Í',
@@ -1397,7 +1625,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinDanish,
+                Alphabet::Latin(LatinAlphabet::Danish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1407,7 +1635,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinDutch,
+                Alphabet::Latin(LatinAlphabet::Dutch),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1416,7 +1644,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinEnglish,
+                Alphabet::Latin(LatinAlphabet::English),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1425,7 +1653,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinEsperanto,
+                Alphabet::Latin(LatinAlphabet::Esperanto),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ĉ', 'ĉ', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'Ĝ', 'ĝ', 'H', 'h', 'Ĥ', 'ĥ', 'I', 'i', 'J', 'j', 'Ĵ', 'ĵ', 'K', 'k', 'L', 'l',
@@ -1434,7 +1662,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinEstonian,
+                Alphabet::Latin(LatinAlphabet::Estonian),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -1443,7 +1671,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinFinnish,
+                Alphabet::Latin(LatinAlphabet::Finnish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1452,7 +1680,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinFrench,
+                Alphabet::Latin(LatinAlphabet::French),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1463,7 +1691,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinGanda,
+                Alphabet::Latin(LatinAlphabet::Ganda),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1471,7 +1699,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinGerman,
+                Alphabet::Latin(LatinAlphabet::German),
                 [
                     'A', 'a', 'Ä', 'ä', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
@@ -1480,7 +1708,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinHungarian,
+                Alphabet::Latin(LatinAlphabet::Hungarian),
                 [
                     'A', 'a', 'Á', 'á', 'B', 'b', 'C', 'c', /* 'Cs', 'cs', */ 'D', 'd',
                     /* 'Dz', 'dz', 'Dzs', 'dzs', */ 'E', 'e', 'É', 'é', 'F', 'f', 'G', 'g',
@@ -1493,7 +1721,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinIcelandic,
+                Alphabet::Latin(LatinAlphabet::Icelandic),
                 [
                     'A', 'a', 'Á', 'á', 'B', 'b', 'D', 'd', 'Ð', 'ð', 'E', 'e', 'É', 'é', 'F', 'f',
                     'G', 'g', 'H', 'h', 'I', 'i', 'Í', 'í', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
@@ -1502,7 +1730,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinIndonesian,
+                Alphabet::Latin(LatinAlphabet::Indonesian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1511,7 +1739,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinIrish,
+                Alphabet::Latin(LatinAlphabet::Irish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -1519,7 +1747,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinItalian,
+                Alphabet::Latin(LatinAlphabet::Italian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q', 'R', 'r',
@@ -1528,7 +1756,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLatin,
+                Alphabet::Latin(LatinAlphabet::Latin),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -1537,7 +1765,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLatvian,
+                Alphabet::Latin(LatinAlphabet::Latvian),
                 [
                     'A', 'a', 'Ā', 'ā', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'Ē', 'ē',
                     'F', 'f', 'G', 'g', 'Ģ', 'ģ', 'H', 'h', 'I', 'i', 'Ī', 'ī', 'J', 'j', 'K', 'k',
@@ -1547,7 +1775,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLithuanian,
+                Alphabet::Latin(LatinAlphabet::Lithuanian),
                 [
                     'A', 'a', 'Ą', 'ą', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'Ę', 'ę',
                     'Ė', 'ė', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'Į', 'į', 'Y', 'y', 'J', 'j',
@@ -1556,7 +1784,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinMalay,
+                Alphabet::Latin(LatinAlphabet::Malay),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1565,7 +1793,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinMaori,
+                Alphabet::Latin(LatinAlphabet::Maori),
                 [
                     'A', 'a', 'E', 'e', 'H', 'h', 'I', 'i', 'K', 'k', 'M', 'm', 'N', 'n', 'O', 'o',
                     'P', 'p', 'R', 'r', 'T', 't', 'U', 'u', 'W', 'w', /* 'Ng', 'ng', */ 'G',
@@ -1573,7 +1801,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinNynorsk,
+                Alphabet::Latin(LatinAlphabet::Nynorsk),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1582,7 +1810,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinPolish,
+                Alphabet::Latin(LatinAlphabet::Polish),
                 [
                     'A', 'a', 'Ą', 'ą', 'B', 'b', 'C', 'c', 'Ć', 'ć', 'D', 'd', 'E', 'e', 'Ę', 'ę',
                     'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'Ł', 'ł',
@@ -1591,7 +1819,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinPortuguese,
+                Alphabet::Latin(LatinAlphabet::Portuguese),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1601,7 +1829,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinRomanian,
+                Alphabet::Latin(LatinAlphabet::Romanian),
                 [
                     'A', 'a', 'Ă', 'ă', 'Â', 'â', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f',
                     'G', 'g', 'H', 'h', 'I', 'i', 'Î', 'î', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
@@ -1610,7 +1838,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinSepedi,
+                Alphabet::Latin(LatinAlphabet::Sepedi),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ê', 'ê', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
@@ -1619,7 +1847,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinSesotho,
+                Alphabet::Latin(LatinAlphabet::Sesotho),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -1627,7 +1855,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinShona,
+                Alphabet::Latin(LatinAlphabet::Shona),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1636,7 +1864,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinSlovak,
+                Alphabet::Latin(LatinAlphabet::Slovak),
                 [
                     'A', 'a', 'Á', 'á', 'Ä', 'ä', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'Ď', 'ď',
                     'E', 'e', 'É', 'é', 'F', 'f', 'G', 'g', 'H', 'h', /* 'Ch', 'ch', */ 'I',
@@ -1647,7 +1875,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinSlovene,
+                Alphabet::Latin(LatinAlphabet::Slovene),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
@@ -1656,7 +1884,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinSomali,
+                Alphabet::Latin(LatinAlphabet::Somali),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Q', 'q',
@@ -1665,7 +1893,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinSpanish,
+                Alphabet::Latin(LatinAlphabet::Spanish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
@@ -1675,7 +1903,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinSwahili,
+                Alphabet::Latin(LatinAlphabet::Swahili),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1683,7 +1911,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinSwedish,
+                Alphabet::Latin(LatinAlphabet::Swedish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1692,7 +1920,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinTagalog,
+                Alphabet::Latin(LatinAlphabet::Tagalog),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -1701,7 +1929,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinTsonga,
+                Alphabet::Latin(LatinAlphabet::Tsonga),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1710,7 +1938,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinTswana,
+                Alphabet::Latin(LatinAlphabet::Tswana),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -1718,7 +1946,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinTurkish,
+                Alphabet::Latin(LatinAlphabet::Turkish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'Ğ', 'ğ', 'H', 'h', 'I', 'ı', 'İ', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
@@ -1727,7 +1955,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinVietnamese,
+                Alphabet::Latin(LatinAlphabet::Vietnamese),
                 [
                     'A', 'a', 'Ă', 'ă', 'Â', 'â', 'B', 'b', 'C', 'c', 'D', 'd', 'Đ', 'đ', 'E', 'e',
                     'Ê', 'ê', 'G', 'g', 'H', 'h', 'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -1744,7 +1972,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinWelsh,
+                Alphabet::Latin(LatinAlphabet::Welsh),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', /* 'Ch', 'ch', */ 'D', 'd',
                     /* 'Dd', 'dd', */ 'E', 'e', 'F', 'f', /* 'Ff', 'ff', */ 'G', 'g',
@@ -1756,7 +1984,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinXhosa,
+                Alphabet::Latin(LatinAlphabet::Xhosa),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -1765,7 +1993,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinYoruba,
+                Alphabet::Latin(LatinAlphabet::Yoruba),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'Ẹ', 'ẹ', 'F', 'f', 'G', 'g',
                     /* 'Gb', 'gb', */ 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M',
@@ -1775,7 +2003,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinZulu,
+                Alphabet::Latin(LatinAlphabet::Zulu),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1784,7 +2012,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinAcehnese,
+                Alphabet::Latin(LatinAlphabet::Acehnese),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1793,7 +2021,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinAsturian,
+                Alphabet::Latin(LatinAlphabet::Asturian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
@@ -1803,7 +2031,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinAymaraCentral,
+                Alphabet::Latin(LatinAlphabet::AymaraCentral),
                 [
                     'A', 'a', 'B', 'b', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'F',
                     'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l',
@@ -1812,7 +2040,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinBalinese,
+                Alphabet::Latin(LatinAlphabet::Balinese),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1820,7 +2048,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinBambara,
+                Alphabet::Latin(LatinAlphabet::Bambara),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -1828,7 +2056,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinBanjar,
+                Alphabet::Latin(LatinAlphabet::Banjar),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1837,7 +2065,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinBemba,
+                Alphabet::Latin(LatinAlphabet::Bemba),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1845,7 +2073,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinBuginese,
+                Alphabet::Latin(LatinAlphabet::Buginese),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1853,7 +2081,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinCebuano,
+                Alphabet::Latin(LatinAlphabet::Cebuano),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -1863,7 +2091,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinChokwe,
+                Alphabet::Latin(LatinAlphabet::Chokwe),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1871,7 +2099,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinCreoleHaitian,
+                Alphabet::Latin(LatinAlphabet::CreoleHaitian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1880,7 +2108,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinDinkaSouthwestern,
+                Alphabet::Latin(LatinAlphabet::DinkaSouthwestern),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1888,7 +2116,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinDyula,
+                Alphabet::Latin(LatinAlphabet::Dyula),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -1896,7 +2124,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinEwe,
+                Alphabet::Latin(LatinAlphabet::Ewe),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Ɔ', 'ɔ', 'P', 'p',
@@ -1905,7 +2133,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinFaroese,
+                Alphabet::Latin(LatinAlphabet::Faroese),
                 [
                     'A', 'a', 'Á', 'á', 'B', 'b', 'D', 'd', 'Ð', 'ð', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'Í', 'í', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -1914,7 +2142,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinFijian,
+                Alphabet::Latin(LatinAlphabet::Fijian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1922,7 +2150,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinFon,
+                Alphabet::Latin(LatinAlphabet::Fon),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Ɔ', 'ɔ', 'P', 'p',
@@ -1930,7 +2158,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinFriulian,
+                Alphabet::Latin(LatinAlphabet::Friulian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -1939,7 +2167,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinFulfuldeNigerian,
+                Alphabet::Latin(LatinAlphabet::FulfuldeNigerian),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -1947,7 +2175,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinGaelicScottish,
+                Alphabet::Latin(LatinAlphabet::GaelicScottish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -1956,7 +2184,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinGalician,
+                Alphabet::Latin(LatinAlphabet::Galician),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
@@ -1966,7 +2194,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinGuarani,
+                Alphabet::Latin(LatinAlphabet::Guarani),
                 [
                     'A', 'a', 'B', 'b', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'G',
                     'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ',
@@ -1976,7 +2204,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinHausa,
+                Alphabet::Latin(LatinAlphabet::Hausa),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'R', 'r',
@@ -1985,7 +2213,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinIgbo,
+                Alphabet::Latin(LatinAlphabet::Igbo),
                 [
                     'A', 'a', 'B', 'b', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'F',
                     'f', 'G', 'g', /* 'Gb', 'gb', 'Gh', 'gh', */ 'H', 'h', 'I', 'i', 'Ị', 'ị',
@@ -1996,7 +2224,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinIlocano,
+                Alphabet::Latin(LatinAlphabet::Ilocano),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l',
                     'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
@@ -2004,7 +2232,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinJavanese,
+                Alphabet::Latin(LatinAlphabet::Javanese),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2013,7 +2241,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinJingpho,
+                Alphabet::Latin(LatinAlphabet::Jingpho),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2022,7 +2250,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKabiye,
+                Alphabet::Latin(LatinAlphabet::Kabiye),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2030,7 +2258,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKabuverdianu,
+                Alphabet::Latin(LatinAlphabet::Kabuverdianu),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2039,7 +2267,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKabyle,
+                Alphabet::Latin(LatinAlphabet::Kabyle),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2048,7 +2276,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKamba,
+                Alphabet::Latin(LatinAlphabet::Kamba),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'S', 's',
@@ -2056,7 +2284,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKanuriCentral,
+                Alphabet::Latin(LatinAlphabet::KanuriCentral),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2064,7 +2292,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKikongo,
+                Alphabet::Latin(LatinAlphabet::Kikongo),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2072,7 +2300,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKikuyu,
+                Alphabet::Latin(LatinAlphabet::Kikuyu),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2080,7 +2308,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKimbundu,
+                Alphabet::Latin(LatinAlphabet::Kimbundu),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'S', 's', 'T', 't',
@@ -2088,7 +2316,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKinyarwanda,
+                Alphabet::Latin(LatinAlphabet::Kinyarwanda),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2096,7 +2324,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinKurdishNorthern,
+                Alphabet::Latin(LatinAlphabet::KurdishNorthern),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'Ê', 'ê', 'F', 'f',
                     'G', 'g', 'H', 'h', 'I', 'i', 'Î', 'î', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
@@ -2105,7 +2333,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLatgalian,
+                Alphabet::Latin(LatinAlphabet::Latgalian),
                 [
                     'A', 'a', 'Ā', 'ā', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'Ē', 'ē',
                     'F', 'f', 'G', 'g', 'Ģ', 'ģ', 'H', 'h', 'I', 'i', 'Ī', 'ī', 'J', 'j', 'K', 'k',
@@ -2115,7 +2343,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLigurian,
+                Alphabet::Latin(LatinAlphabet::Ligurian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2124,7 +2352,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLimburgish,
+                Alphabet::Latin(LatinAlphabet::Limburgish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2135,7 +2363,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLingala,
+                Alphabet::Latin(LatinAlphabet::Lingala),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -2143,7 +2371,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLombard,
+                Alphabet::Latin(LatinAlphabet::Lombard),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2153,7 +2381,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLubaKasai,
+                Alphabet::Latin(LatinAlphabet::LubaKasai),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2161,7 +2389,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLuo,
+                Alphabet::Latin(LatinAlphabet::Luo),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2169,7 +2397,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinLuxembourgish,
+                Alphabet::Latin(LatinAlphabet::Luxembourgish),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2178,7 +2406,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (
-                Alphabet::LatinMalgasyPlateau,
+                Alphabet::Latin(LatinAlphabet::MalgasyPlateau),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2186,7 +2414,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinMaltese,
+                Alphabet::Latin(LatinAlphabet::Maltese),
                 [
                     'A', 'a', 'B', 'b', 'Ċ', 'ċ', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     /* 'Għ', 'għ', */ 'H', 'h', 'Ħ', 'ħ', 'I', 'i',
@@ -2196,7 +2424,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinMinangkabau,
+                Alphabet::Latin(LatinAlphabet::Minangkabau),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2205,7 +2433,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinMizo,
+                Alphabet::Latin(LatinAlphabet::Mizo),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2213,7 +2441,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinMossi,
+                Alphabet::Latin(LatinAlphabet::Mossi),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -2221,7 +2449,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinNuer,
+                Alphabet::Latin(LatinAlphabet::Nuer),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ŋ', 'ŋ',
@@ -2229,7 +2457,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinNyanja,
+                Alphabet::Latin(LatinAlphabet::Nyanja),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2237,7 +2465,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinOccitan,
+                Alphabet::Latin(LatinAlphabet::Occitan),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2247,7 +2475,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinOromoWestCentral,
+                Alphabet::Latin(LatinAlphabet::OromoWestCentral),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2255,7 +2483,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinPangasinan,
+                Alphabet::Latin(LatinAlphabet::Pangasinan),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l',
                     'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
@@ -2263,7 +2491,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinPapiamento,
+                Alphabet::Latin(LatinAlphabet::Papiamento),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2272,7 +2500,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinQuechuaAyacucho,
+                Alphabet::Latin(LatinAlphabet::QuechuaAyacucho),
                 [
                     'A', 'a', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'H', 'h', 'I',
                     'i', 'K', 'k', 'L', 'l', /* 'Ll', 'll', */ 'M', 'm', 'N', 'n', 'Ñ', 'ñ',
@@ -2280,7 +2508,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinRundi,
+                Alphabet::Latin(LatinAlphabet::Rundi),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2288,14 +2516,14 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinSamoan,
+                Alphabet::Latin(LatinAlphabet::Samoan),
                 [
                     'A', 'a', 'E', 'e', 'F', 'f', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm',
                     'N', 'n', 'O', 'o', 'P', 'p', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v'
                 ],
             ),
             (
-                Alphabet::LatinSango,
+                Alphabet::Latin(LatinAlphabet::Sango),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -2303,7 +2531,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinSardinian,
+                Alphabet::Latin(LatinAlphabet::Sardinian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2313,7 +2541,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinSicilian,
+                Alphabet::Latin(LatinAlphabet::Sicilian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2322,7 +2550,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinSilesian,
+                Alphabet::Latin(LatinAlphabet::Silesian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'Ł', 'ł', 'M', 'm', 'N', 'n',
@@ -2331,7 +2559,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinSundanese,
+                Alphabet::Latin(LatinAlphabet::Sundanese),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2340,7 +2568,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinSwati,
+                Alphabet::Latin(LatinAlphabet::Swati),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2348,7 +2576,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinTamasheq,
+                Alphabet::Latin(LatinAlphabet::Tamasheq),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2356,7 +2584,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinTatarCrimean,
+                Alphabet::Latin(LatinAlphabet::TatarCrimean),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'ı', 'İ', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -2365,7 +2593,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinTokPisin,
+                Alphabet::Latin(LatinAlphabet::TokPisin),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2373,7 +2601,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinTumbuka,
+                Alphabet::Latin(LatinAlphabet::Tumbuka),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2381,7 +2609,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinTurkmen,
+                Alphabet::Latin(LatinAlphabet::Turkmen),
                 [
                     'A', 'a', 'B', 'b', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'ı', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Ö', 'ö',
@@ -2390,7 +2618,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinTwi,
+                Alphabet::Latin(LatinAlphabet::Twi),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -2398,7 +2626,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinUmbundu,
+                Alphabet::Latin(LatinAlphabet::Umbundu),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2406,7 +2634,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinUzbekNorthern,
+                Alphabet::Latin(LatinAlphabet::UzbekNorthern),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -2414,7 +2642,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinVenetian,
+                Alphabet::Latin(LatinAlphabet::Venetian),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2424,7 +2652,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinWaray,
+                Alphabet::Latin(LatinAlphabet::Waray),
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'G', 'g', 'H', 'h', 'I', 'i', 'K', 'k',
                     'L', 'l', 'M', 'm', 'N', 'n', /* 'Ng', 'ng', */ 'O', 'o', 'P', 'p', 'R',
@@ -2433,7 +2661,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ],
             ),
             (
-                Alphabet::LatinWolof,
+                Alphabet::Latin(LatinAlphabet::Wolof),
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
