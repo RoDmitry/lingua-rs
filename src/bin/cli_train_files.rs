@@ -8,6 +8,12 @@ use std::fs;
 use std::io::{self, BufRead, Read};
 use std::path::Path;
 use std::str::FromStr;
+#[cfg(not(target_env = "msvc"))]
+use jemallocator::Jemalloc;
+
+#[cfg(not(target_env = "msvc"))]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -88,7 +94,7 @@ fn main() {
     .map(|p| p.unwrap())
     .map(|path| (path.file_name().into_string().unwrap(), path.path()))
     .collect(); */
-    let pool = threadpool::ThreadPool::new(8);
+    let pool = threadpool::ThreadPool::new(4);
 
     for path in paths {
         // files.into_par_iter().for_each(|(file_name, path)| {
