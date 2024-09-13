@@ -1,15 +1,15 @@
+use ::std::fs;
+use ::std::io::{self, BufRead, Read};
+use ::std::path::Path;
+use ::std::str::FromStr;
 use clap::Parser;
+#[cfg(not(target_env = "msvc"))]
+use jemallocator::Jemalloc;
 use lingua::{
-    str_to_alphabets, DetectionResult, IsoCode639_1, Language, LanguageDetector,
+    str_to_alphabets, Alphabet, DetectionResult, IsoCode639_1, Language, LanguageDetector,
     LanguageDetectorBuilder, LanguageModelFilesWriter,
 };
 use rayon::prelude::*;
-use std::fs;
-use std::io::{self, BufRead, Read};
-use std::path::Path;
-use std::str::FromStr;
-#[cfg(not(target_env = "msvc"))]
-use jemallocator::Jemalloc;
 
 #[cfg(not(target_env = "msvc"))]
 #[global_allocator]
@@ -111,9 +111,6 @@ fn main() {
             let Ok(lang) = Language::from_str(lang) else {
                 panic!("*{}* Not found lang: {}", thread_id, lang);
             };
-            if lang == Language::Japanese {
-                return;
-            }
 
             let alphabets = str_to_alphabets(alph);
             let Some(alphabet) = alphabets
@@ -125,6 +122,9 @@ fn main() {
                     thread_id, alphabets
                 );
             };
+            if !matches!(alphabet, Alphabet::Latin(_)) {
+                return;
+            }
             println!("*{}* lang: {:?}", thread_id, lang);
             println!("*{}* alphabet: {:?}", thread_id, alphabet);
 
