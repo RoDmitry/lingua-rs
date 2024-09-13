@@ -99,9 +99,9 @@ struct Args {
 
 const THREADS: usize = 8;
 const MEM_MIN_USAGE: usize = 6 * 1024 * 1024 * 1024;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering;
-use std::sync::Arc;
+// use std::sync::atomic::AtomicBool;
+// use std::sync::atomic::Ordering;
+// use std::sync::Arc;
 fn main() {
     let args = Args::parse();
     let paths = fs::read_dir(&args.inp).unwrap();
@@ -112,16 +112,20 @@ fn main() {
     .collect(); */
     let pool = threadpool::ThreadPool::new(THREADS);
 
-    let point = Arc::new(AtomicBool::new(false));
+    // let point = Arc::new(AtomicBool::new(false));
     for path in paths {
         // files.into_par_iter().for_each(|(file_name, path)| {
         let out_path = args.out.clone();
-        let point = point.clone();
+        // let point = point.clone();
         pool.execute(move || {
             let path = path.unwrap();
             let file_name = path.file_name().into_string().unwrap();
             while ALLOCATOR.allocated() > MEM_MIN_USAGE {
-                println!("*{}* Mem allocated: {}MB Sleeping...", file_name, ALLOCATOR.allocated() / (1024 * 1024));
+                println!(
+                    "*{}* Mem allocated: {}MB Sleeping...",
+                    file_name,
+                    ALLOCATOR.allocated() / (1024 * 1024)
+                );
                 let time = Duration::from_secs(30);
                 thread::sleep(time);
             }
@@ -140,12 +144,12 @@ fn main() {
                     panic!("*{}* Not found lang: {}", file_name, lang);
                 };
                 // skip in order
-                if point.load(Ordering::SeqCst) {
+                /* if point.load(Ordering::SeqCst) {
                 } else if lang == Language::UzbekNorthern {
                     point.store(true, Ordering::SeqCst);
                 } else {
                     return;
-                }
+                } */
 
                 let alphabets = str_to_alphabets(alph);
                 let Some(alphabet) = alphabets
@@ -163,14 +167,19 @@ fn main() {
                 println!("*{}* lang: {:?}", file_name, lang);
                 println!("*{}* alphabet: {:?}", file_name, alphabet);
 
+                let out_path = out_path + "/" + &lang.to_string() + "/" + &alphabet.to_string();
+                let out_path_file = out_path.clone() + "/trigrams.rs";
+                if Path::new(&out_path_file).exists() {
+                    println!("EXISTS: {}", file_name);
+                    return;
+                }
+                let output_directory_path = Path::new(&out_path);
+
                 /* let lines = io::stdin()
                 .lines()
                 .map(|r| r.unwrap())
                 .filter(|line| !line.trim().is_empty()); */
                 let text = fs::read_to_string(path.path()).unwrap();
-
-                let out_path = out_path + "/" + &lang.to_string() + "/" + &alphabet.to_string();
-                let output_directory_path = Path::new(&out_path);
                 let result = LanguageModelFilesWriter::create_and_write_language_model(
                     output_directory_path,
                     text,
@@ -181,7 +190,8 @@ fn main() {
             println!(
                 "*{}* malloc_trim {:?} {:?}MB",
                 file_name,
-                unsafe { libc::malloc_trim(0) }, ALLOCATOR.allocated() / (1024 * 1024)
+                unsafe { libc::malloc_trim(0) },
+                ALLOCATOR.allocated() / (1024 * 1024)
             );
         });
     }
