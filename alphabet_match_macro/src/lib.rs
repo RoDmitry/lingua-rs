@@ -57,11 +57,14 @@ pub fn alphabet_match(input: TokenStream) -> TokenStream {
     }
 
     // Generate match arms
-    let arms = value_to_keys.iter().map(|(value, keys)| {
-        quote! {
-            #value => &[#(#keys),*],
-        }
-    });
+    let arms = value_to_keys
+        .iter()
+        .filter(|(_, k)| k.len() < keys_all.len())
+        .map(|(value, keys)| {
+            quote! {
+                #value => &[#(#keys),*],
+            }
+        });
 
     // Generate the entire match block
     let expanded = quote! {
