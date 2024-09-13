@@ -2,18 +2,29 @@ use ::std::fs;
 use ::std::io::{self, BufRead, Read};
 use ::std::path::Path;
 use ::std::str::FromStr;
+use ::std::{thread, time::Duration};
+use cap::Cap;
 use clap::Parser;
-#[cfg(not(target_env = "msvc"))]
-use jemallocator::Jemalloc;
+// #[cfg(not(target_env = "msvc"))]
+// use jemallocator::Jemalloc;
 use lingua::{
     str_to_alphabets, Alphabet, DetectionResult, IsoCode639_1, Language, LanguageDetector,
     LanguageDetectorBuilder, LanguageModelFilesWriter,
 };
 use rayon::prelude::*;
 
-#[cfg(not(target_env = "msvc"))]
+// #[cfg(not(target_env = "msvc"))]
+// #[global_allocator]
+// static ALLOCATOR: Cap<Jemalloc> = Cap::new(Jemalloc, usize::MAX);
+// static ALLOCATOR: Jemalloc = Jemalloc;
+
+// #[cfg(target_env = "msvc")]
 #[global_allocator]
-static GLOBAL: Jemalloc = Jemalloc;
+static ALLOCATOR: Cap<::std::alloc::System> = Cap::new(::std::alloc::System, usize::MAX);
+
+// #[cfg(not(target_env = "msvc"))]
+// #[global_allocator]
+// static GLOBAL: Jemalloc = Jemalloc;
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -86,6 +97,11 @@ struct Args {
     text: Vec<String>,
 }
 
+const THREADS: usize = 2;
+const MEM_MIN_USAGE: usize = 6 * 1024 * 1024 * 1024;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
 fn main() {
     let args = Args::parse();
     let paths = fs::read_dir(&args.inp).unwrap();
@@ -94,55 +110,79 @@ fn main() {
     .map(|p| p.unwrap())
     .map(|path| (path.file_name().into_string().unwrap(), path.path()))
     .collect(); */
-    let pool = threadpool::ThreadPool::new(4);
+    let pool = threadpool::ThreadPool::new(THREADS);
 
+    let point = Arc::new(AtomicBool::new(false));
     for path in paths {
         // files.into_par_iter().for_each(|(file_name, path)| {
         let out_path = args.out.clone();
+        let point = point.clone();
         pool.execute(move || {
             let path = path.unwrap();
             let file_name = path.file_name().into_string().unwrap();
-            let thread_id: u8 = rand::random();
-            println!("*{}* Name: {}", thread_id, file_name);
-            let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
-                unreachable!()
-            };
-
-            let Ok(lang) = Language::from_str(lang) else {
-                panic!("*{}* Not found lang: {}", thread_id, lang);
-            };
-
-            let alphabets = str_to_alphabets(alph);
-            let Some(alphabet) = alphabets
-                .iter()
-                .find(|a| <&[Language]>::from(**a).contains(&lang))
-            else {
-                panic!(
-                    "*{}* Not found alphabet for lang: {lang} in {:?}",
-                    thread_id, alphabets
-                );
-            };
-            if !matches!(alphabet, Alphabet::Latin(_)) {
-                return;
+            while ALLOCATOR.allocated() > MEM_MIN_USAGE {
+                println!("*{}* Mem allocated: {}MB Sleeping...", file_name, ALLOCATOR.allocated() / (1024 * 1024));
+                let time = Duration::from_secs(30);
+                thread::sleep(time);
             }
-            println!("*{}* lang: {:?}", thread_id, lang);
-            println!("*{}* alphabet: {:?}", thread_id, alphabet);
-
-            /* let lines = io::stdin()
-            .lines()
-            .map(|r| r.unwrap())
-            .filter(|line| !line.trim().is_empty()); */
-            let text = fs::read_to_string(path.path()).unwrap();
-            // let text = fs::read_to_string(path).unwrap();
-
-            let out_path = out_path + "/" + &lang.to_string() + "/" + &alphabet.to_string();
-            let output_directory_path = Path::new(&out_path);
-            let result = LanguageModelFilesWriter::create_and_write_language_model(
-                output_directory_path,
-                text,
-                &lang,
+            println!(
+                "*{}* Mem allocated: {}MB",
+                file_name,
+                ALLOCATOR.allocated() / (1024 * 1024)
             );
-            println!("*{}* {:?}", thread_id, result);
+            {
+                println!("Name: {}", file_name);
+                let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
+                    unreachable!()
+                };
+
+                let Ok(lang) = Language::from_str(lang) else {
+                    panic!("*{}* Not found lang: {}", file_name, lang);
+                };
+                // skip in order
+                if point.load(Ordering::SeqCst) {
+                } else if lang == Language::Nynorsk {
+                    point.store(true, Ordering::SeqCst);
+                } else {
+                    return;
+                }
+
+                let alphabets = str_to_alphabets(alph);
+                let Some(alphabet) = alphabets
+                    .iter()
+                    .find(|a| <&[Language]>::from(**a).contains(&lang))
+                else {
+                    panic!(
+                        "*{}* Not found alphabet for lang: {lang} in {:?}",
+                        file_name, alphabets
+                    );
+                };
+                if !matches!(alphabet, Alphabet::Latin(_)) {
+                    return;
+                }
+                println!("*{}* lang: {:?}", file_name, lang);
+                println!("*{}* alphabet: {:?}", file_name, alphabet);
+
+                /* let lines = io::stdin()
+                .lines()
+                .map(|r| r.unwrap())
+                .filter(|line| !line.trim().is_empty()); */
+                let text = fs::read_to_string(path.path()).unwrap();
+
+                let out_path = out_path + "/" + &lang.to_string() + "/" + &alphabet.to_string();
+                let output_directory_path = Path::new(&out_path);
+                let result = LanguageModelFilesWriter::create_and_write_language_model(
+                    output_directory_path,
+                    text,
+                    &lang,
+                );
+                println!("*{}* {:?}", file_name, result);
+            }
+            println!(
+                "*{}* malloc_trim {:?} {:?}MB",
+                file_name,
+                unsafe { libc::malloc_trim(0) }, ALLOCATOR.allocated() / (1024 * 1024)
+            );
         });
     }
 
