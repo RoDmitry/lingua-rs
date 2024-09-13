@@ -97,7 +97,7 @@ struct Args {
     text: Vec<String>,
 }
 
-const THREADS: usize = 2;
+const THREADS: usize = 8;
 const MEM_MIN_USAGE: usize = 6 * 1024 * 1024 * 1024;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
@@ -141,7 +141,7 @@ fn main() {
                 };
                 // skip in order
                 if point.load(Ordering::SeqCst) {
-                } else if lang == Language::Nynorsk {
+                } else if lang == Language::UzbekNorthern {
                     point.store(true, Ordering::SeqCst);
                 } else {
                     return;
