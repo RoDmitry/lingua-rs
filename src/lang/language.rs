@@ -40,6 +40,7 @@ use strum_macros::{EnumIter, EnumString};
     EnumString,
     // strum_macros::Display,
 )]
+// todo: remove this UPPERCASE
 #[serde(rename_all(serialize = "UPPERCASE", deserialize = "UPPERCASE"))]
 #[strum(ascii_case_insensitive)]
 #[cfg_attr(

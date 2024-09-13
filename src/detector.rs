@@ -18,7 +18,7 @@ use crate::constant::{
     CHARS_TO_LANGUAGES_MAPPING, LETTERS, TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE,
 };
 use crate::json::load_json;
-use crate::lang::alphabet::{self, script_char_to_alphabets};
+use crate::lang::alphabet::{char_combine, script_char_to_alphabets};
 use crate::lang::{Alphabet, Script};
 use crate::model::{JsonLanguageModel, TestDataLanguageModel, TrainingDataLanguageModel};
 use crate::result::DetectionResult;
@@ -1087,8 +1087,8 @@ impl LanguageDetector {
         let mut word_buf = String::new();
         let mut script_alphabets_iter = text
             .map(|(ch_idx, ch)| (Script::find(ch), ch_idx, ch))
-            .filter(|(s, _, _)| s != &Some(Script::Inherited))
-            .map(|(scr, ch_idx, ch)| {
+            // .filter(|(s, _, _)| s != &Some(Script::Inherited))
+            /* .map(|(scr, ch_idx, ch)| {
                 (
                     scr.map(|s| script_char_to_alphabets(s, ch))
                         .unwrap_or_default(),
@@ -1096,14 +1096,13 @@ impl LanguageDetector {
                     ch_idx,
                     ch,
                 )
-            })
-            .chain([([].as_slice(), Script::Common, usize::MAX - 1, '\0')])
-            .peekable();
+            }) */
+            .chain([(None, usize::MAX - 1, '\0')]);
+        let mut next_char: Option<(Option<Script>, usize, char)> = script_alphabets_iter.next();
         // while let Some((ch_idx, ch)) = ch_iter.next() {
         // for (alphabets, script, ch_idx, ch) in script_alphabets_iter/* .chain([(text.len(), '\0')]) */ {
-        while let Some((alphabets, script, ch_idx, ch)) = script_alphabets_iter.next()
-        /* .chain([(text.len(), '\0')]) */
-        {
+        while let Some((script, mut ch_idx, mut ch)) = next_char.take() {
+            next_char = script_alphabets_iter.next();
             /* let script = next_char_script
                 .take()
                 .or_else(|| Script::find(ch))
@@ -1113,6 +1112,19 @@ impl LanguageDetector {
             } */
             // let alphabets = script_char_to_alphabets(script, ch);
             // println!("{}", ch);
+            if script == Some(Script::Inherited) {
+                continue;
+            }
+            if let Some((Some(Script::Inherited), i, c)) = next_char {
+                ch = char_combine(script, ch, c);
+                ch_idx = i;
+                next_char = script_alphabets_iter.next();
+            }
+
+            let alphabets = script
+                .map(|s| script_char_to_alphabets(s, ch))
+                .unwrap_or_default();
+            let script = script.unwrap_or(Script::Common);
 
             let langs: AHashSet<Language> = alphabets
                 .iter()
@@ -1130,10 +1142,10 @@ impl LanguageDetector {
                 } else {
                     if prev_char_langs.intersection(&langs).next().is_none() {
                         true
-                    } else if let Some((_, next_char_script, _, _)) = script_alphabets_iter.peek() {
+                    } else if let Some((next_char_script, _, _)) = next_char {
                         // if let Some(next_ch) = script_alphabets[ch_idx + ch.len_utf8()] {
                         // next_char_script = Script::find(next_ch);
-                        next_char_script == &Script::Common
+                        next_char_script.is_none() || next_char_script == Some(Script::Common)
                     } else {
                         true
                     }
@@ -3084,13 +3096,15 @@ mod tests {
             "Weltweit    gibt es ungefähr 6.000 Sprachen.",
             ahashset!("weltweit", "gibt", "es", "ungefähr", "sprachen")
         ),
+        case("This,is ok", ahashset!("this", "is", "ok")),
+        case::chinese2("中,文", ahashset!("中", "文")),
+        case::chinese3("和little", ahashset!("和", "little")),
         case(
             "Thi̇s is one word", // This = THİS with lowered İ
             ahashset!("this", "is", "one", "word")
         ),
-        case("This,is ok", ahashset!("this", "is", "ok")),
-        case::chinese2("中,文", ahashset!("中", "文")),
-        case::chinese3("和little", ahashset!("和", "little")),
+        case("Spanish Ñ two chars", ahashset!("spanish", "ñ", "two", "chars")),
+        case("Spanish lowered ñ two chars", ahashset!("spanish", "lowered", "ñ", "two", "chars")),
         // case::japanese("ㄹ語幹に付く態転換接尾辞に", ahashset!("ㄹ", "語幹に付く態転換接尾辞に")),
         // case::japanese2("ㅈ語幹用言に付く場合には", ahashset!("ㅈ", "語幹用言に付く場合には")),
         // case::japanese3("現代朝鮮語にも存在する上昇二重母音ㅑ", ahashset!("現代朝鮮語にも存在する上昇二重母音", "ㅑ")),
