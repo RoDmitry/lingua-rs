@@ -1120,6 +1120,9 @@ impl LanguageDetector {
                 ch_idx = i;
                 next_char = script_alphabets_iter.next();
             }
+            if ch == '’' {
+                ch = '\'';
+            }
 
             let alphabets = script
                 .map(|s| script_char_to_alphabets(s, ch))

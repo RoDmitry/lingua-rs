@@ -1215,7 +1215,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         // example2: `word1' word2` for all langs will be parsed as two words without `'`,
         //   because next char after `'` is space, which is not a char of any language
         Script::Common => match ch {
-            '\'' | '’' => &[
+            '\'' => &[
                 Alphabet::CyrillicBelarusian,
                 Alphabet::Latin(LatinAlphabet::Acehnese),
                 Alphabet::Latin(LatinAlphabet::Afrikaans),
