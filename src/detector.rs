@@ -652,6 +652,104 @@ impl LanguageDetector {
             .collect()
     }
 
+    fn compute_language_confidence_values_for_languages_new<S: BuildHasher + Default>(
+        &self,
+        text_str: &str,
+        search_languages: &HashSet<Language, S>,
+    ) -> Vec<(Language, f64)> {
+        let mut values = Vec::with_capacity(search_languages.len());
+
+        for language in search_languages {
+            values.push((*language, 0.0));
+        }
+
+        if text_str.is_empty() {
+            return Vec::new();
+        }
+        let found_words = Self::filter_text_to_words(text_str.char_indices(), true);
+
+        for (word, mut wd) in found_words {
+            wd.alphabets_count.retain(|l, a| search_languages.contains(l));
+            /* let langs = wd.alphabets_count;
+            for (lang, alphabets_count) in langs {
+                if search_languages.contains(&lang) {
+                    languages
+                        .entry(lang)
+                        .and_modify(|asc: &mut Vec<(usize, Alphabet)>| {
+                            for &(cnt, alphabet) in alphabets_count.iter() {
+                                if asc
+                                    .iter_mut()
+                                    .find(|(_, a)| *a == alphabet)
+                                    .map(|(c, _)| *c = c.wrapping_add(cnt))
+                                    .is_none()
+                                {
+                                    asc.push((cnt, alphabet));
+                                }
+                            }
+                        })
+                        .or_insert(alphabets_count);
+                }
+            } */
+        }
+
+        let words: Vec<String> = Vec::new();
+        let languages: AHashMap<Language, Vec<Alphabet>> = AHashMap::new();
+        if languages.len() == 1 {
+            let (&lang, _alphabets) = languages.iter().next().unwrap();
+            // todo: return alphabets also
+            update_confidence_values(&mut values, lang, 1.0);
+            values.sort_by(confidence_values_comparator);
+            return values;
+        }
+
+        let filtered_languages = languages.into_iter().map(|(l, _)| l).collect();
+
+        let character_count: usize = words.iter().map(|word| word.chars().count()).sum();
+
+        if self.is_low_accuracy_mode_enabled && character_count < 3 {
+            values.sort_by(confidence_values_comparator);
+            return values;
+        }
+
+        let ngram_length_range = if character_count >= 120 || self.is_low_accuracy_mode_enabled {
+            3..4usize
+        } else {
+            1..6usize
+        };
+
+        #[allow(clippy::type_complexity)]
+        let all_probabilities_and_unigram_counts: Vec<(
+            AHashMap<Language, f64>,
+            Option<AHashMap<Language, usize>>,
+        )> = ngram_length_range
+            .into_iter()
+            .filter(|i| character_count >= *i)
+            .map(|ngram_length| {
+                self.look_up_language_models(&words, ngram_length, &filtered_languages)
+            })
+            .collect();
+
+        let probability_maps = all_probabilities_and_unigram_counts
+            .iter()
+            .map(|(probabilities, _)| probabilities)
+            .collect::<Vec<_>>();
+
+        let unigram_counts = &all_probabilities_and_unigram_counts[0].1;
+
+        let summed_up_probabilities =
+            self.sum_up_probabilities(&probability_maps, unigram_counts, filtered_languages);
+
+        if summed_up_probabilities.is_empty() {
+            values.sort_by(confidence_values_comparator);
+            return values;
+        }
+
+        self.compute_confidence_values(&mut values, probability_maps, summed_up_probabilities);
+        // println!("res {:?}", &values[..values.len().min(5)]);
+
+        values
+    }
+
     fn compute_language_confidence_values_for_languages<S: BuildHasher + Default>(
         &self,
         text_str: &str,
