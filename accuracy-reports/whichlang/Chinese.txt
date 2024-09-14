@@ -1,10 +1,10 @@
 ##### Chinese #####
 
->>> Accuracy on average: 97.33%
+>>> Accuracy on average: 97.25%
 
->> Detection of 1000 single words (average length: 1 chars)
-Accuracy: 93.7%
-Erroneously classified as Japanese: 5.8%, Italian: 0.4%, Turkish: 0.1%
+>> Detection of 1100 single words (average length: 1 chars)
+Accuracy: 93.45%
+Erroneously classified as Japanese: 6%, Italian: 0.45%, Turkish: 0.09%
 
 >> Detection of 1000 word pairs (average length: 2 chars)
 Accuracy: 98.3%

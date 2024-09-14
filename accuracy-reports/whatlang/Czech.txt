@@ -12,5 +12,5 @@ Erroneously classified as Slovak: 12.1%, Croatian: 3.1%, Slovene: 2.9%, Unknown:
 
 >> Detection of 1000 sentences (average length: 93 chars)
 Accuracy: 82.4%
-Erroneously classified as Slovak: 5.3%, Slovene: 3.1%, Croatian: 1.5%, Portuguese: 1.2%, Spanish: 0.8%, Unknown: 0.7%, Afrikaans: 0.6%, Italian: 0.6%, Romanian: 0.6%, English: 0.5%, French: 0.5%, Catalan: 0.4%, Polish: 0.4%, Hungarian: 0.3%, Latin: 0.3%, Esperanto: 0.2%, German: 0.2%, Azerbaijani: 0.1%, Danish: 0.1%, Lithuanian: 0.1%, Swedish: 0.1%
+Erroneously classified as Slovak: 5.3%, Slovene: 3.1%, Croatian: 1.5%, Portuguese: 1.2%, Unknown: 0.8%, Spanish: 0.8%, Afrikaans: 0.6%, Italian: 0.6%, Romanian: 0.6%, English: 0.5%, French: 0.5%, Catalan: 0.4%, Polish: 0.4%, Hungarian: 0.3%, Latin: 0.3%, Esperanto: 0.2%, German: 0.2%, Danish: 0.1%, Lithuanian: 0.1%, Swedish: 0.1%
 

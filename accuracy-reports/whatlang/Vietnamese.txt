@@ -4,7 +4,7 @@
 
 >> Detection of 879 single words (average length: 4 chars)
 Accuracy: 75.76%
-Erroneously classified as Catalan: 4.55%, Unknown: 3.07%, Romanian: 2.04%, Spanish: 2.04%, Azerbaijani: 1.7%, Hungarian: 0.91%, French: 0.79%, Indonesian: 0.79%, Latin: 0.79%, Afrikaans: 0.68%, Italian: 0.68%, Croatian: 0.56%, Czech: 0.56%, German: 0.56%, Portuguese: 0.56%, Shona: 0.56%, Slovak: 0.56%, English: 0.45%, Lithuanian: 0.45%, Turkish: 0.34%, Zulu: 0.34%, Esperanto: 0.22%, Estonian: 0.22%, Swedish: 0.22%, Dutch: 0.11%, Finnish: 0.11%, Latvian: 0.11%, Slovene: 0.11%
+Erroneously classified as Unknown: 4.77%, Catalan: 4.55%, Romanian: 2.04%, Spanish: 2.04%, Hungarian: 0.91%, French: 0.79%, Indonesian: 0.79%, Latin: 0.79%, Afrikaans: 0.68%, Italian: 0.68%, Croatian: 0.56%, Czech: 0.56%, German: 0.56%, Portuguese: 0.56%, Shona: 0.56%, Slovak: 0.56%, English: 0.45%, Lithuanian: 0.45%, Turkish: 0.34%, Zulu: 0.34%, Esperanto: 0.22%, Estonian: 0.22%, Swedish: 0.22%, Dutch: 0.11%, Finnish: 0.11%, Latvian: 0.11%, Slovene: 0.11%
 
 >> Detection of 957 word pairs (average length: 12 chars)
 Accuracy: 97.8%
