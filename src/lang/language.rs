@@ -754,8 +754,7 @@ impl Language {
             Xhosa => IsoCode639_1::XH,
             Yoruba => IsoCode639_1::YO,
             Zulu => IsoCode639_1::ZU,
-
-            _ => todo!(),
+            _ => IsoCode639_1::SQ,
         }
     }
 
@@ -838,8 +837,7 @@ impl Language {
             Xhosa => IsoCode639_3::XHO,
             Yoruba => IsoCode639_3::YOR,
             Zulu => IsoCode639_3::ZUL,
-
-            _ => todo!(),
+            _ => IsoCode639_3::SQI,
         }
     }
 

@@ -673,7 +673,7 @@ impl LanguageDetector {
         if text_str.is_empty() {
             return Vec::new();
         }
-        println!("text_str {:?}", text_str);
+        // println!("text_str {:?}", text_str);
         let found_words = Self::filter_text_to_words(text_str.char_indices(), true);
 
         /* let alphabets: AHashSet<_> = found_words
@@ -727,7 +727,7 @@ impl LanguageDetector {
         /* let filtered_languages: AHashSet<_> =
         languages.intersection(search_languages).copied().collect(); */
         // languages.retain(|l, _| search_languages.contains(l));
-        println!("filtered_languages {:?}", languages);
+        // println!("filtered_languages {:?}", languages);
         let lang_alphabets_count_max = languages
             .iter()
             .map(|(_, asc)| asc.iter().fold(0, |acc, (cnt, _)| acc + *cnt))
@@ -739,7 +739,7 @@ impl LanguageDetector {
             // acs.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
             // !acs.is_empty()
         });
-        println!("FINAL filtered_languages {:?}", languages);
+        // println!("FINAL filtered_languages {:?}", languages);
 
         // let language_detected_by_rules =
         // Self::find_most_frequent_opt(&mut total_language_counts);
@@ -810,7 +810,7 @@ impl LanguageDetector {
         }
 
         self.compute_confidence_values(&mut values, probability_maps, summed_up_probabilities);
-        println!("res {:?}", &values[..values.len().min(5)]);
+        // println!("res {:?}", &values[..values.len().min(5)]);
 
         values
     }

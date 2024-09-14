@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-use ::std::collections::HashMap;
 use ::std::fs;
 use ::std::io::Write;
 use ::std::path::{Path, PathBuf};
 use ::std::time::Instant;
+use ahash::AHashMap;
 use cld2::{detect_language as cld2_detect_language, Format, Lang as CLD2Language};
 use fraction::{Decimal, Zero};
 use include_dir::Dir;
@@ -26,10 +26,10 @@ use indoc::formatdoc;
 use itertools::Itertools;
 use lingua::{Language, LanguageDetector, LanguageDetectorBuilder};
 use lingua_afrikaans_language_model::AFRIKAANS_TESTDATA_DIRECTORY;
-use lingua_albanian_language_model::ALBANIAN_TESTDATA_DIRECTORY;
+// use lingua_albanian_language_model::ALBANIAN_TESTDATA_DIRECTORY;
 use lingua_arabic_language_model::ARABIC_TESTDATA_DIRECTORY;
 use lingua_armenian_language_model::ARMENIAN_TESTDATA_DIRECTORY;
-use lingua_azerbaijani_language_model::AZERBAIJANI_TESTDATA_DIRECTORY;
+// use lingua_azerbaijani_language_model::AZERBAIJANI_TESTDATA_DIRECTORY;
 use lingua_basque_language_model::BASQUE_TESTDATA_DIRECTORY;
 use lingua_belarusian_language_model::BELARUSIAN_TESTDATA_DIRECTORY;
 use lingua_bengali_language_model::BENGALI_TESTDATA_DIRECTORY;
@@ -69,12 +69,12 @@ use lingua_macedonian_language_model::MACEDONIAN_TESTDATA_DIRECTORY;
 use lingua_malay_language_model::MALAY_TESTDATA_DIRECTORY;
 use lingua_maori_language_model::MAORI_TESTDATA_DIRECTORY;
 use lingua_marathi_language_model::MARATHI_TESTDATA_DIRECTORY;
-use lingua_mongolian_language_model::MONGOLIAN_TESTDATA_DIRECTORY;
+// use lingua_mongolian_language_model::MONGOLIAN_TESTDATA_DIRECTORY;
 use lingua_nynorsk_language_model::NYNORSK_TESTDATA_DIRECTORY;
 use lingua_persian_language_model::PERSIAN_TESTDATA_DIRECTORY;
 use lingua_polish_language_model::POLISH_TESTDATA_DIRECTORY;
 use lingua_portuguese_language_model::PORTUGUESE_TESTDATA_DIRECTORY;
-use lingua_punjabi_language_model::PUNJABI_TESTDATA_DIRECTORY;
+// use lingua_punjabi_language_model::PUNJABI_TESTDATA_DIRECTORY;
 use lingua_romanian_language_model::ROMANIAN_TESTDATA_DIRECTORY;
 use lingua_russian_language_model::RUSSIAN_TESTDATA_DIRECTORY;
 use lingua_serbian_language_model::SERBIAN_TESTDATA_DIRECTORY;
@@ -110,7 +110,7 @@ struct DetectorStatistics {
     single_word_statistic: Statistic,
     word_pair_statistic: Statistic,
     sentence_statistic: Statistic,
-    average_accuracies: HashMap<Language, Decimal>,
+    average_accuracies: AHashMap<Language, Decimal>,
 }
 
 impl DetectorStatistics {
@@ -119,7 +119,7 @@ impl DetectorStatistics {
             single_word_statistic: Statistic::new(),
             word_pair_statistic: Statistic::new(),
             sentence_statistic: Statistic::new(),
-            average_accuracies: HashMap::new(),
+            average_accuracies: AHashMap::new(),
         }
     }
 
@@ -235,8 +235,8 @@ impl DetectorStatistics {
 }
 
 struct Statistic {
-    language_counts: HashMap<Option<Language>, u32>,
-    language_accuracies: HashMap<Option<Language>, Decimal>,
+    language_counts: AHashMap<Option<Language>, u32>,
+    language_accuracies: AHashMap<Option<Language>, Decimal>,
     entity_count: u32,
     entity_length_count: u32,
 }
@@ -244,8 +244,8 @@ struct Statistic {
 impl Statistic {
     fn new() -> Self {
         Self {
-            language_counts: HashMap::new(),
-            language_accuracies: HashMap::new(),
+            language_counts: AHashMap::new(),
+            language_accuracies: AHashMap::new(),
             entity_count: 0,
             entity_length_count: 0,
         }
@@ -371,39 +371,41 @@ fn lingua_high_accuracy_detect(texts: &[&str]) -> Vec<Option<Language>> {
     LINGUA_DETECTOR_WITH_HIGH_ACCURACY.detect_languages_in_parallel_of(texts)
 }
 
-fn get_file_content(file_name: &str) -> HashMap<Language, Vec<&str>> {
+fn get_file_content(file_name: &str) -> AHashMap<Language, Vec<&str>> {
     Language::iter()
-        .map(|language| {
-            let file_content = get_test_data_directory(&language)
-                .get_file(file_name)
-                .unwrap()
-                .contents_utf8()
-                .unwrap()
-                .split('\n')
-                .filter(|&line| !line.trim().is_empty())
-                .collect_vec();
-
-            (language, file_content)
+        .filter_map(|language| {
+            get_test_data_directory(&language).map(|d| {
+                (
+                    language,
+                    d.get_file(file_name)
+                        .unwrap()
+                        .contents_utf8()
+                        .unwrap()
+                        .split('\n')
+                        .filter(|&line| !line.trim().is_empty())
+                        .collect_vec(),
+                )
+            })
         })
         .collect()
 }
 
-static SINGLE_WORDS: Lazy<HashMap<Language, Vec<&str>>> =
+static SINGLE_WORDS: Lazy<AHashMap<Language, Vec<&str>>> =
     Lazy::new(|| get_file_content("single-words.txt"));
 
-static WORD_PAIRS: Lazy<HashMap<Language, Vec<&str>>> =
+static WORD_PAIRS: Lazy<AHashMap<Language, Vec<&str>>> =
     Lazy::new(|| get_file_content("word-pairs.txt"));
 
-static SENTENCES: Lazy<HashMap<Language, Vec<&str>>> =
+static SENTENCES: Lazy<AHashMap<Language, Vec<&str>>> =
     Lazy::new(|| get_file_content("sentences.txt"));
 
 fn collect_statistics(
     detector_name: &str,
     reports_directory: &PathBuf,
     detector_fn: fn(&[&str]) -> Vec<Option<Language>>,
-) -> Vec<DetectorStatistics> {
+) -> AHashMap<Language, DetectorStatistics> {
     let now = Instant::now();
-    let mut language_statistics = vec![];
+    let mut language_statistics = AHashMap::new();
 
     if !reports_directory.is_dir() {
         fs::create_dir_all(reports_directory).expect("Reports directory could not be created");
@@ -421,21 +423,27 @@ fn collect_statistics(
 
         let mut statistics = DetectorStatistics::new();
 
-        let single_words = SINGLE_WORDS.get(&language).unwrap();
+        let Some(single_words) = SINGLE_WORDS.get(&language) else {
+            continue;
+        };
         let single_word_results = detector_fn(single_words);
 
         for (i, single_word) in single_words.iter().enumerate() {
             statistics.add_single_word_counts(*single_word_results.get(i).unwrap(), single_word);
         }
 
-        let word_pairs = WORD_PAIRS.get(&language).unwrap();
+        let Some(word_pairs) = WORD_PAIRS.get(&language) else {
+            continue;
+        };
         let word_pair_results = detector_fn(word_pairs);
 
         for (i, word_pair) in word_pairs.iter().enumerate() {
             statistics.add_word_pair_counts(*word_pair_results.get(i).unwrap(), word_pair);
         }
 
-        let sentences = SENTENCES.get(&language).unwrap();
+        let Some(sentences) = SENTENCES.get(&language) else {
+            continue;
+        };
         let sentence_results = detector_fn(sentences);
 
         for (i, sentence) in sentences.iter().enumerate() {
@@ -452,7 +460,7 @@ fn collect_statistics(
             fs::write(report_file_path, report).expect("Reports file could not be written");
         }
 
-        language_statistics.push(statistics);
+        language_statistics.insert(language, statistics);
     }
 
     println!(
@@ -529,31 +537,31 @@ fn main() {
         .write_all(aggregated_report_columns.iter().join(",").as_bytes())
         .expect("CSV header row could not be written");
 
-    for (idx, language) in Language::iter().enumerate() {
+    for language in Language::iter() {
         let cld2_aggregated_report_row = cld2_statistics
-            .get(idx)
-            .unwrap()
-            .create_aggregated_report_row(&language);
+            .get(&language)
+            .map(|s| s.create_aggregated_report_row(&language))
+            .unwrap_or_default();
 
         let whatlang_aggregated_report_row = whatlang_statistics
-            .get(idx)
-            .unwrap()
-            .create_aggregated_report_row(&language);
+            .get(&language)
+            .map(|s| s.create_aggregated_report_row(&language))
+            .unwrap_or_default();
 
         let whichlang_aggregated_report_row = whichlang_statistics
-            .get(idx)
-            .unwrap()
-            .create_aggregated_report_row(&language);
+            .get(&language)
+            .map(|s| s.create_aggregated_report_row(&language))
+            .unwrap_or_default();
 
         let lingua_low_accuracy_aggregated_report_row = lingua_low_accuracy_statistics
-            .get(idx)
-            .unwrap()
-            .create_aggregated_report_row(&language);
+            .get(&language)
+            .map(|s| s.create_aggregated_report_row(&language))
+            .unwrap_or_default();
 
         let lingua_high_accuracy_aggregated_report_row = lingua_high_accuracy_statistics
-            .get(idx)
-            .unwrap()
-            .create_aggregated_report_row(&language);
+            .get(&language)
+            .map(|s| s.create_aggregated_report_row(&language))
+            .unwrap_or_default();
 
         let total_aggregated_report_row = format!(
             "{:?},{},{},{},{},{}\n",
@@ -598,7 +606,7 @@ fn map_whatlang_to_lingua(language: Option<WhatlangLanguage>) -> Option<Language
     match language {
         Some(WhatlangLanguage::Afr) => Some(Language::Afrikaans),
         Some(WhatlangLanguage::Ara) => Some(Language::Arabic),
-        Some(WhatlangLanguage::Aze) => Some(Language::Azerbaijani),
+        // Some(WhatlangLanguage::Aze) => Some(Language::AzerbaijaniNorth),
         Some(WhatlangLanguage::Bel) => Some(Language::Belarusian),
         Some(WhatlangLanguage::Ben) => Some(Language::Bengali),
         Some(WhatlangLanguage::Bul) => Some(Language::Bulgarian),
@@ -630,7 +638,7 @@ fn map_whatlang_to_lingua(language: Option<WhatlangLanguage>) -> Option<Language
         Some(WhatlangLanguage::Mkd) => Some(Language::Macedonian),
         Some(WhatlangLanguage::Nld) => Some(Language::Dutch),
         Some(WhatlangLanguage::Nob) => Some(Language::Bokmal),
-        Some(WhatlangLanguage::Pan) => Some(Language::Punjabi),
+        // Some(WhatlangLanguage::Pan) => Some(Language::Punjabi),
         Some(WhatlangLanguage::Pes) => Some(Language::Persian),
         Some(WhatlangLanguage::Pol) => Some(Language::Polish),
         Some(WhatlangLanguage::Por) => Some(Language::Portuguese),
@@ -675,82 +683,83 @@ fn map_whichlang_to_lingua(language: WhichlangLanguage) -> Option<Language> {
     }
 }
 
-fn get_test_data_directory(language: &Language) -> Dir<'static> {
+fn get_test_data_directory(language: &Language) -> Option<Dir<'static>> {
     match *language {
-        Language::Afrikaans => AFRIKAANS_TESTDATA_DIRECTORY,
-        Language::Albanian => ALBANIAN_TESTDATA_DIRECTORY,
-        Language::Arabic => ARABIC_TESTDATA_DIRECTORY,
-        Language::Armenian => ARMENIAN_TESTDATA_DIRECTORY,
-        Language::Azerbaijani => AZERBAIJANI_TESTDATA_DIRECTORY,
-        Language::Basque => BASQUE_TESTDATA_DIRECTORY,
-        Language::Belarusian => BELARUSIAN_TESTDATA_DIRECTORY,
-        Language::Bengali => BENGALI_TESTDATA_DIRECTORY,
-        Language::Bokmal => BOKMAL_TESTDATA_DIRECTORY,
-        Language::Bosnian => BOSNIAN_TESTDATA_DIRECTORY,
-        Language::Bulgarian => BULGARIAN_TESTDATA_DIRECTORY,
-        Language::Catalan => CATALAN_TESTDATA_DIRECTORY,
-        Language::Chinese => CHINESE_TESTDATA_DIRECTORY,
-        Language::Croatian => CROATIAN_TESTDATA_DIRECTORY,
-        Language::Czech => CZECH_TESTDATA_DIRECTORY,
-        Language::Danish => DANISH_TESTDATA_DIRECTORY,
-        Language::Dutch => DUTCH_TESTDATA_DIRECTORY,
-        Language::English => ENGLISH_TESTDATA_DIRECTORY,
-        Language::Esperanto => ESPERANTO_TESTDATA_DIRECTORY,
-        Language::Estonian => ESTONIAN_TESTDATA_DIRECTORY,
-        Language::Finnish => FINNISH_TESTDATA_DIRECTORY,
-        Language::French => FRENCH_TESTDATA_DIRECTORY,
-        Language::Ganda => GANDA_TESTDATA_DIRECTORY,
-        Language::Georgian => GEORGIAN_TESTDATA_DIRECTORY,
-        Language::German => GERMAN_TESTDATA_DIRECTORY,
-        Language::Greek => GREEK_TESTDATA_DIRECTORY,
-        Language::Gujarati => GUJARATI_TESTDATA_DIRECTORY,
-        Language::Hebrew => HEBREW_TESTDATA_DIRECTORY,
-        Language::Hindi => HINDI_TESTDATA_DIRECTORY,
-        Language::Hungarian => HUNGARIAN_TESTDATA_DIRECTORY,
-        Language::Icelandic => ICELANDIC_TESTDATA_DIRECTORY,
-        Language::Indonesian => INDONESIAN_TESTDATA_DIRECTORY,
-        Language::Irish => IRISH_TESTDATA_DIRECTORY,
-        Language::Italian => ITALIAN_TESTDATA_DIRECTORY,
-        Language::Japanese => JAPANESE_TESTDATA_DIRECTORY,
-        Language::Kazakh => KAZAKH_TESTDATA_DIRECTORY,
-        Language::Korean => KOREAN_TESTDATA_DIRECTORY,
-        Language::Latin => LATIN_TESTDATA_DIRECTORY,
-        Language::Latvian => LATVIAN_TESTDATA_DIRECTORY,
-        Language::Lithuanian => LITHUANIAN_TESTDATA_DIRECTORY,
-        Language::Macedonian => MACEDONIAN_TESTDATA_DIRECTORY,
-        Language::Malay => MALAY_TESTDATA_DIRECTORY,
-        Language::Maori => MAORI_TESTDATA_DIRECTORY,
-        Language::Marathi => MARATHI_TESTDATA_DIRECTORY,
-        Language::Mongolian => MONGOLIAN_TESTDATA_DIRECTORY,
-        Language::Nynorsk => NYNORSK_TESTDATA_DIRECTORY,
-        Language::Persian => PERSIAN_TESTDATA_DIRECTORY,
-        Language::Polish => POLISH_TESTDATA_DIRECTORY,
-        Language::Portuguese => PORTUGUESE_TESTDATA_DIRECTORY,
-        Language::Punjabi => PUNJABI_TESTDATA_DIRECTORY,
-        Language::Romanian => ROMANIAN_TESTDATA_DIRECTORY,
-        Language::Russian => RUSSIAN_TESTDATA_DIRECTORY,
-        Language::Serbian => SERBIAN_TESTDATA_DIRECTORY,
-        Language::Shona => SHONA_TESTDATA_DIRECTORY,
-        Language::Slovak => SLOVAK_TESTDATA_DIRECTORY,
-        Language::Slovene => SLOVENE_TESTDATA_DIRECTORY,
-        Language::Somali => SOMALI_TESTDATA_DIRECTORY,
-        Language::Sesotho => SESOTHO_TESTDATA_DIRECTORY,
-        Language::Spanish => SPANISH_TESTDATA_DIRECTORY,
-        Language::Swahili => SWAHILI_TESTDATA_DIRECTORY,
-        Language::Swedish => SWEDISH_TESTDATA_DIRECTORY,
-        Language::Tagalog => TAGALOG_TESTDATA_DIRECTORY,
-        Language::Tamil => TAMIL_TESTDATA_DIRECTORY,
-        Language::Telugu => TELUGU_TESTDATA_DIRECTORY,
-        Language::Thai => THAI_TESTDATA_DIRECTORY,
-        Language::Tsonga => TSONGA_TESTDATA_DIRECTORY,
-        Language::Tswana => TSWANA_TESTDATA_DIRECTORY,
-        Language::Turkish => TURKISH_TESTDATA_DIRECTORY,
-        Language::Ukrainian => UKRAINIAN_TESTDATA_DIRECTORY,
-        Language::Urdu => URDU_TESTDATA_DIRECTORY,
-        Language::Vietnamese => VIETNAMESE_TESTDATA_DIRECTORY,
-        Language::Welsh => WELSH_TESTDATA_DIRECTORY,
-        Language::Xhosa => XHOSA_TESTDATA_DIRECTORY,
-        Language::Yoruba => YORUBA_TESTDATA_DIRECTORY,
-        Language::Zulu => ZULU_TESTDATA_DIRECTORY,
+        Language::Afrikaans => Some(AFRIKAANS_TESTDATA_DIRECTORY),
+        // Language::Albanian => ALBANIAN_TESTDATA_DIRECTORY,
+        Language::Arabic => Some(ARABIC_TESTDATA_DIRECTORY),
+        Language::Armenian => Some(ARMENIAN_TESTDATA_DIRECTORY),
+        // Language::Azerbaijani => AZERBAIJANI_TESTDATA_DIRECTORY,
+        Language::Basque => Some(BASQUE_TESTDATA_DIRECTORY),
+        Language::Belarusian => Some(BELARUSIAN_TESTDATA_DIRECTORY),
+        Language::Bengali => Some(BENGALI_TESTDATA_DIRECTORY),
+        Language::Bokmal => Some(BOKMAL_TESTDATA_DIRECTORY),
+        Language::Bosnian => Some(BOSNIAN_TESTDATA_DIRECTORY),
+        Language::Bulgarian => Some(BULGARIAN_TESTDATA_DIRECTORY),
+        Language::Catalan => Some(CATALAN_TESTDATA_DIRECTORY),
+        Language::Chinese => Some(CHINESE_TESTDATA_DIRECTORY),
+        Language::Croatian => Some(CROATIAN_TESTDATA_DIRECTORY),
+        Language::Czech => Some(CZECH_TESTDATA_DIRECTORY),
+        Language::Danish => Some(DANISH_TESTDATA_DIRECTORY),
+        Language::Dutch => Some(DUTCH_TESTDATA_DIRECTORY),
+        Language::English => Some(ENGLISH_TESTDATA_DIRECTORY),
+        Language::Esperanto => Some(ESPERANTO_TESTDATA_DIRECTORY),
+        Language::Estonian => Some(ESTONIAN_TESTDATA_DIRECTORY),
+        Language::Finnish => Some(FINNISH_TESTDATA_DIRECTORY),
+        Language::French => Some(FRENCH_TESTDATA_DIRECTORY),
+        Language::Ganda => Some(GANDA_TESTDATA_DIRECTORY),
+        Language::Georgian => Some(GEORGIAN_TESTDATA_DIRECTORY),
+        Language::German => Some(GERMAN_TESTDATA_DIRECTORY),
+        Language::Greek => Some(GREEK_TESTDATA_DIRECTORY),
+        Language::Gujarati => Some(GUJARATI_TESTDATA_DIRECTORY),
+        Language::Hebrew => Some(HEBREW_TESTDATA_DIRECTORY),
+        Language::Hindi => Some(HINDI_TESTDATA_DIRECTORY),
+        Language::Hungarian => Some(HUNGARIAN_TESTDATA_DIRECTORY),
+        Language::Icelandic => Some(ICELANDIC_TESTDATA_DIRECTORY),
+        Language::Indonesian => Some(INDONESIAN_TESTDATA_DIRECTORY),
+        Language::Irish => Some(IRISH_TESTDATA_DIRECTORY),
+        Language::Italian => Some(ITALIAN_TESTDATA_DIRECTORY),
+        Language::Japanese => Some(JAPANESE_TESTDATA_DIRECTORY),
+        Language::Kazakh => Some(KAZAKH_TESTDATA_DIRECTORY),
+        Language::Korean => Some(KOREAN_TESTDATA_DIRECTORY),
+        Language::Latin => Some(LATIN_TESTDATA_DIRECTORY),
+        Language::Latvian => Some(LATVIAN_TESTDATA_DIRECTORY),
+        Language::Lithuanian => Some(LITHUANIAN_TESTDATA_DIRECTORY),
+        Language::Macedonian => Some(MACEDONIAN_TESTDATA_DIRECTORY),
+        Language::Malay => Some(MALAY_TESTDATA_DIRECTORY),
+        Language::Maori => Some(MAORI_TESTDATA_DIRECTORY),
+        Language::Marathi => Some(MARATHI_TESTDATA_DIRECTORY),
+        // Language::Mongolian => MONGOLIAN_TESTDATA_DIRECTORY,
+        Language::Nynorsk => Some(NYNORSK_TESTDATA_DIRECTORY),
+        Language::Persian => Some(PERSIAN_TESTDATA_DIRECTORY),
+        Language::Polish => Some(POLISH_TESTDATA_DIRECTORY),
+        Language::Portuguese => Some(PORTUGUESE_TESTDATA_DIRECTORY),
+        // Language::Punjabi => PUNJABI_TESTDATA_DIRECTORY,
+        Language::Romanian => Some(ROMANIAN_TESTDATA_DIRECTORY),
+        Language::Russian => Some(RUSSIAN_TESTDATA_DIRECTORY),
+        Language::Serbian => Some(SERBIAN_TESTDATA_DIRECTORY),
+        Language::Shona => Some(SHONA_TESTDATA_DIRECTORY),
+        Language::Slovak => Some(SLOVAK_TESTDATA_DIRECTORY),
+        Language::Slovene => Some(SLOVENE_TESTDATA_DIRECTORY),
+        Language::Somali => Some(SOMALI_TESTDATA_DIRECTORY),
+        Language::Sesotho => Some(SESOTHO_TESTDATA_DIRECTORY),
+        Language::Spanish => Some(SPANISH_TESTDATA_DIRECTORY),
+        Language::Swahili => Some(SWAHILI_TESTDATA_DIRECTORY),
+        Language::Swedish => Some(SWEDISH_TESTDATA_DIRECTORY),
+        Language::Tagalog => Some(TAGALOG_TESTDATA_DIRECTORY),
+        Language::Tamil => Some(TAMIL_TESTDATA_DIRECTORY),
+        Language::Telugu => Some(TELUGU_TESTDATA_DIRECTORY),
+        Language::Thai => Some(THAI_TESTDATA_DIRECTORY),
+        Language::Tsonga => Some(TSONGA_TESTDATA_DIRECTORY),
+        Language::Tswana => Some(TSWANA_TESTDATA_DIRECTORY),
+        Language::Turkish => Some(TURKISH_TESTDATA_DIRECTORY),
+        Language::Ukrainian => Some(UKRAINIAN_TESTDATA_DIRECTORY),
+        Language::Urdu => Some(URDU_TESTDATA_DIRECTORY),
+        Language::Vietnamese => Some(VIETNAMESE_TESTDATA_DIRECTORY),
+        Language::Welsh => Some(WELSH_TESTDATA_DIRECTORY),
+        Language::Xhosa => Some(XHOSA_TESTDATA_DIRECTORY),
+        Language::Yoruba => Some(YORUBA_TESTDATA_DIRECTORY),
+        Language::Zulu => Some(ZULU_TESTDATA_DIRECTORY),
+        _ => None,
     }
 }
