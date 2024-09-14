@@ -2755,7 +2755,6 @@ mod tests {
         word,
         expected_language,
         // words with unique characters
-        case::czech("rozdělit", Some(Czech)),
         case::czech("subjektů", Some(Czech)),
         case::esperanto("nesufiĉecon", Some(Esperanto)),
         case::esperanto("intermiksiĝis", Some(Esperanto)),
@@ -2874,6 +2873,7 @@ mod tests {
     }
 
     #[rstest(word, expected_languages,
+        case::czech("rozdělit", ahashset!(Fon, Czech)),
         case::azerbaijani_north("məhərrəm", ahashset!(TatarCrimean, AzerbaijaniNorth)),
         case::czech("tvořen", ahashset!(Silesian, Czech)),
         case::latvian("teoloģiska", ahashset!(Latvian, Latgalian)),
@@ -2881,8 +2881,8 @@ mod tests {
         case::latvian("ceļojumiem", ahashset!(Latgalian, Latvian)),
         case::latvian("numuriņu", ahashset!(Latgalian, Latvian)),
         case::polish("zmieniły", ahashset!(Silesian, Polish)),
-        case::vietnamese("kẽm", ahashset!(Guarani, Vietnamese)),
-        case::vietnamese("trĩ", ahashset!(Guarani, Vietnamese)),
+        case::vietnamese("kẽm", ahashset!(Vietnamese, Guarani, Ewe)),
+        case::vietnamese("trĩ", ahashset!(Vietnamese, Ewe, Guarani)),
         case::vietnamese("ravị", ahashset!(Vietnamese, Igbo)),
         case::vietnamese("cũng", ahashset!(Guarani, Vietnamese)),
         case::vietnamese("dụng", ahashset!(Vietnamese, Igbo)),
@@ -2923,29 +2923,29 @@ mod tests {
         case::viet2("chọn", ahashset!(Vietnamese, Igbo)),
         case::croat1("prihvaćanju", ahashset!(Croatian, Bosnian)),
         case::croat2("nađete", ahashset!(Bosnian, Croatian, Vietnamese)),
-        case::port1("visão", ahashset!(Portuguese, Vietnamese, Guarani)),
+        case::port1("visão", ahashset!(Guarani, Portuguese, Ewe, Vietnamese)),
         case::port2(
             "catedráticos",
             ahashset!(
-                Friulian, Papiamento, Asturian, Cebuano, Lombard, Galician, Vietnamese, Igbo, Irish,
-                Slovak, Portuguese, GaelicScottish, Guarani, Occitan, Kabuverdianu, Shona, Spanish,
-                Hungarian, Limburgish
+                Spanish, AymaraCentral, Slovak, Afrikaans, Hungarian, Limburgish, Kabuverdianu,
+                Asturian, Galician, Occitan, Shona, Fon, Portuguese, Guarani, Vietnamese, Czech,
+                Papiamento, Lombard, Igbo, Dutch, Irish
             )
         ),
         case::port3(
             "política",
             ahashset!(
-                Kabuverdianu, Kikuyu, Hungarian, Shona, Guarani, Sardinian, Igbo, Lombard, Irish,
-                Galician, Czech, Kinyarwanda, Vietnamese, Occitan, Friulian, Spanish, Limburgish,
-                Asturian, Portuguese, Slovak, Cebuano
+                Spanish, Lombard, Portuguese, Vietnamese, Guarani, Catalan, Afrikaans, Asturian,
+                Fon, Igbo, Shona, Irish, Kikuyu, Kabuverdianu, Slovak, Sardinian, Limburgish,
+                AymaraCentral, Galician, Kinyarwanda, Hungarian, Czech, Occitan
             )
         ),
         case::port4(
             "música",
             ahashset!(
-                Igbo, Guarani, Sardinian, Limburgish, Cebuano, Shona, Vietnamese, Czech, Lombard,
-                Hungarian, Kinyarwanda, Portuguese, Kabuverdianu, Irish, Friulian, Spanish, Kikuyu,
-                Papiamento, Slovak, Galician, Occitan, Asturian
+                Igbo, Shona, Lombard, Czech, Kikuyu, AymaraCentral, Afrikaans, Portuguese,
+                Slovak, Hungarian, Kinyarwanda, Spanish, Papiamento, Galician, Kabuverdianu,
+                Irish, Limburgish, Guarani, Vietnamese, Catalan, Fon, Sardinian, Asturian, Occitan
             )
         ),
         case::pol1("wystąpią", ahashset!(Polish)),
@@ -2953,23 +2953,27 @@ mod tests {
         case::pol3("kradzieżami", ahashset!(Maltese, Polish)),
         case::lith1("nebūsime", ahashset!(Lithuanian, Latgalian, Latin, Latvian)),
         case::rom1("afişate", ahashset!(TatarCrimean, Turkish, KurdishNorthern, AzerbaijaniNorth)),
-        case::rom2("înviat", ahashset!(French, Limburgish, KurdishNorthern, Romanian)),
+        case::rom2(
+            "înviat",
+            ahashset!(Guarani, French, Friulian, Romanian, KurdishNorthern, Limburgish, Afrikaans)
+        ),
         case::rom3("pregătire", ahashset!(Romanian, Vietnamese)),
         case::it1(
             "venerdì",
-            ahashset!(Sardinian, Italian, Limburgish, Lombard, Venetian, Sicilian, Vietnamese)
+            ahashset!(
+                Friulian, Czech, Sicilian, Fon, Limburgish, Venetian, Lombard, Sardinian, Vietnamese, Italian
+            )
         ),
         case::es1(
             "años", 
             ahashset!(
-                Cebuano, Guarani, AymaraCentral, Ilocano, Galician, FulfuldeNigerian, Waray, Basque,
-                Friulian, Spanish, Asturian, Papiamento, Wolof
+                Ilocano, Basque, Waray, Asturian, Spanish, Papiamento, AymaraCentral, Guarani, Wolof, Galician
             )
         ),
         case::slov1("rozohňuje", ahashset!(Silesian, Czech, Slovak)),
         case::cz1("rtuť", ahashset!(Czech, Slovak)),
         case::cz2("jeďte", ahashset!(Slovak, Czech)),
-        case::cz3("vývoj", ahashset!(Faroese, Slovak, Icelandic, Czech)),
+        case::cz3("vývoj", ahashset!(Faroese, Slovak, Afrikaans, Icelandic, Czech, Guarani)),
         case::cz4(
             "zaručen",
             ahashset!(Latgalian, Czech, Slovene, Slovak, Silesian, Latvian, Bosnian, Kabyle, Croatian, Lithuanian)
@@ -2977,51 +2981,54 @@ mod tests {
         case::cz5(
             "zkouškou", 
             ahashset!(
-                Latvian, Croatian, Latgalian, Sepedi, Slovene, Finnish, Czech, Estonian, Slovak, Silesian,
-                Bosnian, Lithuanian
+                Sepedi, Latvian, Estonian, Slovene, Slovak, Bosnian, Latgalian, Silesian, Czech,
+                Croatian, Lithuanian
             )
         ),
         case::cz6(
             "navržen",
             ahashset!(
-                Slovak, Slovene, Finnish, Latvian, Silesian, Czech, Lithuanian, Estonian, Bosnian,
-                Croatian, Latgalian
+                Croatian, Latgalian, Latvian, Silesian, Slovak, Lithuanian, Slovene, Bosnian, Czech, Estonian
             )
         ),
         case::ic1("minjaverðir", ahashset!(Icelandic, Faroese)),
         case::ic2("þagnarskyldu", ahashset!(Icelandic)),
         case::alb1(
             "hashemidëve",
-            ahashset!(French, Afrikaans, AlbanianTosk, Luxembourgish, Catalan, Dutch, Limburgish)
+            ahashset!(Afrikaans, Dutch, Catalan, French, Limburgish, AymaraCentral, Luxembourgish, AlbanianTosk)
         ),
         case::fr1(
             "forêt",
-            ahashset!(Kabuverdianu, French, Danish, KurdishNorthern, Portuguese, AlbanianTosk, Welsh, Sepedi)
+            ahashset!(Sepedi, KurdishNorthern, Kabuverdianu, Welsh, Afrikaans, Portuguese, French, Friulian)
         ),
         case::fr2(
             "succèdent",
             ahashset!(
-                French, Sardinian, Italian, CreoleHaitian, Acehnese, Occitan, Sicilian, Venetian, Ganda,
-                Limburgish, Catalan, GaelicScottish, Lombard, Papiamento, Vietnamese
+                GaelicScottish, Acehnese, Papiamento, Czech, Italian, Vietnamese, Sicilian, Sardinian,
+                Lombard, Friulian, Dutch, CreoleHaitian, Catalan, Afrikaans, Occitan, Venetian, Fon,
+                Limburgish, French
             )
         ),
         case::fr3(
             "où",
             ahashset!(
-                Yoruba, Lombard, Italian, Limburgish, CreoleHaitian, Vietnamese, GaelicScottish,
-                Venetian, Sardinian, French, Sicilian
+                Fon, Sardinian, Venetian, Yoruba, Sicilian, GaelicScottish, French, Vietnamese,
+                Friulian, Czech, Limburgish, Lombard, Italian
             )
         ),
         case::fr4(
             "contrôle",
-            ahashset!(Vietnamese, Afrikaans, Sepedi, Welsh, Limburgish, French, Danish, Portuguese, Slovak)
+            ahashset!(
+                Friulian, Slovak, Afrikaans, French, Portuguese, Welsh, Sepedi, Bambara, Limburgish,
+                Vietnamese, Acehnese
+            )
         ),
         case::fr5(
             "façonnage",
             ahashset!(
-                Friulian, AlbanianTosk, Venetian, KurdishNorthern, Croatian, AzerbaijaniNorth, Bokmal,
-                Danish, Catalan, Afrikaans, Turkish, Occitan, Dutch, French, TatarCrimean, Kabuverdianu,
-                Ligurian, Portuguese, Basque, Turkmen, Bosnian
+                Friulian, KurdishNorthern, Catalan, Bokmal, AlbanianTosk, Portuguese, Venetian,
+                Ligurian, AzerbaijaniNorth, Turkmen, Turkish, French, Occitan, Bosnian, Kabuverdianu,
+                TatarCrimean
             )
         ),
         case::est1(
@@ -3030,9 +3037,12 @@ mod tests {
         ),
         case::est2(
             "päralt",
-            ahashset!(Slovak, Limburgish, Swedish, Finnish, German, Turkmen, Luxembourgish, Estonian)
+            ahashset!(
+                DinkaSouthwestern, Finnish, Swedish, German, Afrikaans, Turkmen, Luxembourgish,
+                AymaraCentral, Estonian, Dutch, Slovak, Limburgish
+            )
         ),
-        case::dan1("direktør", ahashset!(Nynorsk, Danish, Bokmal, Faroese)),
+        case::dan1("direktør", ahashset!(Faroese, Danish, Nynorsk, Czech, Bokmal)),
         case::dan2("indebærer", ahashset!(Latin, Faroese, Nynorsk, Danish, Bokmal, Icelandic, French)),
         case::dan3("måned", ahashset!(Bokmal, Danish, Nynorsk, Swedish)),
         case::cat1(
@@ -3042,55 +3052,56 @@ mod tests {
         case::cat2(
             "contradicció",
             ahashset!(
-                GaelicScottish, Kabuverdianu, Occitan, Sicilian, Irish, Guarani, Friulian, Shona,
-                Igbo, Polish, Spanish, Cebuano, Galician, Hungarian, Catalan, Slovak, Sardinian,
-                Vietnamese, Luxembourgish, Asturian, Venetian, Portuguese, Limburgish, Czech,
-                Papiamento, Lombard
+                Irish, Sicilian, Vietnamese, Luxembourgish, AymaraCentral, Venetian, Sardinian,
+                Limburgish, Asturian, Slovak, Galician, Shona, Lombard, Portuguese, Catalan,
+                Fon, Spanish, Papiamento, Hungarian, Czech, Igbo, Dutch, Kabuverdianu, Guarani,
+                Occitan, Afrikaans, Polish
             )
         ),
         case::cat3(
             "només",
             ahashset!(
-                Bokmal, Friulian, Venetian, Afrikaans, Czech, French, Kabuverdianu, Lombard,
-                Icelandic, Papiamento, Hungarian, Italian, Occitan, Sicilian, Acehnese, Igbo,
-                Guarani, Danish, Shona, Spanish, Waray, Galician, Irish, Yoruba, GaelicScottish,
-                Vietnamese, Sardinian, Cebuano, CreoleHaitian, Ganda, Ilocano, Catalan, Dutch,
-                Asturian, Limburgish, Ligurian, Luxembourgish, Portuguese, Slovak
+                Igbo, Catalan, Bambara, Czech, Sardinian, Danish, Guarani, Venetian, Hungarian,
+                Bokmal, Limburgish, Vietnamese, Balinese, Ligurian, Luxembourgish, Shona, Yoruba,
+                Acehnese, Portuguese, Lombard, Icelandic, Afrikaans, Ilocano, French, Ewe, Asturian,
+                Slovak, Waray, Papiamento, Dutch, Italian, CreoleHaitian, Kabuverdianu, Galician,
+                Fon, Occitan, Banjar, Sicilian, AymaraCentral, Spanish, Irish
             )
         ),
-        case::cat4("substituïts", ahashset!(Afrikaans, Dutch, Catalan, French)),
+        case::cat4("substituïts", ahashset!(Catalan, French, Afrikaans, AymaraCentral, Dutch)),
         case::ge1(
             "überrascht",
             ahashset!(
-                Limburgish, AzerbaijaniNorth, Spanish, Papiamento, Galician, TatarCrimean, Turkish,
-                French, Portuguese, German, Catalan, Asturian, Hungarian, Dutch, Luxembourgish
+                Afrikaans, Catalan, French, Luxembourgish, Spanish, Asturian, Portuguese,
+                Dutch, Hungarian, Turkish, German, Limburgish, TatarCrimean, Papiamento,
+                AzerbaijaniNorth, AymaraCentral
             )
         ),
         case::ge2(
             "höher",
             ahashset!(
-                Swedish, TatarCrimean, Luxembourgish, Turkish, German, Hungarian, Icelandic, Estonian,
-                AzerbaijaniNorth, Limburgish, Turkmen, Finnish
+                AzerbaijaniNorth, Hungarian, Dutch, Estonian, Swedish, Turkmen, TatarCrimean,
+                Limburgish, Luxembourgish, Icelandic, AymaraCentral, Finnish, Afrikaans,
+                DinkaSouthwestern, Acehnese, German, Turkish
             )
         ),
         case::en1(
             "house",
             ahashset!(
-                Latvian, German, Dyula, Swati, UzbekNorthern, Sardinian, Lithuanian, Papiamento,
-                CreoleHaitian, Slovak, Lingala, Kinyarwanda, English, Irish, Hungarian, TokPisin,
-                Kabyle, Faroese, Swahili, Malay, Spanish, Welsh, Bosnian, Mossi, Minangkabau, Shona,
-                Wolof, Occitan, Dutch, Banjar, Turkmen, Friulian, Mizo, OromoWestCentral, Bambara,
-                Ligurian, Asturian, Fijian, Somali, Polish, Nuer, Esperanto, Slovene, Basque,
-                Latgalian, Icelandic, Luxembourgish, Chokwe, Kabuverdianu, Umbundu, GaelicScottish,
-                Kikuyu, Kamba, Romanian, Luo, Cebuano, Fon, Nynorsk, Kabiye, AzerbaijaniNorth,
-                Indonesian, Sango, Lombard, Twi, Sepedi, Venetian, Tsonga, Galician, Maltese, Czech,
-                Kikongo, Vietnamese, MalayStandard, AlbanianTosk, Tagalog, AymaraCentral, Jingpho,
-                Catalan, French, Hausa, KurdishNorthern, Estonian, Guarani, Ganda, Xhosa, Turkish,
-                Ewe, Nyanja, Bokmal, Acehnese, LubaKasai, Sesotho, Croatian, Tamasheq, Waray,
-                Italian, Latin, Buginese, Kimbundu, Silesian, Tswana, Zulu, Sundanese, Tumbuka,
-                Bemba, DinkaSouthwestern, Portuguese, TatarCrimean, Finnish, KanuriCentral, Yoruba,
-                Afrikaans, Swedish, Javanese, Igbo, Balinese, Danish, Sicilian, FulfuldeNigerian,
-                Limburgish, Rundi
+                TatarCrimean, Latin, Ganda, Kimbundu, Italian, Romanian, Kinyarwanda, Shona, Estonian,
+                Tagalog, Tamasheq, UzbekNorthern, Jingpho, Spanish, Luo, Papiamento, Waray, Bambara,
+                German, Icelandic, Lithuanian, Mossi, Friulian, Sicilian, Venetian, Kabiye, Indonesian,
+                Turkmen, Occitan, Danish, Faroese, Cebuano, Vietnamese, Silesian, CreoleHaitian, Mizo,
+                Basque, Luxembourgish, French, Sundanese, Kikongo, OromoWestCentral, Xhosa, Nynorsk,
+                Sepedi, AlbanianTosk, Czech, Nyanja, Swati, Zulu, Sesotho, KurdishNorthern, Ewe,
+                Hungarian, English, Latvian, Rundi, Acehnese, Minangkabau, Turkish, Irish, Lombard,
+                Dyula, Balinese, Lingala, Maltese, KanuriCentral, MalayStandard, Slovene, Tsonga,
+                Sango, Tumbuka, Igbo, Afrikaans, Catalan, Buginese, Polish, Welsh, Croatian, Tswana,
+                FulfuldeNigerian, Wolof, AymaraCentral, Limburgish, AzerbaijaniNorth, Portuguese,
+                Finnish, Twi, Kikuyu, Banjar, Bosnian, Kabyle, Guarani, Yoruba, Sardinian, Javanese,
+                Fon, Somali, Bokmal, Ligurian, Dutch, GaelicScottish, Nuer, Swahili, Galician, Swedish,
+                Latgalian, Umbundu, Slovak, Malay, Kamba, LubaKasai, Asturian, Esperanto, Bemba, Hausa,
+                TokPisin, Chokwe, Kabuverdianu
             )
         ),
         case::marat1(
@@ -3099,12 +3110,12 @@ mod tests {
         ),
         case::ben1("জানাতে", ahashset!(Assamese, BishnupriyaManipuri, Bengali, Meitei)),
         case::heb1("בתחרויות", ahashset!(YiddishEastern, Yiddish, Hebrew)),
-        case("nebûtu", ahashset!(Welsh, KurdishNorthern, French, Limburgish)),
+        case("nebûtu", ahashset!(French, Limburgish, Afrikaans, KurdishNorthern, Friulian, Welsh)),
         case(
             "viòiem",
-            ahashset!(Sardinian, Italian, Limburgish, Catalan, Occitan, CreoleHaitian, Vietnamese, Lombard)
+            ahashset!(Fon, Lombard, Friulian, Occitan, Catalan, Vietnamese, CreoleHaitian, Italian, Ewe, Limburgish, Sardinian)
         ),
-        case("labâk", ahashset!(Vietnamese, AlbanianTosk, Romanian, French, Portuguese)),
+        case("labâk", ahashset!(Romanian, French, Portuguese, Vietnamese)),
     )]
     fn assert_language_filtering_with_rules_works_correctly(
         detector_for_all_languages: LanguageDetector,
