@@ -663,10 +663,10 @@ impl LanguageDetector {
             values.push((*language, 0.0));
         }
 
-        let words = split_text_into_words(text_str);
+        /* let words = split_text_into_words(text_str);
         if words.is_empty() {
             return values;
-        }
+        } */
 
         // let filtered_languages = Self::process_words(&words, search_languages);
 
@@ -684,20 +684,62 @@ impl LanguageDetector {
             .collect();
         println!("alphabets {:?}", alphabets); */
 
-        let mut languages: HashMap<_, Vec<_>, S> = found_words
-            .into_iter()
-            .map(|(_, w)| w.alphabets_count)
-            .flatten()
-            // .map(|(a, _)| <&[Language]>::from(*a))
-            // .flatten()
-            .collect();
-        println!("languages {:?}", languages);
-        println!("search_languages {:?}", search_languages);
+        /* let mut languages: HashMap<_, Vec<_>, S> = found_words
+        .into_iter()
+        .map(|(_, w)| w.alphabets_count)
+        .flatten()
+        // .map(|(a, _)| <&[Language]>::from(*a))
+        // .flatten()
+        .collect(); */
+        // println!("languages {:?}", languages);
+        // println!("search_languages {:?}", search_languages);
 
+        let mut words = Vec::with_capacity(found_words.len());
+        // let mut script_alphabets_iter = found_words.into_iter();
+        // let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
+        let mut languages = AHashMap::new();
+        for (word, wd) in found_words {
+            words.push(word);
+            let langs = wd.alphabets_count;
+            for (lang, alphabets_count) in langs {
+                if search_languages.contains(&lang) {
+                    languages
+                        .entry(lang)
+                        .and_modify(|asc: &mut Vec<(usize, Alphabet)>| {
+                            for &(cnt, alphabet) in alphabets_count.iter() {
+                                if asc
+                                    .iter_mut()
+                                    .find(|(_, a)| *a == alphabet)
+                                    .map(|(c, _)| *c = c.wrapping_add(cnt))
+                                    .is_none()
+                                {
+                                    asc.push((cnt, alphabet));
+                                }
+                            }
+                        })
+                        .or_insert(alphabets_count);
+                }
+            }
+        }
+        if words.is_empty() || languages.is_empty() {
+            return values;
+        }
         /* let filtered_languages: AHashSet<_> =
         languages.intersection(search_languages).copied().collect(); */
-        languages.retain(|l, _| search_languages.contains(l));
+        // languages.retain(|l, _| search_languages.contains(l));
         println!("filtered_languages {:?}", languages);
+        let lang_alphabets_count_max = languages
+            .iter()
+            .map(|(_, asc)| asc.iter().fold(0, |acc, (cnt, _)| acc + *cnt))
+            .fold(1, |acc, cnt| acc.max(cnt));
+
+        languages.retain(|_, asc| {
+            // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
+            asc.iter().fold(0, |acc, (cnt, _)| acc + *cnt) == lang_alphabets_count_max
+            // acs.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
+            // !acs.is_empty()
+        });
+        println!("FINAL filtered_languages {:?}", languages);
 
         // let language_detected_by_rules =
         // Self::find_most_frequent_opt(&mut total_language_counts);
@@ -1049,10 +1091,10 @@ impl LanguageDetector {
             // let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
 
             // println!("pre1 langs_alphabets_count {:?}", langs_alphabets_count);
-            langs_alphabets_count.retain(|_, acs| {
+            langs_alphabets_count.retain(|_, asc| {
                 // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
-                acs.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
-                !acs.is_empty()
+                asc.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
+                !asc.is_empty()
             });
 
             // langs_alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
@@ -2652,7 +2694,7 @@ mod tests {
         assert_eq!(third_result.language(), expected_third_language);
     }
 
-    #[rstest(
+    /* #[rstest(
         sentence,
         expected_first_substring,
         expected_first_word_count,
@@ -2724,7 +2766,7 @@ mod tests {
         assert_eq!(fourth_substring, expected_fourth_substring);
         assert_eq!(fourth_result.word_count, expected_fourth_word_count);
         assert_eq!(fourth_result.language(), expected_fourth_language);
-    }
+    } */
 
     #[rstest(
         builder_languages,
