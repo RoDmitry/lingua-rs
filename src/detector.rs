@@ -20,7 +20,7 @@ use crate::constant::{
 use crate::json::load_json;
 use crate::lang::alphabet::{char_combine, script_char_to_alphabets};
 use crate::lang::{Alphabet, Script};
-use crate::model::{JsonLanguageModel, TestDataLanguageModel, TrainingDataLanguageModel};
+use crate::model::{JsonLanguageModel, TestDataLanguageModel};
 use crate::result::DetectionResult;
 use crate::{ExtraCheck, Language};
 use ::std::borrow::Borrow;

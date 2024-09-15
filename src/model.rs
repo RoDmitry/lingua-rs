@@ -18,7 +18,6 @@ use crate::fraction::Fraction;
 use crate::ngram::{Ngram, NgramRef};
 use crate::Language;
 use ::std::collections::BTreeMap;
-use std::fs::create_dir_all;
 use ::std::fs::File;
 use ::std::io;
 use ::std::io::Write;
@@ -29,6 +28,7 @@ use fraction::GenericFraction;
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::fs::create_dir_all;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub(crate) struct JsonLanguageModel {
@@ -54,7 +54,7 @@ impl JsonLanguageModel {
 
 #[derive(Debug)]
 pub(crate) struct TrainingDataLanguageModel {
-    language: Language,
+    ngram_length: usize,
     pub(crate) absolute_frequencies: Option<AHashMap<Ngram, usize>>,
     relative_frequencies: Option<AHashMap<GenericFraction<usize>, Vec<Ngram>>>,
 }
@@ -75,7 +75,7 @@ impl TrainingDataLanguageModel {
         );
 
         TrainingDataLanguageModel {
-            language: *language,
+            ngram_length,
             absolute_frequencies: Some(absolute_frequencies),
             relative_frequencies: Some(relative_frequencies),
         }
@@ -183,12 +183,31 @@ impl TrainingDataLanguageModel {
             create_dir_all(parent)?;
         }
         let mut file = File::create(file_path)?;
-        file.write_all(b"pub fn prob(t: &str) -> f64 {\nmatch t {\n")?;
+        file.write_all(b"pub fn prob(n:&[char;")?;
+        file.write_all(self.ngram_length.to_string().as_bytes())?;
+        file.write_all(b"]) -> f64 {\nmatch n {\n")?;
 
         for (fraction, ngrams) in sorted {
-            file.write_all(b"\"")?;
-            file.write_all(ngrams.into_iter().map(|n| n.value).join("\"|\"").as_bytes())?;
-            file.write_all(b"\"=>")?;
+            file.write_all(b"&['")?;
+            file.write_all(
+                ngrams
+                    .into_iter()
+                    .map(|n| {
+                        n.value
+                            .chars()
+                            .map(|c| {
+                                if c == '\'' {
+                                    "\\'".to_owned()
+                                } else {
+                                    c.to_string()
+                                }
+                            })
+                            .join("','")
+                    })
+                    .join("']|&['")
+                    .as_bytes(),
+            )?;
+            file.write_all(b"']=>")?;
 
             let numer = fraction.numer().unwrap();
             let denom = fraction.denom().unwrap();
