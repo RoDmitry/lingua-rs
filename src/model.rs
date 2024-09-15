@@ -174,11 +174,10 @@ impl TrainingDataLanguageModel {
         serde_json::to_string(&model).unwrap()
     } */
 
-    pub(crate) fn to_match(self, output_directory_path: &Path, file_name: &str) -> io::Result<()> {
+    pub(crate) fn to_match(self, file_path: &Path) -> io::Result<()> {
         let mut sorted: Vec<_> = self.relative_frequencies.unwrap().into_iter().collect();
         sorted.sort_unstable_by(|a, b| b.0.cmp(&a.0));
 
-        let file_path = output_directory_path.join(file_name);
         if let Some(parent) = file_path.parent() {
             create_dir_all(parent)?;
         }

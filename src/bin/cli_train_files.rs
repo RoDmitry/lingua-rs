@@ -1,5 +1,5 @@
 use ::std::fs;
-use ::std::io::{self, BufRead, Read};
+use ::std::io::{BufRead, Write};
 use ::std::path::Path;
 use ::std::str::FromStr;
 use ::std::{thread, time::Duration};
@@ -120,6 +120,7 @@ fn main() {
         pool.execute(move || {
             let path = path.unwrap();
             let file_name = path.file_name().into_string().unwrap();
+            println!("New: {}", file_name);
             while ALLOCATOR.allocated() > MEM_MIN_USAGE {
                 println!(
                     "*{}* Mem allocated: {}MB Sleeping...",
@@ -135,7 +136,6 @@ fn main() {
                 ALLOCATOR.allocated() / (1024 * 1024)
             );
             {
-                println!("Name: {}", file_name);
                 let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
                     unreachable!()
                 };
@@ -167,13 +167,15 @@ fn main() {
                 println!("*{}* lang: {:?}", file_name, lang);
                 println!("*{}* alphabet: {:?}", file_name, alphabet);
 
-                let out_path = out_path + "/" + &lang.to_string() + "/" + &alphabet.to_string();
-                let out_path_file = out_path.clone() + "/trigrams.rs";
-                if Path::new(&out_path_file).exists() {
+                let mut mod_dir = lang.to_string() + &alphabet.to_string();
+                mod_dir = stringcase::snake_case(&mod_dir);
+
+                let out_path = Path::new(&out_path);
+                let out_mod_path = out_path.join(&mod_dir);
+                if out_mod_path.join("trigrams.rs").exists() {
                     println!("EXISTS: {}", file_name);
                     return;
                 }
-                let output_directory_path = Path::new(&out_path);
 
                 /* let lines = io::stdin()
                 .lines()
@@ -181,11 +183,17 @@ fn main() {
                 .filter(|line| !line.trim().is_empty()); */
                 let text = fs::read_to_string(path.path()).unwrap();
                 let result = LanguageModelFilesWriter::create_and_write_language_model(
-                    output_directory_path,
+                    &out_mod_path,
                     text,
                     &lang,
                 );
                 println!("*{}* {:?}", file_name, result);
+
+                let file_path = out_path.join("lib.rs");
+                let mut file = fs::File::options().append(true).open(file_path).unwrap();
+                file.write_all(b"mod ").unwrap();
+                file.write_all(mod_dir.as_bytes()).unwrap();
+                file.write_all(b";\n").unwrap();
             }
             println!(
                 "*{}* malloc_trim {:?} {:?}MB",

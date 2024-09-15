@@ -102,7 +102,7 @@ impl LanguageModelFilesWriter {
             unigram_model.absolute_frequencies.as_ref().unwrap(),
         );
         // panic!("{:?}\n{:?}", unigram_model.absolute_frequencies, bigram_model);
-        unigram_model.to_match(output_directory_path, "unigrams.rs")?;
+        unigram_model.to_match(&output_directory_path.join("unigrams.rs"))?;
 
         let trigram_model = TrainingDataLanguageModel::from_text(
             &word_chars,
@@ -110,9 +110,13 @@ impl LanguageModelFilesWriter {
             3,
             bigram_model.absolute_frequencies.as_ref().unwrap(),
         );
-        bigram_model.to_match(output_directory_path, "bigrams.rs")?;
+        bigram_model.to_match(&output_directory_path.join("bigrams.rs"))?;
 
-        trigram_model.to_match(output_directory_path, "trigrams.rs")
+        trigram_model.to_match(&output_directory_path.join("trigrams.rs"))?;
+
+        let file_path = output_directory_path.join("mod.rs");
+        let mut file = File::create(file_path)?;
+        file.write_all(b"pub mod unigrams;\npub mod bigrams;\npub mod trigrams;\n")
 
         /* let trigram_model = Self::create_language_model(
             input_file_path,

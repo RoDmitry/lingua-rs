@@ -59,6 +59,7 @@ harness = false
 required-features = ["benchmark"]
 
 [dependencies]
+stringcase = "0.3.0"
 alphabet_match_macro = { path = "alphabet_match_macro" }
 brotli = "6.0.0"
 cap = "0.1"
