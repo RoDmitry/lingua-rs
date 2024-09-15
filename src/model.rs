@@ -182,31 +182,60 @@ impl TrainingDataLanguageModel {
             create_dir_all(parent)?;
         }
         let mut file = File::create(file_path)?;
-        file.write_all(b"pub fn prob(n:&[char;")?;
-        file.write_all(self.ngram_length.to_string().as_bytes())?;
-        file.write_all(b"]) -> f64 {\nmatch n {\n")?;
+        file.write_all(b"#![cfg_attr(rustfmt,rustfmt_skip)]\n#[inline]\n")?;
+        if self.ngram_length == 1 {
+            file.write_all(b"pub(super) fn prob(c:char) -> f64 {\nmatch c {\n")?;
+        } else {
+            file.write_all(b"pub(super) fn prob(g:&[char;")?;
+            file.write_all(self.ngram_length.to_string().as_bytes())?;
+            file.write_all(b"]) -> f64 {\nmatch g {\n")?;
+        }
 
         for (fraction, ngrams) in sorted {
-            file.write_all(b"&['")?;
-            file.write_all(
-                ngrams
-                    .into_iter()
-                    .map(|n| {
-                        n.value
-                            .chars()
-                            .map(|c| {
-                                if c == '\'' {
-                                    "\\'".to_owned()
-                                } else {
-                                    c.to_string()
-                                }
-                            })
-                            .join("','")
-                    })
-                    .join("']|&['")
-                    .as_bytes(),
-            )?;
-            file.write_all(b"']=>")?;
+            if self.ngram_length == 1 {
+                file.write_all(b"'")?;
+                file.write_all(
+                    ngrams
+                        .into_iter()
+                        .map(|n| {
+                            n.value
+                                .chars()
+                                .map(|c| {
+                                    if c == '\'' {
+                                        "\\'".to_owned()
+                                    } else {
+                                        c.to_string()
+                                    }
+                                })
+                                .next()
+                                .unwrap()
+                        })
+                        .join("'|'")
+                        .as_bytes(),
+                )?;
+                file.write_all(b"'=>")?;
+            } else {
+                file.write_all(b"&['")?;
+                file.write_all(
+                    ngrams
+                        .into_iter()
+                        .map(|n| {
+                            n.value
+                                .chars()
+                                .map(|c| {
+                                    if c == '\'' {
+                                        "\\'".to_owned()
+                                    } else {
+                                        c.to_string()
+                                    }
+                                })
+                                .join("','")
+                        })
+                        .join("']|&['")
+                        .as_bytes(),
+                )?;
+                file.write_all(b"']=>")?;
+            }
 
             let numer = fraction.numer().unwrap();
             let denom = fraction.denom().unwrap();

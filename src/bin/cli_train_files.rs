@@ -167,8 +167,8 @@ fn main() {
                 println!("*{}* lang: {:?}", file_name, lang);
                 println!("*{}* alphabet: {:?}", file_name, alphabet);
 
-                let mut mod_dir = lang.to_string() + &alphabet.to_string();
-                mod_dir = stringcase::snake_case(&mod_dir);
+                let model_name = lang.to_string() + &alphabet.to_string();
+                let mod_dir = stringcase::snake_case(&model_name);
 
                 let out_path = Path::new(&out_path);
                 let out_mod_path = out_path.join(&mod_dir);
@@ -189,11 +189,41 @@ fn main() {
                 );
                 println!("*{}* {:?}", file_name, result);
 
-                let file_path = out_path.join("lib.rs");
-                let mut file = fs::File::options().append(true).open(file_path).unwrap();
-                file.write_all(b"mod ").unwrap();
-                file.write_all(mod_dir.as_bytes()).unwrap();
-                file.write_all(b";\n").unwrap();
+                {
+                    let file_path = out_mod_path.join("mod.rs");
+                    let mut file = fs::File::create(file_path).unwrap();
+                    file.write_all(b"mod bigrams;\nmod trigrams;\nmod unigrams;\n\n")
+                        .unwrap();
+                    file.write_all(b"pub struct ").unwrap();
+                    file.write_all(model_name.as_bytes()).unwrap();
+                    file.write_all(b"Model;\n\nimpl crate::Model for ").unwrap();
+                    file.write_all(model_name.as_bytes()).unwrap();
+                    file.write_all(b"Model {\n").unwrap();
+                    file.write_all(
+                        b"    fn check_unigram(c: char) -> f64 {\n        unigrams::prob(c)\n    }\n",
+                    )
+                    .unwrap();
+                    file.write_all(
+                        b"    fn check_bigram(g: &[char; 2]) -> f64 {\n        bigrams::prob(g)\n    }\n",
+                    )
+                    .unwrap();
+                    file.write_all(
+                        b"    fn check_trigram(g: &[char; 3]) -> f64 {\n        trigrams::prob(g)\n    }\n",
+                    )
+                    .unwrap();
+                    file.write_all(b"}\n").unwrap();
+                }
+
+                {
+                    let file_path = out_path.join("lib.rs");
+                    let mut file = fs::File::options().append(true).open(file_path).unwrap();
+                    file.write_all(b"mod ").unwrap();
+                    file.write_all(mod_dir.as_bytes()).unwrap();
+                    file.write_all(b";\n").unwrap();
+                    file.write_all(b"pub use ").unwrap();
+                    file.write_all(mod_dir.as_bytes()).unwrap();
+                    file.write_all(b"::*;\n").unwrap();
+                }
             }
             println!(
                 "*{}* malloc_trim {:?} {:?}MB",
