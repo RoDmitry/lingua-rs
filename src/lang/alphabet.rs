@@ -105,6 +105,7 @@ main_alphabet!(
         GurungKhema,
         Hangul,
         HanifiRohingya,
+        Hanja,
         Hanunoo,
         Hatran,
         Hebrew,
@@ -112,9 +113,9 @@ main_alphabet!(
         ImperialAramaic,
         InscriptionalPahlavi,
         InscriptionalParthian,
-        JapaneseKanji,
         Javanese,
         Kaithi,
+        Kanji,
         Kannada,
         Katakana,
         Kawi,
@@ -125,7 +126,6 @@ main_alphabet!(
         Khojki,
         Khudawadi,
         KiratRai,
-        KoreanHanja,
         Lao,
         Latin(LatinAlphabet),
         Lepcha,
@@ -378,6 +378,7 @@ impl From<Alphabet> for &[Language] {
             GurungKhema => &[Language::Gurung],
             Hangul => &[Language::Korean],
             HanifiRohingya => &[Language::Rohingya],
+            Hanja => &[Language::Korean],
             Hanunoo => &[Language::Hanunoo],
             Hatran => &[Language::Aramaic],
             Hebrew => &[
@@ -389,9 +390,9 @@ impl From<Alphabet> for &[Language] {
             ImperialAramaic => &[Language::Aramaic],
             InscriptionalPahlavi => &[Language::MiddlePersian],
             InscriptionalParthian => &[Language::Parthian],
-            JapaneseKanji => &[Language::Japanese],
             Javanese => &[Language::Javanese],
             Kaithi => &[Language::Bhojpuri, Language::Magahi, Language::Maithili],
+            Kanji => &[Language::Japanese],
             Kannada => &[Language::Kannada],
             Katakana => &[Language::Japanese],
             Kawi => &[Language::OldJavanese, Language::Sanskrit],
@@ -402,7 +403,6 @@ impl From<Alphabet> for &[Language] {
             Khojki => &[Language::Sindhi, Language::Khoja],
             Khudawadi => &[Language::Sindhi],
             KiratRai => &[Language::Bantawa],
-            KoreanHanja => &[Language::Korean],
             Lao => &[Language::Lao],
             Latin(la) => {
                 use LatinAlphabet::*;
@@ -866,7 +866,7 @@ pub fn str_to_alphabets(s: &str) -> &[Alphabet] {
         "Hans" => &[ChineseSimplified],
         "Hant" => &[ChineseTraditional],
         "Hebr" => &[Hebrew],
-        "JpanKanji" => &[JapaneseKanji],
+        "JpanKanji" => &[Kanji],
         "Khmr" => &[Khmer],
         "Knda" => &[Kannada],
         "Laoo" => &[Lao],
@@ -1451,9 +1451,10 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                 ]
             ),
             (Alphabet::ChineseTraditional, []),
+            (Alphabet::Hanja, []), // Korean
             (
                 // it also uses all Traditional Chinese characters
-                Alphabet::JapaneseKanji,
+                Alphabet::Kanji, // Japanese
                 [
                     // Jōyō kanji (https://en.wikipedia.org/wiki/List_of_j%C5%8Dy%C5%8D_kanji)
                     '亜', '悪', '圧', '囲', '医', '為', '壱', '逸', '隠', '栄', '営', '衛', '駅',
@@ -1505,7 +1506,6 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
                     '醖',
                 ]
             ),
-            (Alphabet::KoreanHanja, []),
         ]),
         Script::Hangul => alphabet_match!([(Alphabet::Hangul, [])]),
         Script::HanifiRohingya => alphabet_match!([(Alphabet::HanifiRohingya, [])]),
