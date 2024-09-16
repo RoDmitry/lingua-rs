@@ -39,7 +39,7 @@ use strum_macros::{EnumIter, EnumString};
 )]
 // todo: remove this UPPERCASE
 #[serde(rename_all(serialize = "UPPERCASE", deserialize = "UPPERCASE"))]
-#[strum(ascii_case_insensitive)]
+// #[strum(ascii_case_insensitive)]
 #[cfg_attr(
     feature = "python",
     pyo3::prelude::pyclass(eq, eq_int, frozen, hash, ord, rename_all = "UPPERCASE")
@@ -569,8 +569,7 @@ pub enum Language {
 
 impl Display for Language {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let debug_repr = format!("{self:?}");
-        write!(f, "{}", debug_repr)
+        write!(f, "{self:?}")
     }
 }
 

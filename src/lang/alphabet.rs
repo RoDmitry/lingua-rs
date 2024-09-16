@@ -228,6 +228,10 @@ main_alphabet!(
     }
 );
 
+fn type_of<T>(_: &T) -> &str {
+    std::any::type_name::<T>()
+}
+
 impl Alphabet {
     #[allow(dead_code)]
     fn iter() -> impl Iterator<Item = &'static Self> {
@@ -236,14 +240,21 @@ impl Alphabet {
             .filter_map(|a| a.as_ref())
             .chain(LatinAlphabet::ALPHABETS)
     }
-}
 
-/* impl Display for Alphabet {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        let debug_repr = format!("{self:?}");
-        write!(f, "{}", debug_repr)
+    pub fn to_full_dbg(&self) -> String {
+        match self {
+            Self::Latin(v) => {
+                self.to_string()
+                    + "("
+                    + type_of(v).split("::").last().unwrap()
+                    + "::"
+                    + &v.to_string()
+                    + ")"
+            }
+            v => v.to_string(),
+        }
     }
-} */
+}
 
 impl From<Alphabet> for &[Language] {
     fn from(a: Alphabet) -> Self {
@@ -673,7 +684,7 @@ macro_rules! alphabet_wrapper {
 }
 
 alphabet_wrapper!(
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display)]
 pub enum LatinAlphabet in Latin {
     Acehnese,
     Afrikaans,

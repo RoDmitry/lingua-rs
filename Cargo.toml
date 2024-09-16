@@ -61,6 +61,7 @@ required-features = ["benchmark"]
 [dependencies]
 stringcase = "0.3.0"
 alphabet_match_macro = { path = "alphabet_match_macro" }
+parselang_models = { path = "../parselang-models" }
 brotli = "6.0.0"
 cap = "0.1"
 clap = { version = "4.5.17", features = ["derive"] }

@@ -221,6 +221,18 @@ fn main() {
                     file.write_all(mod_dir.as_bytes()).unwrap();
                     file.write_all(b"::*;\n").unwrap();
                 }
+
+                {
+                    let file_path = out_path.join("macros.rs");
+                    let mut file = fs::File::options().append(true).open(file_path).unwrap();
+                    file.write_all(b"(Alphabet::").unwrap();
+                    file.write_all(alphabet.to_full_dbg().as_bytes()).unwrap();
+                    file.write_all(b",Language::").unwrap();
+                    file.write_all(lang.to_string().as_bytes()).unwrap();
+                    file.write_all(b") => Some(Box::new(parselang_models::").unwrap();
+                    file.write_all(model_name.as_bytes()).unwrap();
+                    file.write_all(b"Model)),\n").unwrap();
+                }
             }
             println!(
                 "*{}* malloc_trim {:?} {:?}MB",

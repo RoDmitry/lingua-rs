@@ -1,4 +1,6 @@
-use ahash::{AHashMap, AHashSet};
+use ahash::AHashMap;
+#[cfg(debug_assertions)]
+use ahash::AHashSet;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, Expr, ExprArray, ExprTuple, Lit};
