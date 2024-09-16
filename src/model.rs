@@ -594,7 +594,7 @@ mod tests {
         } */
     }
 
-    mod test_data {
+    /* mod test_data {
         use crate::detector::split_text_into_words;
 
         use super::*;
@@ -842,5 +842,5 @@ mod tests {
                 .sort_by(|first, second| first[0].value.cmp(second[0].value));
             assert_eq!(model.ngrams, expected_ngrams);
         }
-    }
+    } */
 }

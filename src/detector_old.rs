@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-use crate::constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE};
+use crate::constant::{
+    CHARS_TO_LANGUAGES_MAPPING, LETTERS, TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE,
+};
 use crate::json::load_json;
 use crate::lang::alphabet::{char_combine, script_char_to_alphabets};
 use crate::lang::{Alphabet, Script};
 use crate::model::{JsonLanguageModel, TestDataLanguageModel};
 use crate::result::DetectionResult;
-use crate::Language;
+use crate::{ExtraCheck, Language};
+use ::std::borrow::Borrow;
 use ::std::cmp::Ordering;
 use ::std::collections::hash_map::Entry;
 use ::std::collections::{HashMap, HashSet};
+use ::std::hash::Hasher;
 use ::std::hash::{BuildHasher, Hash};
 use ::std::sync::RwLock;
 use ahash::{AHashMap, AHashSet};
@@ -43,6 +47,43 @@ static BIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::
 static TRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
 static QUADRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
 static FIVEGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
+
+trait Contains<T, S: BuildHasher> {
+    fn contains<Q>(&self, value: &Q) -> bool
+    where
+        T: Eq + Hash + Borrow<Q>,
+        Q: ?Sized + Hash + Eq;
+}
+
+impl<T, S: BuildHasher> Contains<T, S> for HashSet<T, S> {
+    fn contains<Q>(&self, value: &Q) -> bool
+    where
+        T: Eq + Hash + Borrow<Q>,
+        Q: ?Sized + Hash + Eq,
+    {
+        self.contains(value)
+    }
+}
+
+impl<T, V, S: BuildHasher> Contains<T, S> for HashMap<T, V, S> {
+    fn contains<Q>(&self, value: &Q) -> bool
+    where
+        T: Eq + Hash + Borrow<Q>,
+        Q: ?Sized + Hash + Eq,
+    {
+        self.contains_key(value)
+    }
+}
+
+impl<T, V, S: BuildHasher> Contains<T, S> for AHashMap<T, V, S> {
+    fn contains<Q>(&self, value: &Q) -> bool
+    where
+        T: Eq + Hash + Borrow<Q>,
+        Q: ?Sized + Hash + Eq,
+    {
+        self.contains_key(value)
+    }
+}
 
 #[derive(Debug)]
 pub struct WordData {
@@ -628,8 +669,7 @@ impl LanguageDetector {
         let found_words = Self::filter_text_to_words(text_str.char_indices(), true);
 
         for (word, mut wd) in found_words {
-            wd.alphabets_count
-                .retain(|l, a| search_languages.contains(l));
+            wd.alphabets_count.retain(|l, a| search_languages.contains(l));
             /* let langs = wd.alphabets_count;
             for (lang, alphabets_count) in langs {
                 if search_languages.contains(&lang) {
@@ -977,6 +1017,132 @@ impl LanguageDetector {
             .collect()
     }
 
+    fn filter_opt_data<
+        T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>,
+        S: BuildHasher,
+        C: Contains<T, S>,
+    >(
+        data_counts: &mut AHashMap<Option<T>, usize>,
+        search_data: &C,
+    ) {
+        data_counts.retain(|v, _| v.as_ref().map_or(true, |v2| search_data.contains(v2)));
+        /* let mut data_counts = data_counts_iter
+            .filter(|(v, _)| v.as_ref().map_or(true, |v2| search_data.contains(v2)))
+            .map(|(k, v)| (*k, *v))
+            .collect_vec();
+        data_counts */
+    }
+
+    fn filter_data<
+        T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>,
+        S: BuildHasher,
+        C: Contains<T, S>,
+    >(
+        data_counts: &mut AHashMap<T, usize>,
+        search_data: &C,
+    ) {
+        data_counts.retain(|v, _| search_data.contains(v));
+        /* let mut data_counts = data_counts_iter
+            .filter(|(v, _)| v.as_ref().map_or(true, |v2| search_data.contains(v2)))
+            .map(|(k, v)| (*k, *v))
+            .collect_vec();
+        data_counts */
+    }
+
+    fn find_most_frequent_opt<
+        T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>,
+    >(
+        data_counts: &mut AHashMap<Option<T>, usize>,
+        // search_data: &C,
+    ) -> Option<T> {
+        if let Some(&unknown_data_count) = data_counts.get(&None) {
+            let half_data_count = data_counts.values().sum::<usize>() as f64 * 0.5;
+            if (unknown_data_count as f64) < half_data_count {
+                data_counts.remove(&None);
+            } else {
+                return None;
+            }
+        }
+        /* let data_counts_iter = data_counts.iter().filter(|(k, unknown_data_count)| {
+            k.map_or_else(
+                || {
+                    let half_data_count = data_counts.values().sum::<usize>() as f64 * 0.5;
+                    if (**unknown_data_count as f64) < half_data_count {
+                        false
+                    } else {
+                        true
+                    }
+                },
+                |_| true,
+            )
+        }); */
+
+        /* let mut data_counts = data_counts_iter
+        .filter(|(v, _)| v.as_ref().map_or(true, |v2| search_data.contains(v2)))
+        .map(|(k, v)| (*k, *v))
+        .collect_vec(); */
+
+        if data_counts.is_empty() {
+            return None;
+        }
+
+        T::modif_opt(data_counts);
+
+        if data_counts.len() == 1 {
+            return data_counts.iter().next().and_then(|v| *v.0);
+        }
+
+        // TODO: refactor
+        let mut data_counts_iter = data_counts
+            .into_iter()
+            .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+        // data_counts.sort_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+        // safe because we checked `word_data_counts.is_empty()`
+        let (most_frequent, most_frequent_count) = data_counts_iter.next().unwrap();
+        // safe because we checked `word_data_counts.len() == 1`, so len is > 1
+        let (_, second_count) = data_counts_iter.next().unwrap();
+        if most_frequent_count > second_count {
+            return *most_frequent;
+        }
+
+        None
+    }
+
+    fn find_most_frequent<T: Copy + Hash + std::cmp::PartialEq + std::cmp::Eq + ExtraCheck<T>>(
+        data_counts: &mut AHashMap<T, usize>,
+    ) -> Vec<(T, usize)> {
+        if data_counts.is_empty() {
+            return vec![];
+        }
+
+        T::modif(data_counts);
+
+        if data_counts.len() == 1 {
+            return data_counts.iter().map(|(l, c)| (*l, *c)).collect();
+        }
+
+        // TODO refactor
+        let mut data_counts_iter = data_counts
+            .into_iter()
+            .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
+            .peekable();
+        let max = *data_counts_iter.peek().unwrap().1;
+        let data_counts = data_counts_iter
+            .filter(|v| *v.1 == max)
+            .map(|(l, c)| (*l, *c))
+            .collect();
+        // data_counts.sort_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count));
+        // safe because we checked `word_data_counts.is_empty()`
+        /* let (most_frequent, most_frequent_count) = data_counts_iter.next().unwrap();
+        // safe because we checked `word_data_counts.len() == 1`, so len is > 1
+        let (_, second_count) = data_counts_iter.next().unwrap();
+        if most_frequent_count > second_count {
+            return Some(*most_frequent);
+        } */
+
+        data_counts
+    }
+
     fn process_alphabets_count<'t>(
         // word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
         word_alphabets: Vec<(Script, &[Alphabet])>,
@@ -1243,6 +1409,371 @@ impl LanguageDetector {
         words
     }
 
+    #[inline]
+    fn process_words_unused<S: BuildHasher>(
+        words: &[String],
+        search_languages: &HashSet<Language, S>,
+    ) -> Vec<Language> {
+        let mut total_script_counts = AHashMap::<Script, usize>::new();
+        // let mut probable_language_counts = AHashMap::<Language, usize>::new();
+        // let mut probable_languages = AHashSet::<Language>::with_capacity(search_languages.len());
+        let mut detected_language_counts = AHashMap::<Language, usize>::new();
+
+        let mut search_scripts: AHashMap<Script, Vec<Language>> = AHashMap::new();
+        for lang in search_languages {
+            for a in lang.scripts() {
+                search_scripts.entry(*a).or_default().push(*lang);
+            }
+        }
+
+        for word in words {
+            let mut word_script_count = AHashMap::<Script, usize>::new();
+            for ch in word.chars() {
+                let Some(script) = Script::find(ch) else {
+                    continue;
+                };
+                Self::increment_counter(&mut word_script_count, script, 1);
+            }
+
+            // let mut word_script_count_to_remove = Vec::new();
+            for word_most_frequent_script in Self::find_most_frequent(&mut word_script_count) {
+                Self::increment_counter(
+                    &mut total_script_counts,
+                    word_most_frequent_script.0,
+                    word.len(),
+                );
+            }
+        }
+
+        Self::filter_data(&mut total_script_counts, &search_scripts);
+        if total_script_counts.is_empty() {
+            // println!("most_frequent_scripts.is_empty()");
+            return vec![];
+        }
+        /* if most_frequent_scripts.is_empty() {
+            for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
+                for lang in langs {
+                    if search_languages.contains(lang) {
+                        for word in words {
+                            for character in word.chars() {
+                                if specifics.contains(character) {
+                                    // println!("character2 {:?}", character);
+                                    Self::increment_counter(
+                                        &mut detected_language_counts,
+                                        *lang,
+                                        1,
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } */
+        // println!("total_script_counts {:?}", total_script_counts);
+        for (script, script_count) in total_script_counts.clone() {
+            // for script in most_frequent_script {
+            let Some(search_langs) = search_scripts.get(&script) else {
+                // word_script_count_to_remove.push(*script);
+                unreachable!(); // todo refactor to unwrap
+            };
+            // search_langs is never empty because of `search_scripts.entry(*a).or_default().push(*lang);`
+            /* debug_assert!(search_langs.len() > 0);
+            unsafe {
+                std::hint::assert_unchecked(search_langs.len() > 0);
+            } */
+            /* if search_langs.is_empty() {
+                continue;
+            } */
+            // println!("search_langs {:?}", search_langs);
+            if script == Script::Han {
+                if cfg!(feature = "chinese") && search_langs.contains(&Language::Chinese) {
+                    Self::increment_counter(
+                        &mut detected_language_counts,
+                        Language::Chinese,
+                        script_count,
+                    );
+                }
+                if cfg!(feature = "japanese") && search_langs.contains(&Language::Japanese) {
+                    Self::increment_counter(
+                        &mut detected_language_counts,
+                        Language::Japanese,
+                        script_count,
+                    );
+                }
+                continue;
+            }
+            if search_langs.len() == 1 {
+                Self::increment_counter(
+                    &mut detected_language_counts,
+                    search_langs[0],
+                    script_count,
+                );
+                continue;
+            }
+            for search_lang in search_langs {
+                if let Some(unique_chars) = search_lang.unique_characters() {
+                    for word in words {
+                        for ch in word.chars() {
+                            if unique_chars.contains(ch) {
+                                // println!("search_lang {:?}", search_lang);
+                                // println!("unique_char {:?}", ch);
+                                Self::increment_counter(
+                                    &mut detected_language_counts,
+                                    *search_lang,
+                                    1,
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
+                // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
+                // let relevant_languages = search_languages.intersection(langs).collect::<Vec<_>>();
+
+                // if detected_language_counts.is_empty() {
+                // if let Some(script) = most_frequent_script {
+                let script_langs = search_scripts.get(&script).unwrap();
+                for lang in langs {
+                    if script_langs.contains(lang) {
+                        for word in words {
+                            for character in word.chars() {
+                                if specifics.contains(character) {
+                                    // println!("lang {:?}", lang);
+                                    // println!("specific character {:?}", character);
+                                    Self::increment_counter(
+                                        &mut detected_language_counts,
+                                        *lang,
+                                        1,
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+                /* } else {
+                    for lang in langs {
+                        if search_languages.contains(lang) {
+                            for word in words {
+                                for character in word.chars() {
+                                    if specifics.contains(character) {
+                                        // println!("character2 {:?}", character);
+                                        Self::increment_counter(
+                                            &mut detected_language_counts,
+                                            *lang,
+                                            1,
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } */
+                /* } else {
+                    for lang in langs {
+                        if detected_language_counts.contains(lang) {
+                            for word in words {
+                                for character in word.chars() {
+                                    if specifics.contains(character) {
+                                        // println!("character3 {:?}", character);
+                                        Self::increment_counter(&mut detected_language_counts, *lang, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } */
+            }
+            // println!("detected_language_counts9 {:?}", detected_language_counts);
+        }
+        /* if detected_language_counts.is_empty() {
+            search_langs.iter().for_each(|l| {
+                _ = probable_languages.insert(*l);
+            });
+        } */
+        // }
+
+        /* word_script_count_to_remove.into_iter().for_each(|a| {
+            _ = word_script_count.remove(&a);
+        }); */
+        //drop(script); // most frequent script should not be used to detect langs, use word detected scripts instead
+
+        // let lang = Self::find_most_frequent(&mut word_language_counts);
+        // Self::increment_counter(&mut total_language_counts, lang, word.len());
+
+        // println!("detected_language_counts {:?}", detected_language_counts);
+        let detected_languages = Self::find_most_frequent(&mut detected_language_counts);
+        if detected_languages.is_empty() {
+            let most_frequent = Self::find_most_frequent(&mut total_script_counts)
+                .iter()
+                .map(|(l, _)| search_scripts.get(l).unwrap())
+                .flatten()
+                .copied()
+                .collect();
+            return most_frequent;
+        }
+
+        /* #[cfg(any(debug_assertions, feature = "accuracy-reports"))]
+        if detected_languages.len() > 0 {
+            let most_frequent_scripts = Self::find_most_frequent(&mut total_script_counts);
+            for (script, _) in most_frequent_scripts {
+                let script_langs = search_scripts.get(&script).unwrap();
+                let langs: Vec<_> = detected_language_counts
+                    .keys()
+                    .filter(|l| !script_langs.contains(l))
+                    // todo: remove Chinese
+                    .filter(|l| **l != Language::Chinese)
+                    .filter(|l| **l != Language::Greek)
+                    .filter(|l| **l != Language::Vietnamese)
+                    .filter(|l| !cfg!(feature = "japanese") || **l != Language::Japanese)
+                    .collect();
+                if !langs.is_empty() {
+                    panic!(
+                        "Possibly invalid input text. Found specific chars from these langs: {:?} not related for the most frequent script: {:?}\nwords {:?}",
+                        langs, script, words
+                    );
+                }
+            }
+        } */
+
+        detected_languages.into_iter().map(|(l, _)| l).collect()
+        /* if detected_language_counts.is_empty() {
+            if let Some(script) = most_frequent_script {
+                (
+                    detected_languages,
+                    search_scripts
+                        .get(&script)
+                        .unwrap()
+                        .iter()
+                        .copied()
+                        .collect(),
+                )
+            } else {
+                (
+                    detected_languages,
+                    search_languages.iter().copied().collect(),
+                )
+            }
+        } else {
+            (
+                detected_languages,
+                detected_language_counts.keys().copied().collect(),
+            )
+        } */
+    }
+
+    // replaced by find_most_frequent_opt
+    /* fn detect_language_with_rules(
+        &self,
+        words_count_half: f64,
+        mut total_language_counts: AHashMap<Option<Language>, usize>,
+    ) -> Option<Language> {
+        let unknown_language_count = *total_language_counts.get(&None).unwrap_or(&0) as f64;
+
+        if unknown_language_count < words_count_half {
+            total_language_counts.remove(&None);
+        }
+
+        if total_language_counts.is_empty() {
+            return None;
+        }
+
+        if total_language_counts.len() == 1 {
+            return *total_language_counts.iter().next().unwrap().0;
+        }
+
+        if total_language_counts.len() == 2
+            && cfg!(feature = "chinese")
+            && cfg!(feature = "japanese")
+            && total_language_counts.contains_key(&Some(Language::Chinese))
+            && total_language_counts.contains_key(&Some(Language::Japanese))
+        {
+            return Some(Language::Japanese);
+        }
+
+        let sorted_total_language_counts = total_language_counts
+            .into_iter()
+            .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
+            .collect_vec();
+        let (most_frequent_language, first_count) = sorted_total_language_counts[0];
+        let (_, second_count) = sorted_total_language_counts[1];
+
+        if first_count == second_count {
+            return None;
+        }
+
+        most_frequent_language
+    } */
+
+    /* fn filter_languages_by_rules(
+        &self,
+        words: &[String],
+        // languages: &HashSet<Language, S>,
+        words_count_half: f64,
+        // total_script_counts: AHashMap<Script, usize>,
+        filtered_languages: AHashSet<Language>,
+    ) -> AHashSet<Language> {
+        /* if total_script_counts.is_empty() {
+            return AHashSet::from_iter(languages.iter().cloned());
+        }
+
+        if total_script_counts.len() > 1 {
+            let mut distinct_scripts = AHashSet::with_capacity(total_script_counts.len());
+            for count in total_script_counts.values() {
+                distinct_scripts.insert(count);
+            }
+            if distinct_scripts.len() == 1 {
+                return AHashSet::from_iter(languages.iter().cloned());
+            }
+        }
+
+        let most_frequent_script = total_script_counts
+            .iter()
+            .sorted_by(|(_, first_count), (_, second_count)| second_count.cmp(first_count))
+            .next()
+            .unwrap()
+            .0;
+
+        let filtered_languages = languages
+            .iter()
+            .cloned()
+            .filter(|it| it.scripts().contains(&most_frequent_script))
+            .collect::<AHashSet<_>>(); */
+
+        let mut language_counts = AHashMap::<Language, usize>::new();
+
+        for (&specifics, langs) in CHARS_TO_LANGUAGES_MAPPING.iter() {
+            // intersection of a `HashSet` on a `HashSet` will produce a `Vec` with no duplicates
+            let relevant_languages = filtered_languages.intersection(langs).collect::<Vec<_>>();
+
+            if !relevant_languages.is_empty() {
+                for word in words {
+                    for character in word.chars() {
+                        if specifics.contains(character) {
+                            for language in relevant_languages.iter() {
+                                Self::increment_counter(&mut language_counts, **language, 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let languages_subset = language_counts
+            .into_iter()
+            .filter(|(_, count)| (*count as f64) >= words_count_half)
+            .map(|(language, _)| language)
+            .collect::<AHashSet<_>>();
+
+        if !languages_subset.is_empty() {
+            languages_subset
+        } else {
+            filtered_languages
+        }
+    } */
+
     fn get_language_models<R>(
         &self,
         ngram_length: usize,
@@ -1507,6 +2038,29 @@ impl LanguageDetector {
         let counter = counts.entry(key).or_insert(0);
         *counter += value;
     }
+}
+
+pub(crate) fn split_text_into_words(text: &str) -> Vec<String> {
+    LETTERS
+        .find_iter(&text.trim().to_lowercase())
+        .map(|mat| mat.as_str().to_string())
+        .collect()
+}
+
+fn collect_languages_with_unique_characters(languages: &AHashSet<Language>) -> AHashSet<Language> {
+    languages
+        .iter()
+        .filter(|it| it.unique_characters().is_some())
+        .copied()
+        .collect()
+}
+
+fn collect_one_language_scripts(languages: &AHashSet<Language>) -> AHashMap<Script, Language> {
+    /* Script::all_supporting_single_language()
+    .into_iter()
+    .filter(|(_, language)| languages.contains(language))
+    .collect() */
+    ahashmap!()
 }
 
 fn confidence_values_comparator(first: &(Language, f64), second: &(Language, f64)) -> Ordering {
