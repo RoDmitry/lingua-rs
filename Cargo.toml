@@ -35,6 +35,9 @@ default-run = "cli_train_files"
 [profile.dev]
 opt-level = 1
 
+[profile.dev.package.parselang_models]
+opt-level = 0
+
 [lib]
 name = "lingua"
 crate-type = ["cdylib", "rlib"]

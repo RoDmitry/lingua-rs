@@ -824,6 +824,7 @@ dependencies = [
  "lingua-zulu-language-model",
  "maplit",
  "once_cell",
+ "parselang_models",
  "pyo3",
  "rayon",
  "regex 1.10.6",
@@ -1504,6 +1505,10 @@ name = "oorandom"
 version = "11.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b410bbe7e14ab526a0e86877eb47c6996a2bd7746f027ba551028c925390e4e9"
+
+[[package]]
+name = "parselang_models"
+version = "0.1.0"
 
 [[package]]
 name = "pin-project-lite"
