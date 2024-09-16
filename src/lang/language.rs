@@ -16,10 +16,7 @@
 
 use super::Script;
 use crate::isocode::{IsoCode639_1, IsoCode639_3};
-use crate::ExtraCheck;
-use ::std::collections::HashMap;
 use ::std::fmt::{Debug, Display, Formatter, Result};
-use ::std::hash::BuildHasher;
 use ahash::AHashSet;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
@@ -577,7 +574,7 @@ impl Display for Language {
     }
 }
 
-impl ExtraCheck for Language {
+/* impl ExtraCheck for Language {
     #[inline]
     fn modif_opt<S: BuildHasher>(_lang_counts: &mut HashMap<Option<Self>, usize, S>) {
         /* if cfg!(feature = "chinese") && cfg!(feature = "japanese") {
@@ -610,7 +607,7 @@ impl ExtraCheck for Language {
             }
         } */
     }
-}
+} */
 
 impl Language {
     /// Returns a set of all supported languages.
@@ -923,7 +920,7 @@ impl Language {
         }
     }
 
-    pub(crate) fn unique_characters(&self) -> Option<&str> {
+    /* pub(crate) fn unique_characters(&self) -> Option<&str> {
         match self {
             #[cfg(feature = "azerbaijani")]
             Language::AzerbaijaniNorth => Some("Əə"),
@@ -948,7 +945,7 @@ impl Language {
 
             _ => None,
         }
-    }
+    } */
 }
 
 #[cfg(test)]

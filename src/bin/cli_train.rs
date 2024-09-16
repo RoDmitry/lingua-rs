@@ -1,11 +1,7 @@
 use clap::Parser;
-use lingua::{
-    DetectionResult, IsoCode639_1, Language, LanguageDetector, LanguageDetectorBuilder,
-    LanguageModelFilesWriter,
-};
-use std::io::{self, BufRead, Read};
+use lingua::{Language, LanguageModelFilesWriter};
+use std::io::{self, Read};
 use std::path::Path;
-use std::str::FromStr;
 
 #[derive(Parser)]
 #[command(version, about)]

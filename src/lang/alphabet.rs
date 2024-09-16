@@ -1,12 +1,12 @@
 use super::{Language, Script};
-use ::std::fmt::{Debug, Display, Formatter, Result};
+use ::std::fmt::Debug;
 use alphabet_match_macro::alphabet_match;
-use std::str::FromStr;
+/* use std::str::FromStr;
 use std::string::ToString;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use strum_macros::EnumString;
-use strum_macros::IntoStaticStr;
+use strum_macros::IntoStaticStr; */
 
 macro_rules! alphabets_filter {
     ($var:ident $inner:ident) => {

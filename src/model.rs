@@ -26,7 +26,6 @@ use ahash::{AHashMap, AHashSet};
 use compact_str::CompactString;
 use fraction::GenericFraction;
 use itertools::Itertools;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fs::create_dir_all;
 
@@ -61,8 +60,7 @@ pub(crate) struct TrainingDataLanguageModel {
 
 impl TrainingDataLanguageModel {
     pub(crate) fn from_text(
-        words_chars: &Vec<(Vec<char>, usize)>,
-        language: &Language,
+        words_chars: &Vec<Vec<char>>,
         ngram_length: usize,
         lower_ngram_absolute_frequencies: &AHashMap<Ngram, usize>,
     ) -> Self {
@@ -82,7 +80,7 @@ impl TrainingDataLanguageModel {
     }
 
     fn compute_absolute_frequencies(
-        words_chars: &Vec<(Vec<char>, usize)>,
+        words_chars: &Vec<Vec<char>>,
         ngram_length: usize,
     ) -> AHashMap<Ngram, usize> {
         let mut absolute_frequencies = AHashMap::new();
@@ -92,7 +90,7 @@ impl TrainingDataLanguageModel {
             )
         }); */
 
-        for (chars, count) in words_chars.iter() {
+        for chars in words_chars.iter() {
             /* let chars = word
             .chars()
             .map(|c| c.to_lowercase().next().unwrap())
@@ -101,15 +99,14 @@ impl TrainingDataLanguageModel {
                 continue;
             }
 
-            let count = *count;
             for i in 0..=chars.len() - ngram_length {
                 let slice = &chars[i..i + ngram_length].iter().collect::<String>();
 
                 // if regex.is_match(slice) {
                 absolute_frequencies
                     .entry(Ngram::new(slice))
-                    .and_modify(|c| *c += count)
-                    .or_insert(count);
+                    .and_modify(|c| *c += 1)
+                    .or_insert(1);
                 // }
             }
         }
@@ -308,16 +305,15 @@ fn get_utf8_slice(string: &str, start: usize, end: usize) -> &str {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use itertools::Itertools;
     use rstest::*;
 
-    use super::*;
-
-    const TEXT: &str = "
+    /* const TEXT: &str = "
         These sentences are intended for testing purposes.
         ⚠ Do not use them in production
         By the way, they consist of 23 words in total.
-    ";
+    "; */
 
     /* mod json_data {
         use super::*;
@@ -385,14 +381,14 @@ mod tests {
             ))
         }
 
-        fn expected_unigram_json_relative_frequencies() -> AHashMap<CompactString, f64> {
+        /* fn expected_unigram_json_relative_frequencies() -> AHashMap<CompactString, f64> {
             expected_unigram_relative_frequencies()
                 .iter()
                 .map(|(ngram, fraction)| {
                     (CompactString::new(ngram.value.clone()), fraction.to_f64())
                 })
                 .collect()
-        }
+        } */
 
         #[fixture]
         fn expected_bigram_absolute_frequencies() -> AHashMap<Ngram, u32> {

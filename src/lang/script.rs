@@ -1,4 +1,3 @@
-use crate::ExtraCheck;
 use ::std::cmp::Ordering;
 use strum_macros::EnumIter;
 
@@ -194,7 +193,7 @@ pub(crate) enum Script {
     Thai, */
 }
 
-impl ExtraCheck for Script {}
+// impl ExtraCheck for Script {}
 
 use super::ucd::BY_NAME;
 

@@ -1,6 +1,6 @@
 use clap::Parser;
 use lingua::{DetectionResult, IsoCode639_1, Language, LanguageDetectorBuilder};
-use std::io::{self, BufRead, Read};
+use std::io::{self, Read};
 use std::str::FromStr;
 
 #[derive(Parser)]
@@ -109,62 +109,6 @@ fn main() {
 
     let results = detector.detect_multiple_languages_of(&text);
     print_with_offset(&results, &text, &args.delimiter)
-}
-
-#[inline]
-fn long_enough(line: &str, minlength: u8) -> bool {
-    line.chars().filter(|c| c.is_alphabetic()).count() >= minlength as usize
-}
-
-fn print_confidence_values(
-    results: &Vec<(Language, f64)>,
-    delimiter: &str,
-    confidence_threshold: Option<f64>,
-    all: bool,
-) {
-    let mut found = false;
-    for result in results {
-        if confidence_threshold.is_none()
-            || (confidence_threshold.is_some() && result.1 >= confidence_threshold.unwrap())
-        {
-            found = true;
-            print!("{}{}{}\n", result.0.iso_code_639_1(), delimiter, result.1);
-        }
-        if !all {
-            break;
-        }
-    }
-    if !found {
-        print!("unknown{}\n", delimiter);
-    }
-}
-
-fn print_line_with_confidence_values(
-    line: &str,
-    results: &Vec<(Language, f64)>,
-    delimiter: &str,
-    confidence_threshold: Option<f64>,
-    all: bool,
-) {
-    for result in results {
-        if confidence_threshold.is_none()
-            || (confidence_threshold.is_some() && result.1 >= confidence_threshold.unwrap())
-        {
-            print!(
-                "{}{}{}{}{}\n",
-                result.0.iso_code_639_1(),
-                delimiter,
-                result.1,
-                delimiter,
-                line
-            );
-        } else {
-            print!("unknown{}{}{}\n", delimiter, delimiter, line);
-        }
-        if !all {
-            break;
-        }
-    }
 }
 
 fn print_with_offset(results: &Vec<DetectionResult>, text: &str, delimiter: &str) {

@@ -1,5 +1,5 @@
 use ::std::fs;
-use ::std::io::{BufRead, Write};
+use ::std::io::Write;
 use ::std::path::Path;
 use ::std::str::FromStr;
 use ::std::{thread, time::Duration};
@@ -7,11 +7,8 @@ use cap::Cap;
 use clap::Parser;
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
-use lingua::{
-    str_to_alphabets, Alphabet, DetectionResult, IsoCode639_1, Language, LanguageDetector,
-    LanguageDetectorBuilder, LanguageModelFilesWriter,
-};
-use rayon::prelude::*;
+use lingua::{str_to_alphabets, Alphabet, Language, LanguageModelFilesWriter};
+// use rayon::prelude::*;
 
 // #[cfg(not(target_env = "msvc"))]
 // #[global_allocator]

@@ -386,8 +386,8 @@
 //! [npm registry](https://www.npmjs.com) as well, allowing for an easy download and installation
 //! within every JavaScript or TypeScript project.
 
-#[macro_use]
-extern crate maplit;
+/* #[macro_use]
+extern crate maplit; */
 
 macro_rules! ahashmap {
     (@single $($x:tt)*) => (());
@@ -423,10 +423,10 @@ macro_rules! ahashset {
     };
 }
 
-use ::std::{collections::HashMap, hash::BuildHasher};
 #[cfg(test)]
 use regex::Regex;
 
+mod alphabet_count;
 mod builder;
 mod constant;
 mod detector;
@@ -437,6 +437,7 @@ mod lang;
 mod model;
 mod ngram;
 mod result;
+mod word_iter;
 mod writer;
 
 pub use builder::LanguageDetectorBuilder;
@@ -451,10 +452,10 @@ pub use wasm::{
 };
 pub use writer::{LanguageModelFilesWriter, TestDataFilesWriter};
 
-pub(crate) trait ExtraCheck<T: Sized = Self> {
+/* pub(crate) trait ExtraCheck<T: Sized = Self> {
     fn modif_opt<S: BuildHasher>(_: &mut HashMap<Option<T>, usize, S>) {}
     fn modif<S: BuildHasher>(_: &mut HashMap<T, usize, S>) {}
-}
+} */
 
 #[cfg(feature = "python")]
 mod python;

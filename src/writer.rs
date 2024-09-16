@@ -16,13 +16,10 @@
 
 use crate::constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION};
 use crate::model::TrainingDataLanguageModel;
-use crate::ngram::Ngram;
-use crate::{Language, LanguageDetector};
+use crate::{word_iter, Language};
 use ::std::fs::{remove_file, File};
 use ::std::io::{self, BufRead, BufReader, LineWriter, Write};
 use ::std::path::Path;
-use ahash::AHashMap;
-use brotli::CompressorWriter;
 use itertools::Itertools;
 use regex::Regex;
 
@@ -71,19 +68,19 @@ impl LanguageModelFilesWriter {
         // let chars = text.map(|t| t.char_indices().collect::<Vec<_>>()).flatten();
         // let chars: Vec<_> = chars.collect();
         // println!("{:?}", chars);
-        let words = LanguageDetector::filter_text_to_words(text.char_indices(), false);
-        drop(text);
+        let words = word_iter::from_ch_iter(text.char_indices());
         /* let wrong_words: Vec<_> = words
             .iter()
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
             .collect();
         println!("wrong_words {}", wrong_words.len()); */
-        let word_chars: Vec<(Vec<char>, usize)> = words
+        let word_chars: Vec<Vec<char>> = words
             .into_iter()
             // todo: uncomment filter
             // .filter(|(_, wd)| wd.alphabets_count.contains_key(language))
-            .map(|(w, wd)| (w.chars().collect::<Vec<_>>(), wd.text_indexes.len()))
+            .map(|wd| wd.word.chars().collect::<Vec<_>>())
             .collect();
+        drop(text);
         /* let words: Vec<Vec<char>> = lines
         .into_iter()
         .map(|text| LanguageDetector::filter_text_to_words(text).into_iter())
@@ -92,12 +89,10 @@ impl LanguageModelFilesWriter {
         .map(|(w, _)| w.chars().collect::<Vec<_>>())
         .collect(); */
 
-        let unigram_model =
-            TrainingDataLanguageModel::from_text(&word_chars, language, 1, &ahashmap!());
+        let unigram_model = TrainingDataLanguageModel::from_text(&word_chars, 1, &ahashmap!());
 
         let bigram_model = TrainingDataLanguageModel::from_text(
             &word_chars,
-            language,
             2,
             unigram_model.absolute_frequencies.as_ref().unwrap(),
         );
@@ -106,7 +101,6 @@ impl LanguageModelFilesWriter {
 
         let trigram_model = TrainingDataLanguageModel::from_text(
             &word_chars,
-            language,
             3,
             bigram_model.absolute_frequencies.as_ref().unwrap(),
         );
@@ -435,12 +429,10 @@ mod tests {
         files
     }
 
-    mod language_model_files {
-        use brotli::Decompressor;
-
-        use crate::minify;
-
+    /* mod language_model_files {
         use super::*;
+        use crate::minify;
+        use brotli::Decompressor;
 
         const TEXT: &str = "
             These sentences are intended for testing purposes.
@@ -522,7 +514,7 @@ mod tests {
         }
         "#;
 
-        /* #[test]
+        #[test]
         fn test_language_model_files_writer() {
             let input_file = create_temp_input_file(TEXT);
             let output_directory = tempdir().expect("Temporary directory could not be created");
@@ -571,8 +563,8 @@ mod tests {
                 .unwrap();
 
             assert_eq!(uncompressed_file_content, minify(expected_file_content));
-        } */
-    }
+        }
+    } */
 
     mod test_data_files {
         use indoc::indoc;
