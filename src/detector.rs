@@ -590,6 +590,115 @@ impl LanguageDetector {
             .collect()
     }
 
+    fn compute_language_confidence_values_for_languages_new<S: BuildHasher + Default>(
+        &self,
+        text_str: &str,
+        search_languages: &HashSet<Language, S>,
+    ) -> Vec<(Language, f64)> {
+        let mut values = Vec::with_capacity(search_languages.len());
+
+        for language in search_languages {
+            values.push((*language, 0.0));
+        }
+
+        if text_str.is_empty() {
+            return Vec::new();
+        }
+        let found_words = word_iter::from_ch_iter(text_str.char_indices());
+
+        let mut words = Vec::new();
+        let mut languages = AHashMap::new();
+        for wd in found_words {
+            words.push(wd.word);
+            let langs = alphabet_count::process_alphabets_count(wd.script_alphabets);
+            for (lang, alphabets_count) in langs {
+                if search_languages.contains(&lang) {
+                    languages
+                        .entry(lang)
+                        .and_modify(|asc: &mut Vec<(Alphabet, usize)>| {
+                            for &(alphabet, cnt) in alphabets_count.iter() {
+                                if asc
+                                    .iter_mut()
+                                    .find(|(a, _)| *a == alphabet)
+                                    .map(|(_, c)| *c = c.wrapping_add(cnt))
+                                    .is_none()
+                                {
+                                    asc.push((alphabet, cnt));
+                                }
+                            }
+                        })
+                        .or_insert(alphabets_count);
+                }
+            }
+        }
+        if words.is_empty() || languages.is_empty() {
+            return values;
+        }
+        let lang_alphabets_count_max = languages
+            .iter()
+            .map(|(_, asc)| asc.iter().fold(0, |acc, (_, cnt)| acc + *cnt))
+            .fold(1, |acc, cnt| acc.max(cnt));
+
+        languages.retain(|_, asc| {
+            asc.iter().fold(0, |acc, (_, cnt)| acc + *cnt) == lang_alphabets_count_max
+        });
+
+        if languages.len() == 1 {
+            let (&lang, _alphabets) = languages.iter().next().unwrap();
+            // todo: return alphabets also
+            update_confidence_values(&mut values, lang, 1.0);
+            values.sort_by(confidence_values_comparator);
+            return values;
+        }
+
+        let filtered_languages = languages.into_iter().map(|(l, _)| l).collect();
+
+        let character_count: usize = words.iter().map(|word| word.chars().count()).sum();
+
+        if self.is_low_accuracy_mode_enabled && character_count < 3 {
+            values.sort_by(confidence_values_comparator);
+            return values;
+        }
+
+        let ngram_length_range = if character_count >= 120 || self.is_low_accuracy_mode_enabled {
+            3..4usize
+        } else {
+            1..6usize
+        };
+
+        #[allow(clippy::type_complexity)]
+        let all_probabilities_and_unigram_counts: Vec<(
+            AHashMap<Language, f64>,
+            Option<AHashMap<Language, usize>>,
+        )> = ngram_length_range
+            .into_iter()
+            .filter(|i| character_count >= *i)
+            .map(|ngram_length| {
+                self.look_up_language_models(&words, ngram_length, &filtered_languages)
+            })
+            .collect();
+
+        let probability_maps = all_probabilities_and_unigram_counts
+            .iter()
+            .map(|(probabilities, _)| probabilities)
+            .collect::<Vec<_>>();
+
+        let unigram_counts = &all_probabilities_and_unigram_counts[0].1;
+
+        let summed_up_probabilities =
+            self.sum_up_probabilities(&probability_maps, unigram_counts, filtered_languages);
+
+        if summed_up_probabilities.is_empty() {
+            values.sort_by(confidence_values_comparator);
+            return values;
+        }
+
+        self.compute_confidence_values(&mut values, probability_maps, summed_up_probabilities);
+        // println!("res {:?}", &values[..values.len().min(5)]);
+
+        values
+    }
+
     fn compute_language_confidence_values_for_languages<S: BuildHasher + Default>(
         &self,
         text_str: &str,
@@ -643,15 +752,15 @@ impl LanguageDetector {
                 if search_languages.contains(&lang) {
                     languages
                         .entry(lang)
-                        .and_modify(|asc: &mut Vec<(usize, Alphabet)>| {
-                            for &(cnt, alphabet) in alphabets_count.iter() {
+                        .and_modify(|asc: &mut Vec<(Alphabet, usize)>| {
+                            for &(alphabet, cnt) in alphabets_count.iter() {
                                 if asc
                                     .iter_mut()
-                                    .find(|(_, a)| *a == alphabet)
-                                    .map(|(c, _)| *c = c.wrapping_add(cnt))
+                                    .find(|(a, _)| *a == alphabet)
+                                    .map(|(_, c)| *c = c.wrapping_add(cnt))
                                     .is_none()
                                 {
-                                    asc.push((cnt, alphabet));
+                                    asc.push((alphabet, cnt));
                                 }
                             }
                         })
@@ -668,12 +777,12 @@ impl LanguageDetector {
         // println!("filtered_languages {:?}", languages);
         let lang_alphabets_count_max = languages
             .iter()
-            .map(|(_, asc)| asc.iter().fold(0, |acc, (cnt, _)| acc + *cnt))
+            .map(|(_, asc)| asc.iter().fold(0, |acc, (_, cnt)| acc + *cnt))
             .fold(1, |acc, cnt| acc.max(cnt));
 
         languages.retain(|_, asc| {
             // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
-            asc.iter().fold(0, |acc, (cnt, _)| acc + *cnt) == lang_alphabets_count_max
+            asc.iter().fold(0, |acc, (_, cnt)| acc + *cnt) == lang_alphabets_count_max
             // acs.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
             // !acs.is_empty()
         });

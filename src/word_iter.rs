@@ -20,8 +20,8 @@ pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>
     res: Option<WordData>,
 }
 
-/* impl<T: Iterator<Item = (usize, char)>, CI: Iterator<Item = (Option<Script>, usize, char)>> From<T>
-    for WordIterator<CI>
+/* impl<CT: Iterator<Item = (usize, char)>, I: Iterator<Item = (Option<Script>, usize, char)>> From<T>
+    for WordIterator<I>
 { */
 pub(crate) fn from_ch_iter(
     ch_iter: impl Iterator<Item = (usize, char)>,
@@ -62,7 +62,7 @@ pub(crate) struct WordData {
     pub word_end_index: usize,
 }
 
-impl<CI: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterator<CI> {
+impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterator<I> {
     type Item = WordData;
 
     fn next(&mut self) -> Option<Self::Item> {

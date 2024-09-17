@@ -5,7 +5,7 @@ use ahash::AHashMap;
 pub(crate) fn process_alphabets_count<'t>(
     // word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
     word_alphabets: Vec<(Script, &[Alphabet])>,
-) -> AHashMap<Language, Vec<(usize, Alphabet)>> {
+) -> AHashMap<Language, Vec<(Alphabet, usize)>> {
     let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
     for (script, alphabets) in word_alphabets {
         for alphabet in alphabets {
@@ -22,12 +22,12 @@ pub(crate) fn process_alphabets_count<'t>(
         }
     }
     // println!("word_alphabets_count {:?}", word_alphabets_count);
-    let mut script_alphabets: AHashMap<Script, AHashMap<Language, Vec<(usize, Alphabet)>>> =
+    let mut script_alphabets: AHashMap<Script, AHashMap<Language, Vec<(Alphabet, usize)>>> =
         AHashMap::new();
     for ((s, a), c) in word_alphabets_count {
         let sa_entry = script_alphabets.entry(s).or_default();
         for &l in <&[Language]>::from(a) {
-            sa_entry.entry(l).or_default().push((c, a));
+            sa_entry.entry(l).or_default().push((a, c));
         }
     }
     if script_alphabets.is_empty() {
@@ -44,13 +44,13 @@ pub(crate) fn process_alphabets_count<'t>(
             .iter()
             .map(|(_, asc)| asc)
             .flatten()
-            .fold(1, |acc, (cnt, _)| acc.max(*cnt));
+            .fold(1, |acc, (_, cnt)| acc.max(*cnt));
         // let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
 
         // println!("pre1 langs_alphabets_count {:?}", langs_alphabets_count);
         langs_alphabets_count.retain(|_, asc| {
             // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
-            asc.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
+            asc.retain(|(_, cnt)| *cnt == lang_alphabets_count_max);
             !asc.is_empty()
         });
 
@@ -69,14 +69,14 @@ pub(crate) fn process_alphabets_count<'t>(
                 return false;
             };
 
-            for (cnt, alphabet) in asc {
+            for (alphabet, cnt) in asc {
                 if alphabets_count
                     .iter_mut()
-                    .find(|(_, a)| *a == alphabet)
-                    .map(|(c, _)| *c = c.wrapping_add(cnt))
+                    .find(|(a, _)| *a == alphabet)
+                    .map(|(_, c)| *c = c.wrapping_add(cnt))
                     .is_none()
                 {
-                    alphabets_count.push((cnt, alphabet));
+                    alphabets_count.push((alphabet, cnt));
                 }
             }
 
