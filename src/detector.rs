@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+use crate::alphabet_count::process_alphabets_count;
 use crate::constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE};
 use crate::json::load_json;
 use crate::lang::Alphabet;
@@ -604,56 +605,28 @@ impl LanguageDetector {
         if text_str.is_empty() {
             return Vec::new();
         }
-        let found_words = word_iter::from_ch_iter(text_str.char_indices());
+        let found_words_iter = word_iter::from_ch_iter(text_str.char_indices());
+        let words_with_langs_iter = found_words_iter.map(|mut wd| {
+            let mut langs_alphabets =
+                process_alphabets_count(std::mem::take(&mut wd.script_alphabets));
+            langs_alphabets.retain(|l, _| search_languages.contains(l));
 
-        let mut words = Vec::new();
-        let mut languages = AHashMap::new();
-        for wd in found_words {
-            words.push(wd.word);
-            let langs = alphabet_count::process_alphabets_count(wd.script_alphabets);
-            for (lang, alphabets_count) in langs {
-                if search_languages.contains(&lang) {
-                    languages
-                        .entry(lang)
-                        .and_modify(|asc: &mut Vec<(Alphabet, usize)>| {
-                            for &(alphabet, cnt) in alphabets_count.iter() {
-                                if asc
-                                    .iter_mut()
-                                    .find(|(a, _)| *a == alphabet)
-                                    .map(|(_, c)| *c = c.wrapping_add(cnt))
-                                    .is_none()
-                                {
-                                    asc.push((alphabet, cnt));
-                                }
-                            }
-                        })
-                        .or_insert(alphabets_count);
-                }
-            }
-        }
-        if words.is_empty() || languages.is_empty() {
-            return values;
-        }
-        let lang_alphabets_count_max = languages
-            .iter()
-            .map(|(_, asc)| asc.iter().fold(0, |acc, (_, cnt)| acc + *cnt))
-            .fold(1, |acc, cnt| acc.max(cnt));
-
-        languages.retain(|_, asc| {
-            asc.iter().fold(0, |acc, (_, cnt)| acc + *cnt) == lang_alphabets_count_max
+            (langs_alphabets, wd)
         });
 
-        if languages.len() == 1 {
+        /* if words.is_empty() || languages.is_empty() {
+            return values;
+        } */
+
+        /* if languages.len() == 1 {
             let (&lang, _alphabets) = languages.iter().next().unwrap();
             // todo: return alphabets also
             update_confidence_values(&mut values, lang, 1.0);
             values.sort_by(confidence_values_comparator);
             return values;
-        }
+        } */
 
-        let filtered_languages = languages.into_iter().map(|(l, _)| l).collect();
-
-        let character_count: usize = words.iter().map(|word| word.chars().count()).sum();
+        /* let character_count: usize = words.iter().map(|word| word.chars().count()).sum();
 
         if self.is_low_accuracy_mode_enabled && character_count < 3 {
             values.sort_by(confidence_values_comparator);
@@ -664,9 +637,10 @@ impl LanguageDetector {
             3..4usize
         } else {
             1..6usize
-        };
+        }; */
 
-        #[allow(clippy::type_complexity)]
+        todo!();
+        /* #[allow(clippy::type_complexity)]
         let all_probabilities_and_unigram_counts: Vec<(
             AHashMap<Language, f64>,
             Option<AHashMap<Language, usize>>,
@@ -696,7 +670,7 @@ impl LanguageDetector {
         self.compute_confidence_values(&mut values, probability_maps, summed_up_probabilities);
         // println!("res {:?}", &values[..values.len().min(5)]);
 
-        values
+        values */
     }
 
     fn compute_language_confidence_values_for_languages<S: BuildHasher + Default>(
@@ -747,7 +721,7 @@ impl LanguageDetector {
         let mut languages = AHashMap::new();
         for wd in found_words {
             words.push(wd.word);
-            let langs = alphabet_count::process_alphabets_count(wd.script_alphabets);
+            let langs = process_alphabets_count(wd.script_alphabets);
             for (lang, alphabets_count) in langs {
                 if search_languages.contains(&lang) {
                     languages

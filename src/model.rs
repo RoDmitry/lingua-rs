@@ -260,7 +260,7 @@ impl<'a> TestDataLanguageModel<'a> {
             "ngram length {ngram_length} is not in range 1..6"
         );
 
-        let mut ngrams = AHashSet::new();
+        let mut ngrams = Vec::new();
 
         for word in words.iter() {
             let chars_count = word.chars().count();
@@ -268,21 +268,41 @@ impl<'a> TestDataLanguageModel<'a> {
             if chars_count >= ngram_length {
                 for i in 0..=chars_count - ngram_length {
                     let slice = get_utf8_slice(word, i, i + ngram_length);
-                    ngrams.insert(NgramRef::new(slice));
+                    ngrams.push(NgramRef::new(slice));
                 }
             }
         }
 
         let mut lower_order_ngrams = Vec::with_capacity(ngrams.len());
 
-        for ngram in ngrams {
+        /* for ngram in ngrams {
             lower_order_ngrams.push(ngram.range_of_lower_order_ngrams().collect_vec());
+        } */
+        for ngram in ngrams {
+            let mut res = Vec::new();
+            // let len = ngram.value.chars().count();
+            // if len > 1 {
+            for (i, _) in ngram.value.char_indices() {
+                /* let mut iter = ngram.value.char_indices().skip(i).take(ngram_length);
+                let first = iter.next().unwrap();
+                let last = iter.last().unwrap_or(first);
+                res.push(NgramRef::new(
+                    &ngram.value[first.0..last.0 + last.1.len_utf8()],
+                )); */
+                let ngram = NgramRef::new(&ngram.value[i..]);
+                ngram
+                    .range_of_lower_order_ngrams()
+                    .for_each(|v| res.push(v));
+            }
+            // }
+            lower_order_ngrams.push(res);
         }
         // println!("words: {:?}", words);
         // println!("{:?}", lower_order_ngrams);
 
         Self {
             ngrams: lower_order_ngrams,
+            // ngrams: vec![ngrams.into_iter().collect()],
         }
     }
 }
