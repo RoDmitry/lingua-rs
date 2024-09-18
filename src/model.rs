@@ -260,7 +260,7 @@ impl<'a> TestDataLanguageModel<'a> {
             "ngram length {ngram_length} is not in range 1..6"
         );
 
-        let mut ngrams = Vec::new();
+        let mut ngrams = AHashSet::new();
 
         for word in words.iter() {
             let chars_count = word.chars().count();
@@ -268,17 +268,17 @@ impl<'a> TestDataLanguageModel<'a> {
             if chars_count >= ngram_length {
                 for i in 0..=chars_count - ngram_length {
                     let slice = get_utf8_slice(word, i, i + ngram_length);
-                    ngrams.push(NgramRef::new(slice));
+                    ngrams.insert(NgramRef::new(slice));
                 }
             }
         }
 
         let mut lower_order_ngrams = Vec::with_capacity(ngrams.len());
 
-        /* for ngram in ngrams {
-            lower_order_ngrams.push(ngram.range_of_lower_order_ngrams().collect_vec());
-        } */
         for ngram in ngrams {
+            lower_order_ngrams.push(ngram.range_of_lower_order_ngrams().collect_vec());
+        }
+        /* for ngram in ngrams {
             let mut res = Vec::new();
             // let len = ngram.value.chars().count();
             // if len > 1 {
@@ -296,9 +296,15 @@ impl<'a> TestDataLanguageModel<'a> {
             }
             // }
             lower_order_ngrams.push(res);
-        }
+        } */
+        /* let ngrams = lower_order_ngrams
+            .into_iter()
+            .map(|v| v.into_iter())
+            .flatten()
+            .collect(); */
         // println!("words: {:?}", words);
-        // println!("{:?}", lower_order_ngrams);
+        // println!("lower_order_ngrams {:?}", lower_order_ngrams);
+        // println!("{:?}", ngrams);
 
         Self {
             ngrams: lower_order_ngrams,

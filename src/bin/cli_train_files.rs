@@ -7,7 +7,7 @@ use cap::Cap;
 use clap::Parser;
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
-use lingua::{str_to_alphabets, Alphabet, Language};
+use lingua::{str_to_alphabets, Alphabet, Language, LanguageModelFilesWriter};
 // use rayon::prelude::*;
 
 // #[cfg(not(target_env = "msvc"))]

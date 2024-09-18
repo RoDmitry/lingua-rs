@@ -35,8 +35,8 @@ default-run = "cli_train_files"
 [profile.dev]
 opt-level = 1
 
-[profile.dev.package.parselang_models]
-opt-level = 0
+# [profile.dev.package.parselang_models]
+# opt-level = 0
 
 [lib]
 name = "lingua"
@@ -64,7 +64,7 @@ required-features = ["benchmark"]
 [dependencies]
 stringcase = "0.3.0"
 alphabet_match_macro = { path = "alphabet_match_macro" }
-parselang_models = { path = "../parselang-models" }
+# parselang_models = { path = "../parselang-models" }
 brotli = "6.0.0"
 cap = "0.1"
 clap = { version = "4.5.17", features = ["derive"] }
