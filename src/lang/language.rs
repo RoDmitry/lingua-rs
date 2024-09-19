@@ -35,6 +35,7 @@ use strum_macros::{EnumIter, EnumString};
     Deserialize,
     EnumIter,
     EnumString,
+    fixed_map::Key,
     // strum_macros::Display,
 )]
 // todo: remove this UPPERCASE

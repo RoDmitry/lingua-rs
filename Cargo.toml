@@ -62,6 +62,7 @@ harness = false
 required-features = ["benchmark"]
 
 [dependencies]
+fixed-map = { path = "../fixed-map" }
 stringcase = "0.3.0"
 alphabet_match_macro = { path = "alphabet_match_macro" }
 # parselang_models = { path = "../parselang-models" }

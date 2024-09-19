@@ -1,7 +1,7 @@
 use ::std::cmp::Ordering;
 use strum_macros::EnumIter;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, EnumIter, fixed_map::Key)]
 pub(crate) enum Script {
     Adlam,
     Ahom,

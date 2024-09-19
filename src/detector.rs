@@ -609,7 +609,7 @@ impl LanguageDetector {
         let words_with_langs_iter = found_words_iter.map(|mut wd| {
             let mut langs_alphabets =
                 process_alphabets_count(std::mem::take(&mut wd.script_alphabets));
-            langs_alphabets.retain(|l, _| search_languages.contains(l));
+            langs_alphabets.retain(|l, _| search_languages.contains(&l));
 
             (langs_alphabets, wd)
         });

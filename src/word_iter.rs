@@ -1,4 +1,4 @@
-use ahash::AHashSet;
+use fixed_map::Set;
 
 use crate::{
     lang::{
@@ -15,7 +15,7 @@ pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>
     word_start_index: usize,
     not_saved_word_end_index: usize,
     prev_char_script: Script,
-    prev_char_langs: AHashSet<Language>,
+    prev_char_langs: Set<Language>,
     word_alphabets: Vec<(Script, &'static [Alphabet])>,
     res: Option<WordData>,
 }
@@ -89,7 +89,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                 .unwrap_or_default();
             let script = script.unwrap_or(Script::Common);
 
-            let langs: AHashSet<Language> = alphabets
+            let langs: Set<Language> = alphabets
                 .iter()
                 .map(|&a| <&[Language]>::from(a))
                 .flatten()
@@ -174,6 +174,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
 #[cfg(test)]
 mod test {
     use super::*;
+    use ahash::AHashSet;
     use rstest::*;
 
     #[rstest(text, expected_words,
