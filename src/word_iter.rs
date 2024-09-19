@@ -1,4 +1,5 @@
 use fixed_map::Set;
+use std::ops::Range;
 
 use crate::{
     lang::{
@@ -58,8 +59,7 @@ pub(crate) fn from_ch_iter(
 pub(crate) struct WordData {
     pub word: Vec<char>,
     pub script_alphabets: Vec<(Script, &'static [Alphabet])>,
-    pub word_start_index: usize,
-    pub word_end_index: usize,
+    pub word_range: Range<usize>,
 }
 
 impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterator<I> {
@@ -146,8 +146,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                     self.res = Some(WordData {
                         word: std::mem::take(&mut self.word_buf),
                         script_alphabets: std::mem::take(&mut self.word_alphabets),
-                        word_start_index: self.word_start_index,
-                        word_end_index: self.not_saved_word_end_index,
+                        word_range: self.word_start_index..self.not_saved_word_end_index,
                     })
 
                     // reset temp variables

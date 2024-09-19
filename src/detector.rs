@@ -24,6 +24,7 @@ use crate::{alphabet_count, word_iter, Language};
 use ::std::cmp::Ordering;
 use ::std::collections::{HashMap, HashSet};
 use ::std::hash::{BuildHasher, Hash};
+use std::ops::Range;
 use ::std::sync::RwLock;
 use ahash::{AHashMap, AHashSet};
 use compact_str::CompactString;
@@ -43,14 +44,14 @@ static TRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap:
 static QUADRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
 static FIVEGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
 
-/// final resulting word
-pub struct Word<'t> {
-    pub word: &'t str,
+/// final result
+pub struct TextSlice {
+    pub text_range: Range<usize>,
     pub most_frequent_alphabet: Alphabet,
     /// Languages listed here are always from the most frequent Alphabet
-    pub checked_languages: Vec<(Language, f64)>,
+    pub checked_languages: Vec<(Language, Alphabet, f64)>,
     /// can include most frequent Alphabet, but for different languages
-    pub unverified_alphabet_languages: AHashMap<Alphabet, Vec<Language>>,
+    pub unverified_alphabet_languages: AHashMap<Language, Vec<(Alphabet, usize)>>,
 }
 
 /// This struct detects the language of given input text.
@@ -595,7 +596,7 @@ impl LanguageDetector {
         &self,
         text_str: &str,
         search_languages: &HashSet<Language, S>,
-    ) -> Vec<(Language, f64)> {
+    ) -> Vec<TextSlice> {
         let mut values = Vec::with_capacity(search_languages.len());
 
         for language in search_languages {
