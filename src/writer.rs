@@ -78,7 +78,7 @@ impl LanguageModelFilesWriter {
             .into_iter()
             // todo: uncomment filter
             // .filter(|(_, wd)| wd.alphabets_count.contains_key(language))
-            .map(|wd| wd.word.chars().collect::<Vec<_>>())
+            .map(|wd| wd.word)
             .collect();
         drop(text);
         /* let words: Vec<Vec<char>> = lines

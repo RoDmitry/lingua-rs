@@ -250,11 +250,11 @@ impl TrainingDataLanguageModel {
 }
 
 pub(crate) struct TestDataLanguageModel<'a> {
-    pub(crate) ngrams: Vec<Vec<NgramRef<'a>>>,
+    pub(crate) ngrams: Vec<Vec<&'a [char]>>,
 }
 
 impl<'a> TestDataLanguageModel<'a> {
-    pub(crate) fn from(words: &'a [String], ngram_length: usize) -> Self {
+    pub(crate) fn from(words: &'a [Vec<char>], ngram_length: usize) -> Self {
         debug_assert!(
             (1..6).contains(&ngram_length),
             "ngram length {ngram_length} is not in range 1..6"
@@ -263,12 +263,13 @@ impl<'a> TestDataLanguageModel<'a> {
         let mut ngrams = AHashSet::new();
 
         for word in words.iter() {
-            let chars_count = word.chars().count();
+            let chars_count = word.len();
 
             if chars_count >= ngram_length {
                 for i in 0..=chars_count - ngram_length {
-                    let slice = get_utf8_slice(word, i, i + ngram_length);
-                    ngrams.insert(NgramRef::new(slice));
+                    // let slice = get_utf8_slice(word, i, i + ngram_length);
+                    // ngrams.insert(NgramRef::new(slice));
+                    ngrams.insert(&word[i..ngram_length + i]);
                 }
             }
         }
@@ -276,7 +277,11 @@ impl<'a> TestDataLanguageModel<'a> {
         let mut lower_order_ngrams = Vec::with_capacity(ngrams.len());
 
         for ngram in ngrams {
-            lower_order_ngrams.push(ngram.range_of_lower_order_ngrams().collect_vec());
+            let mut ngrams = Vec::with_capacity(ngram.len());
+            for i in (1..=ngram.len()).rev() {
+                ngrams.push(&ngram[0..i]);
+            }
+            lower_order_ngrams.push(ngrams);
         }
         /* for ngram in ngrams {
             let mut res = Vec::new();
@@ -313,7 +318,7 @@ impl<'a> TestDataLanguageModel<'a> {
     }
 }
 
-fn get_utf8_slice(string: &str, start: usize, end: usize) -> &str {
+/* fn get_utf8_slice(string: &str, start: usize, end: usize) -> &str {
     string
         .char_indices()
         .nth(start)
@@ -327,7 +332,7 @@ fn get_utf8_slice(string: &str, start: usize, end: usize) -> &str {
                 )
         })
         .unwrap()
-}
+} */
 
 #[cfg(test)]
 mod tests {

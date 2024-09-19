@@ -11,7 +11,7 @@ use crate::{
 pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>> {
     iter: I,
     next_char: Option<(Option<Script>, usize, char)>,
-    word_buf: String,
+    word_buf: Vec<char>,
     word_start_index: usize,
     not_saved_word_end_index: usize,
     prev_char_script: Script,
@@ -56,7 +56,7 @@ pub(crate) fn from_ch_iter(
 
 #[derive(Debug)]
 pub(crate) struct WordData {
-    pub word: String,
+    pub word: Vec<char>,
     pub script_alphabets: Vec<(Script, &'static [Alphabet])>,
     pub word_start_index: usize,
     pub word_end_index: usize,
@@ -215,7 +215,7 @@ mod test {
     )]
     fn test_filter_text_to_words(text: &str, expected_words: AHashSet<&str>) {
         let found_words: Vec<_> = from_ch_iter(text.char_indices())
-            .map(|wd| wd.word)
+            .map(|wd| wd.word.into_iter().collect::<String>())
             .collect();
         let words: AHashSet<&str> = found_words.iter().map(|w| w.as_str()).collect();
 
