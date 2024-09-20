@@ -41,7 +41,7 @@ macro_rules! main_alphabet {
 } */
 
 // main_alphabet!(
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display, fixed_map::Key)]
 pub enum Alphabet {
     Cyrillic(CyrillicAlphabet),
     Han(HanAlphabet),
@@ -49,6 +49,17 @@ pub enum Alphabet {
     Script(Script),
 }
 // );
+
+/* impl From<Alphabet> for Script {
+    fn from(a: Alphabet) -> Self {
+        match a {
+            Alphabet::Cyrillic(_) => Script::Cyrillic,
+            Alphabet::Han(_) => Script::Han,
+            Alphabet::Latin(_) => Script::Latin,
+            Alphabet::Script(s) => s,
+        }
+    }
+} */
 
 #[derive(Clone, Copy, Debug)]
 pub enum ScriptAlphabets {
@@ -578,7 +589,7 @@ macro_rules! alphabet_wrapper {
 }
 
 alphabet_wrapper!(
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display, fixed_map::Key)]
 pub enum HanAlphabet in Han {
     ChineseSimplified,
     ChineseTraditional,
@@ -588,7 +599,7 @@ pub enum HanAlphabet in Han {
 );
 
 alphabet_wrapper!(
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display, fixed_map::Key)]
 pub enum CyrillicAlphabet in Cyrillic {
     Bashkir,
     Belarusian,
@@ -607,7 +618,7 @@ pub enum CyrillicAlphabet in Cyrillic {
 );
 
 alphabet_wrapper!(
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display, fixed_map::Key)]
 pub enum LatinAlphabet in Latin {
     Acehnese,
     Afrikaans,

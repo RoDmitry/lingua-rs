@@ -4,9 +4,9 @@ use std::ops::Range;
 use crate::{
     lang::{
         alphabet::{char_combine, script_char_to_alphabets},
-        Script, ScriptAlphabets, ScriptAlphabetIter,
+        Script, ScriptAlphabets,
     },
-    Alphabet, Language,
+    Language,
 };
 
 pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>> {
@@ -57,9 +57,9 @@ pub(crate) fn from_ch_iter(
 
 #[derive(Debug)]
 pub(crate) struct WordData {
-    pub word: Vec<char>,
+    pub chars: Vec<char>,
     pub script_alphabets: Vec<(Script, ScriptAlphabets)>,
-    pub word_range: Range<usize>,
+    pub range: Range<usize>,
 }
 
 impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterator<I> {
@@ -144,9 +144,9 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                         words.insert(self.word_buf, word_data);
                     } */
                     self.res = Some(WordData {
-                        word: std::mem::take(&mut self.word_buf),
+                        chars: std::mem::take(&mut self.word_buf),
                         script_alphabets: std::mem::take(&mut self.word_alphabets),
-                        word_range: self.word_start_index..self.not_saved_word_end_index,
+                        range: self.word_start_index..self.not_saved_word_end_index,
                     })
 
                     // reset temp variables
@@ -215,7 +215,7 @@ mod test {
     )]
     fn test_filter_text_to_words(text: &str, expected_words: AHashSet<&str>) {
         let found_words: Vec<_> = from_ch_iter(text.char_indices())
-            .map(|wd| wd.word.into_iter().collect::<String>())
+            .map(|wd| wd.chars.into_iter().collect::<String>())
             .collect();
         let words: AHashSet<&str> = found_words.iter().map(|w| w.as_str()).collect();
 

@@ -4,10 +4,12 @@ use crate::{
 };
 // use ::std::collections::hash_map::Entry;
 use ahash::AHashMap;
+// use fixed_map::Map;
 
 pub(crate) fn process_alphabets_count<'t>(
     // word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
     word_alphabets: Vec<(Script, ScriptAlphabets)>,
+    // word_alphabets_count: Map<Alphabet, usize>,
 ) -> AHashMap<Language, Vec<(Alphabet, usize)>> {
     let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
     for (script, alphabets) in word_alphabets {

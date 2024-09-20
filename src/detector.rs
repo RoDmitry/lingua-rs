@@ -721,7 +721,7 @@ impl LanguageDetector {
         // let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
         let mut languages = AHashMap::new();
         for wd in found_words {
-            words.push(wd.word);
+            words.push(wd.chars);
             let langs = process_alphabets_count(wd.script_alphabets);
             for (lang, alphabets_count) in langs {
                 if search_languages.contains(&lang) {
