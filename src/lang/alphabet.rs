@@ -8,7 +8,7 @@ use strum_macros::EnumIter;
 use strum_macros::EnumString;
 use strum_macros::IntoStaticStr; */
 
-macro_rules! alphabets_filter {
+/* macro_rules! alphabets_filter {
     ($var:ident $inner:ident) => {
         None
     };
@@ -38,7 +38,7 @@ macro_rules! main_alphabet {
             };
         }
     };
-}
+} */
 
 // main_alphabet!(
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display)]
@@ -50,28 +50,64 @@ pub enum Alphabet {
 }
 // );
 
-/* pub enum ScriptAlphabet {
+#[derive(Clone, Copy, Debug)]
+pub enum ScriptAlphabets {
     Alphabets(&'static [Alphabet]),
-    Script(Script)
-} */
-/* impl IntoIterator for ScriptAlphabet {
-    type IntoIter = Iterator<Item = Alphabet>;
-
-    fn into_iter(self) -> Self::IntoIter {}
-} */
-
-pub struct ScriptAlphabetIter<A: Iterator<Item = Alphabet>> {
-    a: A,
-    s: Option<Script>,
+    Script(Option<Script>),
 }
 
-impl<A: Iterator<Item = Alphabet>> Iterator for ScriptAlphabetIter<A> {
+impl From<(Option<Script>, Option<&'static [Alphabet]>)> for ScriptAlphabets {
+    fn from((os, oa): (Option<Script>, Option<&'static [Alphabet]>)) -> Self {
+        if let Some(a) = oa {
+            Self::Alphabets(a)
+        } else {
+            Self::Script(os)
+        }
+    }
+}
+
+impl ScriptAlphabets {
+    pub fn iter(&self) -> ScriptAlphabetIter {
+        match self {
+            Self::Alphabets(a) => ScriptAlphabetIter::Iter(a.iter().copied()),
+            Self::Script(s) => ScriptAlphabetIter::Script(*s),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Alphabets(a) => a.is_empty(),
+            Self::Script(s) => s.is_none(),
+        }
+    }
+}
+
+pub enum ScriptAlphabetIter {
+    Iter(::std::iter::Copied<::std::slice::Iter<'static, Alphabet>>),
+    Script(Option<Script>),
+}
+
+impl Iterator for ScriptAlphabetIter {
     type Item = Alphabet;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.a
-            .next()
-            .or_else(|| self.s.take().map(|s| Alphabet::Script(s)))
+        match self {
+            Self::Iter(iter) => iter.next(),
+            Self::Script(s) => s.take().map(|s| Alphabet::Script(s)),
+        }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        match self {
+            Self::Iter(iter) => iter.size_hint(),
+            Self::Script(s) => {
+                if s.is_some() {
+                    (1, Some(1))
+                } else {
+                    (0, Some(0))
+                }
+            }
+        }
     }
 }
 
@@ -1063,7 +1099,7 @@ pub(crate) fn char_combine(s: Option<Script>, ch: char, extra: char) -> char {
 /// add all the leters of all the alphabets in the script group
 /// or not all, only if it does not require to exclude letters
 /// if the script group has only one language, then leave it empty
-pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Alphabet] {
+pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> Option<&'static [Alphabet]> {
     match script {
         /* Script::Adlam => alphabet_match!([(Alphabet::Adlam, [])]),
         Script::Ahom => alphabet_match!([(Alphabet::Ahom, [])]),
@@ -1101,7 +1137,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         //   because if Alphabets of all 3 chars do not intersect, it will be two words
         // example2: `word1' word2` for all langs will be parsed as two words without `'`,
         //   because next char after `'` is space, which is not a char of any language
-        Script::Common => match ch {
+        Script::Common => Some(match ch {
             '\'' => &[
                 Alphabet::Cyrillic(CyrillicAlphabet::Belarusian),
                 Alphabet::Latin(LatinAlphabet::Acehnese),
@@ -1131,13 +1167,13 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
             '¿' => &[Alphabet::Latin(LatinAlphabet::Spanish)],
             'ʻ' => &[Alphabet::Latin(LatinAlphabet::UzbekNorthern)],
             _ => &[], // must be always empty
-        },
+        }),
         /* Script::Coptic => alphabet_match!([(Alphabet::Coptic, [])]),
         Script::Cuneiform => alphabet_match!([(Alphabet::Cuneiform, []),]),
         Script::Cypriot => alphabet_match!([(Alphabet::Cypriot, [])]),
         Script::CyproMinoan => alphabet_match!([(Alphabet::CyproMinoan, [])]), */
         Script::Cyrillic => alphabet_match!([
-            // (Alphabet::Cyrillic, []),
+            // TODO: Lost some alphabets from CyrillicAlphabet
             (
                 Alphabet::Cyrillic(CyrillicAlphabet::Belarusian),
                 [
@@ -1401,7 +1437,7 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         Script::Hebrew => alphabet_match!([(Alphabet::Hebrew, []),]),
         Script::Hiragana => alphabet_match!([(Alphabet::Hiragana, [])]),
         Script::ImperialAramaic => alphabet_match!([(Alphabet::ImperialAramaic, [])]), */
-        Script::Inherited => &[], /* match ch {
+        Script::Inherited => Some(&[]), /* match ch {
         /* '\u{307}' => &[
                 // Alphabet::ChechenLatin,
                 // Alphabet::OldIrishLatin,
@@ -2677,6 +2713,6 @@ pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> &'static [Al
         Script::Yezidi => alphabet_match!([(Alphabet::Yezidi, [])]),
         Script::Yi => alphabet_match!([(Alphabet::Yi, [])]),
         Script::ZanabazarSquare => alphabet_match!([(Alphabet::ZanabazarSquare, []),]), */
-        _ => &[],
+        _ => None,
     }
 }

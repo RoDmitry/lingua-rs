@@ -1,16 +1,19 @@
-use crate::{lang::Script, Alphabet, Language};
+use crate::{
+    lang::{Script, ScriptAlphabets},
+    Alphabet, Language,
+};
 // use ::std::collections::hash_map::Entry;
 use ahash::AHashMap;
 
 pub(crate) fn process_alphabets_count<'t>(
     // word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
-    word_alphabets: Vec<(Script, &[Alphabet])>,
+    word_alphabets: Vec<(Script, ScriptAlphabets)>,
 ) -> AHashMap<Language, Vec<(Alphabet, usize)>> {
     let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
     for (script, alphabets) in word_alphabets {
-        for alphabet in alphabets {
+        for alphabet in alphabets.iter() {
             word_alphabets_count
-                .entry((script, *alphabet))
+                .entry((script, alphabet))
                 .and_modify(|c| *c = c.wrapping_add(1))
                 .or_insert(1);
             /* match cnt_entry {

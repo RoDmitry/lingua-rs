@@ -4,7 +4,7 @@ use std::ops::Range;
 use crate::{
     lang::{
         alphabet::{char_combine, script_char_to_alphabets},
-        Script,
+        Script, ScriptAlphabets, ScriptAlphabetIter,
     },
     Alphabet, Language,
 };
@@ -17,7 +17,7 @@ pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>
     not_saved_word_end_index: usize,
     prev_char_script: Script,
     prev_char_langs: Set<Language>,
-    word_alphabets: Vec<(Script, &'static [Alphabet])>,
+    word_alphabets: Vec<(Script, ScriptAlphabets)>,
     res: Option<WordData>,
 }
 
@@ -58,7 +58,7 @@ pub(crate) fn from_ch_iter(
 #[derive(Debug)]
 pub(crate) struct WordData {
     pub word: Vec<char>,
-    pub script_alphabets: Vec<(Script, &'static [Alphabet])>,
+    pub script_alphabets: Vec<(Script, ScriptAlphabets)>,
     pub word_range: Range<usize>,
 }
 
@@ -84,19 +84,19 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                 ch = '\'';
             }
 
-            let alphabets = script
-                .map(|s| script_char_to_alphabets(s, ch))
-                .unwrap_or_default();
-            let script = script.unwrap_or(Script::Common);
+            let alphabets = script.and_then(|s| script_char_to_alphabets(s, ch));
+            let script_alphabets = ScriptAlphabets::from((script, alphabets));
 
-            let langs: Set<Language> = alphabets
+            let langs: Set<Language> = script_alphabets
                 .iter()
-                .map(|&a| <&[Language]>::from(a))
+                .map(|a| <&[Language]>::from(a))
                 .flatten()
                 .copied()
                 .collect();
 
-            let ch_skip = if alphabets.is_empty() {
+            let script = script.unwrap_or(Script::Common);
+
+            let ch_skip = if script_alphabets.is_empty() {
                 true
             } else if script == Script::Common {
                 if self.prev_char_script == Script::Common {
@@ -160,7 +160,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
             if !ch_skip {
                 self.not_saved_word_end_index = ch_idx + ch.len_utf8();
                 self.word_buf.push(ch.to_lowercase().next().unwrap()); // maybe check each char?
-                self.word_alphabets.push((script, alphabets));
+                self.word_alphabets.push((script, script_alphabets));
             }
             self.prev_char_script = script;
             self.prev_char_langs = langs;
