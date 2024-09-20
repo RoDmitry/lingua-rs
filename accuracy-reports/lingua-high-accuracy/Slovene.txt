@@ -12,5 +12,5 @@ Erroneously classified as Croatian: 5%, Bosnian: 4.1%, Czech: 0.4%, Esperanto: 0
 
 >> Detection of 1000 sentences (average length: 114 chars)
 Accuracy: 89.1%
-Erroneously classified as Czech: 6.3%, Slovak: 1.8%, Croatian: 0.7%, Bosnian: 0.6%, Silesian: 0.4%, Lithuanian: 0.3%, Unknown: 0.1%, Dutch: 0.1%, Esperanto: 0.1%, German: 0.1%, Romanian: 0.1%, Spanish: 0.1%, Swedish: 0.1%, Zulu: 0.1%
+Erroneously classified as Czech: 6.4%, Slovak: 1.8%, Croatian: 0.7%, Bosnian: 0.6%, Silesian: 0.4%, Lithuanian: 0.2%, Unknown: 0.1%, Dutch: 0.1%, Esperanto: 0.1%, German: 0.1%, Romanian: 0.1%, Spanish: 0.1%, Swedish: 0.1%, Zulu: 0.1%
 

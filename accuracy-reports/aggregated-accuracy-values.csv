@@ -18,7 +18,7 @@ ArabicSouthernYemeni,,,,,
 ArabicSouthLevantine,,,,,
 ArabicTunisian,,,,,
 Aramaic,,,,,
-Armenian,100,100,100,100,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,99,100,100,99,99,100,100,99
+Armenian,100,100,100,100,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,100,100,100,100,100,100,100,100
 Assamese,,,,,
 Asturian,,,,,
 Avestan,,,,,
@@ -42,7 +42,7 @@ Bhaiksuki,,,,,
 Bhojpuri,,,,,
 BishnupriyaManipuri,,,,,
 Bokmal,NaN,NaN,NaN,NaN,49,23,43,80,NaN,NaN,NaN,NaN,50,27,47,75,57,38,58,76
-Bosnian,18,4,15,36,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,29,23,29,35,34,29,34,38
+Bosnian,18,4,15,36,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,29,23,29,35,33,29,34,38
 Braille,,,,,
 BuddhistMarchen,,,,,
 Buginese,,,,,
@@ -57,7 +57,7 @@ Chakma,,,,,
 Cham,,,,,
 Cherokee,,,,,
 Chhattisgarhi,,,,,
-Chinese,33,NaN,2,98,100,100,100,100,97,93,98,100,33,NaN,NaN,99,84,67,86,99
+Chinese,33,NaN,2,98,100,100,100,100,97,93,98,100,33,NaN,NaN,99,81,60,84,99
 ChineseCantonese,,,,,
 ChineseMandarin,,,,,
 ChineseTuhua,,,,,
@@ -82,7 +82,7 @@ English,55,11,55,99,49,17,35,94,66,34,65,98,63,31,63,96,81,55,89,99
 EnglishDuployan,,,,,
 EnglishMormon,,,,,
 EnglishPhonetic,,,,,
-Esperanto,50,7,45,97,58,32,53,90,NaN,NaN,NaN,NaN,70,45,74,90,82,67,89,92
+Esperanto,50,7,45,97,58,32,53,90,NaN,NaN,NaN,NaN,70,45,74,90,82,67,89,91
 Estonian,65,23,73,99,67,43,62,96,NaN,NaN,NaN,NaN,81,63,87,92,89,80,94,92
 Etruscan,,,,,
 Ewe,,,,,
@@ -111,7 +111,7 @@ Gurung,,,,,
 Hanunoo,,,,,
 Hausa,,,,,
 Hebrew,NaN,NaN,NaN,NaN,95,92,95,99,NaN,NaN,NaN,NaN,99,100,100,99,99,100,100,99
-Hindi,76,55,75,99,68,54,54,96,100,100,100,100,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN
+Hindi,76,55,75,99,68,54,54,96,100,100,100,100,72,62,64,90,74,63,65,92
 Hittite,,,,,
 Hmong,,,,,
 Ho,,,,,
@@ -119,9 +119,9 @@ Hungarian,75,40,85,99,72,49,70,98,NaN,NaN,NaN,NaN,81,73,88,82,85,82,93,82
 Icelandic,65,25,73,99,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,89,77,93,98,93,85,96,98
 Igbo,,,,,
 Ilocano,,,,,
-Indonesian,62,36,62,88,69,42,69,95,NaN,NaN,NaN,NaN,47,25,46,71,61,39,61,83
+Indonesian,62,36,62,88,69,42,69,95,NaN,NaN,NaN,NaN,47,25,46,71,61,39,61,82
 Inuktitut,,,,,
-Irish,66,29,77,92,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,72,66,85,66,79,80,91,67
+Irish,66,29,77,92,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,72,66,85,66,79,80,91,66
 Italian,44,6,32,93,56,24,48,96,85,68,87,99,57,43,74,54,71,69,91,55
 Japanese,33,NaN,NaN,100,99,98,100,100,99,98,100,99,100,100,100,100,100,100,100,100
 Javanese,,,,,
@@ -181,8 +181,8 @@ Mandaic,,,,,
 Mandailing,,,,,
 Mande,,,,,
 ManipuriMeetei,,,,,
-Maori,60,12,71,98,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,79,64,82,89,87,84,86,90
-Marathi,83,65,86,98,78,59,80,94,NaN,NaN,NaN,NaN,100,100,100,100,100,100,100,100
+Maori,60,12,71,98,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,79,64,82,90,87,84,86,90
+Marathi,83,65,86,98,78,59,80,94,NaN,NaN,NaN,NaN,79,66,78,94,82,69,82,95
 Marwari,,,,,
 Medefaidrin,,,,,
 Meitei,,,,,
@@ -266,7 +266,7 @@ Slovene,47,8,42,92,52,29,43,83,NaN,NaN,NaN,NaN,64,40,68,85,78,61,86,89
 Sogdian,,,,,
 Somali,69,26,83,99,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,80,68,91,81,86,82,95,81
 Sora,,,,,
-Spanish,43,12,33,84,47,18,32,91,62,35,54,98,57,27,50,94,69,43,68,97
+Spanish,43,12,33,84,47,18,32,91,62,35,54,98,57,27,50,94,70,43,68,97
 Sumerian,,,,,
 Sundanese,,,,,
 Sunuwar,,,,,
