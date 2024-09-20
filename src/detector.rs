@@ -20,11 +20,11 @@ use crate::json::load_json;
 use crate::lang::Alphabet;
 use crate::model::{JsonLanguageModel, TestDataLanguageModel};
 use crate::result::DetectionResult;
-use crate::{alphabet_count, word_iter, Language};
+use crate::{word_iter, Language};
 use ::std::cmp::Ordering;
 use ::std::collections::{HashMap, HashSet};
 use ::std::hash::{BuildHasher, Hash};
-use std::ops::Range;
+use ::std::ops::Range;
 use ::std::sync::RwLock;
 use ahash::{AHashMap, AHashSet};
 use compact_str::CompactString;
@@ -45,13 +45,14 @@ static QUADRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashM
 static FIVEGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
 
 /// final result
-pub struct TextSlice {
-    pub text_range: Range<usize>,
+pub struct Word {
+    pub chars: Vec<char>,
+    pub range: Range<usize>,
     pub most_frequent_alphabet: Alphabet,
     /// Languages listed here are always from the most frequent Alphabet
     pub checked_languages: Vec<(Language, Alphabet, f64)>,
     /// can include most frequent Alphabet, but for different languages
-    pub unverified_alphabet_languages: AHashMap<Language, Vec<(Alphabet, usize)>>,
+    pub unverified_alphabet_languages: AHashMap<Language, Vec<Alphabet>>,
 }
 
 /// This struct detects the language of given input text.
@@ -596,7 +597,7 @@ impl LanguageDetector {
         &self,
         text_str: &str,
         search_languages: &HashSet<Language, S>,
-    ) -> Vec<TextSlice> {
+    ) -> Vec<Word> {
         let mut values = Vec::with_capacity(search_languages.len());
 
         for language in search_languages {
@@ -719,27 +720,20 @@ impl LanguageDetector {
         let mut words = Vec::new();
         // let mut script_alphabets_iter = found_words.into_iter();
         // let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
-        let mut languages = AHashMap::new();
+        let mut languages: AHashMap<Language, (usize, Vec<Alphabet>)> = AHashMap::new();
         for wd in found_words {
+            let len = wd.chars.len();
             words.push(wd.chars);
             let langs = process_alphabets_count(wd.script_alphabets);
-            for (lang, alphabets_count) in langs {
+            for (lang, alphs) in langs {
                 if search_languages.contains(&lang) {
-                    languages
-                        .entry(lang)
-                        .and_modify(|asc: &mut Vec<(Alphabet, usize)>| {
-                            for &(alphabet, cnt) in alphabets_count.iter() {
-                                if asc
-                                    .iter_mut()
-                                    .find(|(a, _)| *a == alphabet)
-                                    .map(|(_, c)| *c = c.wrapping_add(cnt))
-                                    .is_none()
-                                {
-                                    asc.push((alphabet, cnt));
-                                }
-                            }
-                        })
-                        .or_insert(alphabets_count);
+                    let (cnt, alphabets) = languages.entry(lang).or_default();
+                    *cnt += len;
+                    for alph in alphs {
+                        if alphabets.iter().find(|a| **a == alph).is_none() {
+                            alphabets.push(alph);
+                        }
+                    }
                 }
             }
         }
@@ -752,16 +746,16 @@ impl LanguageDetector {
         // println!("filtered_languages {:?}", languages);
         let lang_alphabets_count_max = languages
             .iter()
-            .map(|(_, asc)| asc.iter().fold(0, |acc, (_, cnt)| acc + *cnt))
+            .map(|(_, lcas)| lcas.0)
             .fold(1, |acc, cnt| acc.max(cnt));
 
-        languages.retain(|_, asc| {
+        languages.retain(|_, lcas| {
             // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
-            asc.iter().fold(0, |acc, (_, cnt)| acc + *cnt) == lang_alphabets_count_max
+            // let max = asc.iter().fold(1, |acc, (_, cnt)| acc.max(*cnt));
+            lcas.0 == lang_alphabets_count_max
             // acs.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
             // !acs.is_empty()
         });
-        // println!("FINAL filtered_languages {:?}", languages);
 
         // let language_detected_by_rules =
         // Self::find_most_frequent_opt(&mut total_language_counts);

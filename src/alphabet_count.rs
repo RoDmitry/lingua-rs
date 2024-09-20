@@ -10,7 +10,7 @@ pub(crate) fn process_alphabets_count<'t>(
     // word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
     word_alphabets: Vec<(Script, ScriptAlphabets)>,
     // word_alphabets_count: Map<Alphabet, usize>,
-) -> AHashMap<Language, Vec<(Alphabet, usize)>> {
+) -> AHashMap<Language, Vec<Alphabet>> {
     let mut word_alphabets_count: AHashMap<(Script, Alphabet), usize> = AHashMap::new();
     for (script, alphabets) in word_alphabets {
         for alphabet in alphabets.iter() {
@@ -29,7 +29,7 @@ pub(crate) fn process_alphabets_count<'t>(
             } */
         }
     }
-    // println!("word_alphabets_count {:?}", word_alphabets_count);
+
     let mut script_alphabets: AHashMap<Script, AHashMap<Language, Vec<(Alphabet, usize)>>> =
         AHashMap::new();
     for ((s, a), c) in word_alphabets_count {
@@ -41,37 +41,12 @@ pub(crate) fn process_alphabets_count<'t>(
     if script_alphabets.is_empty() {
         return Default::default();
     }
-    let script_alphabets_len = script_alphabets.len();
+    // let script_alphabets_len = script_alphabets.len();
 
     let mut script_alphabets_iter = script_alphabets.into_values();
     let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
 
-    // filter langs if one script
-    if script_alphabets_len == 1 {
-        let lang_alphabets_count_max = langs_alphabets_count
-            .iter()
-            .map(|(_, asc)| asc)
-            .flatten()
-            .fold(1, |acc, (_, cnt)| acc.max(*cnt));
-        // let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
-
-        // println!("pre1 langs_alphabets_count {:?}", langs_alphabets_count);
-        langs_alphabets_count.retain(|_, asc| {
-            // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
-            asc.retain(|(_, cnt)| *cnt == lang_alphabets_count_max);
-            !asc.is_empty()
-        });
-
-        // langs_alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
-        // println!("alphabets_count_max {:?}", lang_alphabets_count_max);
-
-        // println!("FILTERED langs_alphabets_count {:?}", langs_alphabets_count);
-        return langs_alphabets_count;
-    }
-
-    // println!("prefinal langs_alphabets_count {:?}", langs_alphabets_count);
     for mut langs_alphs_cnt in script_alphabets_iter {
-        // println!("prefinal langs_alphs_cnt {:?}", langs_alphs_cnt);
         langs_alphabets_count.retain(|l, alphabets_count| {
             let Some(asc) = langs_alphs_cnt.remove(l) else {
                 return false;
@@ -91,9 +66,28 @@ pub(crate) fn process_alphabets_count<'t>(
             true
         });
     }
-    // println!("FINAL langs_alphabets_count {:?}", langs_alphabets_count);
+
+    // if script_alphabets_len == 1 {
+    let lang_alphabets_count_max = langs_alphabets_count
+        .iter()
+        .map(|(_, asc)| asc)
+        .flatten()
+        .fold(1, |acc, (_, cnt)| acc.max(*cnt));
+    // let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
+
+    langs_alphabets_count.retain(|_, asc| {
+        // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
+        asc.retain(|(_, cnt)| *cnt == lang_alphabets_count_max);
+        !asc.is_empty()
+    });
+
+    // langs_alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
+    // }
 
     langs_alphabets_count
+        .into_iter()
+        .map(|(l, a)| (l, a.into_iter().map(|a| a.0).collect()))
+        .collect()
 }
 
 #[cfg(test)]
