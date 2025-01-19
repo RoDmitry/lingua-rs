@@ -95,7 +95,7 @@ struct Args {
 }
 
 const THREADS: usize = 8;
-const MEM_MIN_USAGE: usize = 6 * 1024 * 1024 * 1024;
+const MEM_LIMIT_SLEEP: usize = 6 * 1024 * 1024 * 1024;
 // use std::sync::atomic::AtomicBool;
 // use std::sync::atomic::Ordering;
 // use std::sync::Arc;
@@ -118,7 +118,7 @@ fn main() {
             let path = path.unwrap();
             let file_name = path.file_name().into_string().unwrap();
             println!("New: {}", file_name);
-            while ALLOCATOR.allocated() > MEM_MIN_USAGE {
+            while ALLOCATOR.allocated() > MEM_LIMIT_SLEEP {
                 println!(
                     "*{}* Mem allocated: {}MB Sleeping...",
                     file_name,
@@ -158,7 +158,11 @@ fn main() {
                         file_name, alphabets
                     );
                 };
+                // TODO: rm this filter
                 if !matches!(alphabet, Alphabet::Latin(_)) {
+                    return;
+                }
+                if !matches!(lang, Language::English) {
                     return;
                 }
                 println!("*{}* lang: {:?}", file_name, lang);

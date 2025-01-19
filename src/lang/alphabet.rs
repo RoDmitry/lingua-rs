@@ -1107,10 +1107,15 @@ pub(crate) fn char_combine(s: Option<Script>, ch: char, extra: char) -> char {
     }
 }
 
+pub(crate) fn script_char_to_alphabets(script: Option<Script>, ch: char) -> ScriptAlphabets {
+    let alphabets = script.and_then(|s| script_char_match(s, ch));
+    ScriptAlphabets::from((script, alphabets))
+}
+
 /// add all the leters of all the alphabets in the script group
 /// or not all, only if it does not require to exclude letters
 /// if the script group has only one language, then leave it empty
-pub(crate) fn script_char_to_alphabets(script: Script, ch: char) -> Option<&'static [Alphabet]> {
+fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
     match script {
         /* Script::Adlam => alphabet_match!([(Alphabet::Adlam, [])]),
         Script::Ahom => alphabet_match!([(Alphabet::Ahom, [])]),

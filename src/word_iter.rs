@@ -84,8 +84,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                 ch = '\'';
             }
 
-            let alphabets = script.and_then(|s| script_char_to_alphabets(s, ch));
-            let script_alphabets = ScriptAlphabets::from((script, alphabets));
+            let script_alphabets = script_char_to_alphabets(script, ch);
 
             let langs: Set<Language> = script_alphabets
                 .iter()
@@ -96,29 +95,25 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
 
             let script = script.unwrap_or(Script::Common);
 
+            let langs_not_intersect = self.prev_char_script != script
+                && !self.prev_char_langs.is_empty()
+                && self.prev_char_langs.intersection(&langs).next().is_none();
+
             let ch_skip = if script_alphabets.is_empty() {
                 true
             } else if script == Script::Common {
-                if self.prev_char_script == Script::Common {
+                if self.prev_char_script == Script::Common || langs_not_intersect {
                     true
+                } else if let Some((next_char_script, _, _)) = self.next_char {
+                    next_char_script.is_none() || next_char_script == Some(Script::Common)
                 } else {
-                    if self.prev_char_langs.intersection(&langs).next().is_none() {
-                        true
-                    } else if let Some((next_char_script, _, _)) = self.next_char {
-                        next_char_script.is_none() || next_char_script == Some(Script::Common)
-                    } else {
-                        true
-                    }
+                    true
                 }
             } else {
                 false
             };
 
-            if ch_skip
-                || !self.prev_char_langs.is_empty()
-                    && self.prev_char_script != script
-                    && self.prev_char_langs.intersection(&langs).next().is_none()
-            {
+            if ch_skip || langs_not_intersect {
                 if !self.word_buf.is_empty() {
                     // saves word
                     /* if let Some(w) = words.get_mut(&self.word_buf) {
@@ -187,6 +182,7 @@ mod test {
         case("worda' wordb", ahashset!("worda", "wordb")),
         case("worda 'wordb", ahashset!("worda", "wordb")),
         case("'worda', 'wordb'", ahashset!("worda", "wordb")),
+        case("ПроSto", ahashset!("про", "sto")),
         case::chinese("中文", ahashset!("中文")),
         case("worda 🙈", ahashset!("worda")),
         case::kanji("昨日、東京で大切な友達に会いました。", ahashset!("昨日", "東京で大切な友達に会いました")),
