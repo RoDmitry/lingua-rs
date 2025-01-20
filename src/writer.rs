@@ -77,12 +77,12 @@ impl LanguageModelFilesWriter {
         println!("wrong_words {}", wrong_words.len()); */
         let word_chars: Vec<Vec<char>> = words
             .into_iter()
-            // TODO: uncomment filter
-            // .map(|wd| (process_langs_count(wd.script_langs), wd.chars))
-            // .filter(|(langs_cnt, _)| langs_cnt.contains_key(language))
+            // filter
+            .map(|wd| (process_langs_count(wd.script_langs), wd.chars))
+            .filter(|(langs_cnt, _)| langs_cnt.contains_key(language))
             // .inspect(|wd| println!("{:?}", wd))
-            // .map(|(_, chars)| chars)
-            .map(|wd| wd.chars)
+            .map(|(_, chars)| chars)
+            // .map(|wd| wd.chars)
             .collect();
         drop(text);
         /* let words: Vec<Vec<char>> = lines
