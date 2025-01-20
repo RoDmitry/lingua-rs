@@ -746,7 +746,7 @@ impl LanguageDetector {
             for &search_lang in search_languages {
                 if let Some(_cnt) = langs.get(search_lang) {
                     let cnt = languages.entry(search_lang).or_default();
-                    *cnt += len;
+                    *cnt = cnt.wrapping_add(len);
                 }
             }
         }

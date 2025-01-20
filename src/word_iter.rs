@@ -109,7 +109,6 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
             let langs = script
                 .map(|s| script_char_to_langs(s, ch))
                 .unwrap_or_default();
-            // println!("{:?}", langs);
 
             /* let langs: Set<Language> = script_alphabets
             .iter()
@@ -172,7 +171,6 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                         script_langs: std::mem::take(&mut self.word_script_langs),
                         range: self.word_start_index..self.not_saved_word_end_index,
                     });
-                    // println!("{:?}", self.res);
 
                     // reset temp variables
                     // self.word_buf = Default::default();

@@ -179,7 +179,7 @@ fn main() {
                 let result = LanguageModelFilesWriter::create_and_write_language_model(
                     &out_mod_path,
                     text,
-                    &lang,
+                    lang,
                 );
                 println!("*{}* {:?}", file_name, result);
 
@@ -224,9 +224,9 @@ fn main() {
                     let mut file = fs::File::options().append(true).open(file_path).unwrap();
                     // file.write_all(b"(Alphabet::").unwrap();
                     // file.write_all(alphabet.to_full_dbg().as_bytes()).unwrap();
-                    file.write_all(b"(Language::").unwrap();
+                    file.write_all(b"Language::").unwrap();
                     file.write_all(lang.to_string().as_bytes()).unwrap();
-                    file.write_all(b") => Some(Box::new(parselang_models::").unwrap();
+                    file.write_all(b" => Some(Box::new(parselang_models::").unwrap();
                     file.write_all(model_name.as_bytes()).unwrap();
                     file.write_all(b"Model)),\n").unwrap();
                 }

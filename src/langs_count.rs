@@ -9,8 +9,33 @@ pub(crate) fn process_langs_count(
     if script_langs.is_empty() {
         return Default::default();
     }
-    // let script_alphabets_len = script_alphabets.len();
 
+    let mut script_langs_iter = script_langs.into_values();
+    let mut langs_count = script_langs_iter.next().unwrap();
+
+    for langs_count_more in script_langs_iter {
+        for (lang, cnt) in langs_count_more {
+            let v = langs_count.entry(lang).or_default();
+            *v = v.wrapping_add(cnt);
+        }
+    }
+
+    let lang_count_max = langs_count
+        .iter()
+        .map(|(_, cnt)| cnt)
+        .fold(1, |acc, cnt| acc.max(*cnt));
+
+    langs_count.retain(|_, cnt| *cnt == lang_count_max);
+
+    langs_count
+}
+
+/* pub(crate) fn process_langs_count(
+    script_langs: AHashMap<Script, Map<Language, usize>>,
+) -> Map<Language, usize> {
+    if script_langs.is_empty() {
+        return Default::default();
+    }
     let mut script_langs_iter = script_langs.into_values();
     let mut langs_count = script_langs_iter.next().unwrap();
 
@@ -21,42 +46,22 @@ pub(crate) fn process_langs_count(
             };
 
             *count = count.wrapping_add(cnt);
-            /* for (alphabet, cnt) in asc {
-                if count
-                    .iter_mut()
-                    .find(|(a, _)| *a == alphabet)
-                    .map(|(_, c)| *c = c.wrapping_add(cnt))
-                    .is_none()
-                {
-                    count.push((alphabet, cnt));
-                }
-            } */
 
             true
         });
     }
 
-    // if script_alphabets_len == 1 {
     let lang_count_max = langs_count
         .iter()
         .map(|(_, cnt)| cnt)
         .fold(1, |acc, cnt| acc.max(*cnt));
-    // let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
 
     langs_count.retain(|_, cnt| {
-        // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
         *cnt == lang_count_max
     });
 
-    // langs_alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
-    // }
-
     langs_count
-    /* langs_count
-    .into_iter()
-    .map(|(l, a)| (l, a.into_iter().map(|a| a.0).collect()))
-    .collect() */
-}
+} */
 
 /* pub(crate) fn process_alphabets_count<'t>(
     // word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
@@ -514,6 +519,9 @@ mod test {
             ahashset!(Fon, Lombard, Friulian, Occitan, Catalan, Vietnamese, CreoleHaitian, Italian, Ewe, Limburgish, Sardinian)
         ),
         case("labâk", ahashset!(Romanian, French, Portuguese, Vietnamese)),
+        case("šefčovič's",
+            ahashset!(Slovak, Lithuanian, Silesian, Croatian, Latgalian, Czech, Bosnian, Latvian, Slovene)
+        ),
     )]
     fn assert_language_filtering_with_rules_works_correctly(
         word: &str,

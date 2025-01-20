@@ -15,6 +15,7 @@
  */
 
 use crate::constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION};
+use crate::langs_count::process_langs_count;
 use crate::model::TrainingDataLanguageModel;
 use crate::{word_iter, Language};
 use ::std::fs::{remove_file, File};
@@ -56,7 +57,7 @@ impl LanguageModelFilesWriter {
         out_mod_path: &Path,
         // lines: Vec<&str>,
         text: String,
-        language: &Language,
+        language: Language,
     ) -> io::Result<()> {
         // check_input_file_path(input_file_path);
         // check_output_directory_path(output_directory_path);
@@ -77,7 +78,10 @@ impl LanguageModelFilesWriter {
         let word_chars: Vec<Vec<char>> = words
             .into_iter()
             // TODO: uncomment filter
-            // .filter(|(_, wd)| wd.alphabets_count.contains_key(language))
+            // .map(|wd| (process_langs_count(wd.script_langs), wd.chars))
+            // .filter(|(langs_cnt, _)| langs_cnt.contains_key(language))
+            // .inspect(|wd| println!("{:?}", wd))
+            // .map(|(_, chars)| chars)
             .map(|wd| wd.chars)
             .collect();
         drop(text);
@@ -521,7 +525,7 @@ mod tests {
             let result = LanguageModelFilesWriter::create_and_write_language_model_files(
                 input_file.path(),
                 output_directory.path(),
-                &Language::English,
+                Language::English,
                 "\\p{L}",
             );
 

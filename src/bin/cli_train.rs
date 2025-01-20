@@ -103,7 +103,7 @@ fn main() {
     let result = LanguageModelFilesWriter::create_and_write_language_model(
         output_directory_path,
         text,
-        &Language::Japanese,
+        Language::Japanese,
     );
     println!("{:?}", result)
 }
