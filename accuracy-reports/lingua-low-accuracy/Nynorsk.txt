@@ -12,5 +12,5 @@ Erroneously classified as Bokmal: 17%, Swedish: 5.9%, Danish: 5.8%, German: 2.8%
 
 >> Detection of 1000 sentences (average length: 96 chars)
 Accuracy: 79.7%
-Erroneously classified as Bokmal: 12.6%, Swedish: 1.8%, Czech: 0.9%, Danish: 0.7%, Catalan: 0.5%, French: 0.5%, German: 0.5%, Afrikaans: 0.4%, Dutch: 0.3%, Icelandic: 0.3%, English: 0.2%, Spanish: 0.2%, Banjar: 0.1%, Basque: 0.1%, Esperanto: 0.1%, Estonian: 0.1%, Finnish: 0.1%, Hungarian: 0.1%, Italian: 0.1%, Latin: 0.1%, Lithuanian: 0.1%, Silesian: 0.1%, Slovak: 0.1%, Vietnamese: 0.1%, Xhosa: 0.1%, Yoruba: 0.1%
+Erroneously classified as Bokmal: 12.6%, Swedish: 1.8%, Czech: 0.9%, Danish: 0.7%, Catalan: 0.5%, French: 0.5%, German: 0.5%, Afrikaans: 0.4%, Dutch: 0.3%, Icelandic: 0.3%, English: 0.2%, Spanish: 0.2%, Basque: 0.1%, Esperanto: 0.1%, Estonian: 0.1%, Finnish: 0.1%, Hungarian: 0.1%, Italian: 0.1%, KanuriCentral: 0.1%, Latin: 0.1%, Lithuanian: 0.1%, Silesian: 0.1%, Slovak: 0.1%, Vietnamese: 0.1%, Xhosa: 0.1%, Yoruba: 0.1%
 
