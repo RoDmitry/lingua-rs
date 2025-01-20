@@ -792,7 +792,6 @@ dependencies = [
  "lingua-bosnian-language-model",
  "lingua-bulgarian-language-model",
  "lingua-catalan-language-model",
- "lingua-chinese-language-model",
  "lingua-croatian-language-model",
  "lingua-czech-language-model",
  "lingua-danish-language-model",

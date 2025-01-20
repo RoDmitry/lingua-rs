@@ -61,7 +61,7 @@ pub enum Alphabet {
     }
 } */
 
-#[derive(Clone, Copy, Debug)]
+/* #[derive(Clone, Copy, Debug)]
 pub enum ScriptAlphabets {
     Alphabets(&'static [Alphabet]),
     Script(Option<Script>),
@@ -120,7 +120,7 @@ impl Iterator for ScriptAlphabetIter {
             }
         }
     }
-}
+} */
 
 fn type_of<T>(_: &T) -> &str {
     std::any::type_name::<T>()
@@ -150,7 +150,7 @@ impl Alphabet {
     }
 }
 
-impl From<Alphabet> for &'static [Language] {
+/* impl From<Alphabet> for &'static [Language] {
     fn from(a: Alphabet) -> Self {
         match a {
             Alphabet::Cyrillic(ca) => {
@@ -398,7 +398,6 @@ impl From<Alphabet> for &'static [Language] {
                         Language::Magahi,
                         Language::Maithili,
                         Language::Marathi,
-                        Language::Marathi,
                         Language::Nepali,
                         Language::Sanskrit,
                     ],
@@ -562,7 +561,7 @@ impl From<Alphabet> for &'static [Language] {
             }
         }
     }
-}
+} */
 
 macro_rules! alphabet_wrapper {
     (
@@ -783,38 +782,40 @@ bod_Tibt
 
 // static ASD: Vec<Alphabet> = LatinAlphabet::iter().map(|la| Alphabet::Latin(la)).collect::<Vec<_>>();
 
-pub fn str_to_alphabets(s: &str) -> &[Alphabet] {
-    // use Alphabet::*;
+pub fn str_to_langs(s: &str) -> &[Language] {
     match s {
-        "Arab" => &[Alphabet::Script(Script::Arabic)],
-        "Armn" => &[Alphabet::Script(Script::Armenian)],
-        "Beng" => &[Alphabet::Script(Script::Bengali)],
-        "Cyrl" => CyrillicAlphabet::ALPHABETS,
-        "Deva" => &[Alphabet::Script(Script::Devanagari)],
-        "Ethi" => &[Alphabet::Script(Script::Ethiopic)],
-        "Geor" => &[Alphabet::Script(Script::Georgian)],
-        "Grek" => &[Alphabet::Script(Script::Greek)],
-        "Gujr" => &[Alphabet::Script(Script::Gujarati)],
-        "Guru" => &[Alphabet::Script(Script::Gurmukhi)],
-        "Hang" => &[Alphabet::Script(Script::Hangul)],
-        "Hans" => &[Alphabet::Han(HanAlphabet::ChineseSimplified)],
-        "Hant" => &[Alphabet::Han(HanAlphabet::ChineseTraditional)],
-        "Hebr" => &[Alphabet::Script(Script::Hebrew)],
-        "JpanKanji" => &[Alphabet::Han(HanAlphabet::Kanji)],
-        "Khmr" => &[Alphabet::Script(Script::Khmer)],
-        "Knda" => &[Alphabet::Script(Script::Kannada)],
-        "Laoo" => &[Alphabet::Script(Script::Lao)],
-        "Latn" => LatinAlphabet::ALPHABETS,
-        "Mlym" => &[Alphabet::Script(Script::Malayalam)],
-        "Mymr" => &[Alphabet::Script(Script::Myanmar)],
-        "Olck" => &[Alphabet::Script(Script::OlChiki)],
-        "Orya" => &[Alphabet::Script(Script::Oriya)],
-        "Sinh" => &[Alphabet::Script(Script::Sinhala)],
-        "Taml" => &[Alphabet::Script(Script::Tamil)],
-        "Telu" => &[Alphabet::Script(Script::Telugu)],
-        "Tfng" => &[Alphabet::Script(Script::Tifinagh)],
-        "Thai" => &[Alphabet::Script(Script::Thai)],
-        "Tibt" => &[Alphabet::Script(Script::Tibetan)],
+        "Arab" => script_char_to_langs(Script::Arabic, char::default()),
+        "Armn" => script_char_to_langs(Script::Armenian, char::default()),
+        "Beng" => script_char_to_langs(Script::Bengali, char::default()),
+        "Cyrl" => script_char_to_langs(Script::Cyrillic, char::default()),
+        "Deva" => script_char_to_langs(Script::Devanagari, char::default()),
+        "Ethi" => script_char_to_langs(Script::Ethiopic, char::default()),
+        "Geor" => script_char_to_langs(Script::Georgian, char::default()),
+        "Grek" => script_char_to_langs(Script::Greek, char::default()),
+        "Gujr" => script_char_to_langs(Script::Gujarati, char::default()),
+        "Guru" => script_char_to_langs(Script::Gurmukhi, char::default()),
+        "Hang" => script_char_to_langs(Script::Hangul, char::default()),
+        "Hans" => &[Language::ChineseSimplified],
+        "Hant" => &[
+            Language::ChineseTraditional,
+            Language::ChineseCantoneseTraditional,
+        ],
+        "Hebr" => script_char_to_langs(Script::Hebrew, char::default()),
+        "Jpan" => &[Language::Japanese],
+        "Khmr" => script_char_to_langs(Script::Khmer, char::default()),
+        "Knda" => script_char_to_langs(Script::Kannada, char::default()),
+        "Laoo" => script_char_to_langs(Script::Lao, char::default()),
+        "Latn" => script_char_to_langs(Script::Latin, char::default()),
+        "Mlym" => script_char_to_langs(Script::Malayalam, char::default()),
+        "Mymr" => script_char_to_langs(Script::Myanmar, char::default()),
+        "Olck" => script_char_to_langs(Script::OlChiki, char::default()),
+        "Orya" => script_char_to_langs(Script::Oriya, char::default()),
+        "Sinh" => script_char_to_langs(Script::Sinhala, char::default()),
+        "Taml" => script_char_to_langs(Script::Tamil, char::default()),
+        "Telu" => script_char_to_langs(Script::Telugu, char::default()),
+        "Tfng" => script_char_to_langs(Script::Tifinagh, char::default()),
+        "Thai" => script_char_to_langs(Script::Thai, char::default()),
+        "Tibt" => script_char_to_langs(Script::Tibetan, char::default()),
         _ => &[],
     }
 }
@@ -1167,7 +1168,7 @@ pub(crate) fn script_char_to_langs(script: Script, ch: char) -> &'static [Langua
             Language::Meitei,
         ],
         Bhaiksuki => &[Language::Bhaiksuki],
-        Bopomofo => &[Language::ChineseMandarin],
+        Bopomofo => &[Language::ChineseMandarinBopomofo],
         Brahmi => &[Language::Sanskrit, Language::Prakrit],
         Braille => &[Language::Braille],
         Buginese => &[Language::Buginese, Language::Makassarese],
@@ -1322,7 +1323,6 @@ pub(crate) fn script_char_to_langs(script: Script, ch: char) -> &'static [Langua
             Language::Magahi,
             Language::Maithili,
             Language::Marathi,
-            Language::Marathi,
             Language::Nepali,
             Language::Sanskrit,
         ],
@@ -1350,7 +1350,7 @@ pub(crate) fn script_char_to_langs(script: Script, ch: char) -> &'static [Langua
         GurungKhema => &[Language::Gurung],
         Han => alphabet_match!([
             (
-                Language::Chinese, // ChineseSimplified
+                Language::ChineseSimplified,
                 [
                     // https://en.wikisource.org/wiki/Translation:List_of_Frequently_Used_Characters_in_Modern_Chinese
                     // https://www.tutormandarin.net/en/list-of-different-simplified-and-traditional-characters/
@@ -1439,7 +1439,8 @@ pub(crate) fn script_char_to_langs(script: Script, ch: char) -> &'static [Langua
                     '窑', '乔', '四', '随', '历', '咽', '扩', '绪', '飞', '愿', '虫'
                 ]
             ),
-            (Language::Chinese, []), // ChineseTraditional
+            (Language::ChineseTraditional, []),
+            (Language::ChineseCantoneseTraditional, []),
             (Language::Korean, []),
             (
                 // it also uses all Traditional Chinese characters

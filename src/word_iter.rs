@@ -1,4 +1,5 @@
-use fixed_map::Set;
+use ahash::AHashMap;
+use fixed_map::Map;
 use std::ops::Range;
 
 use crate::{
@@ -9,6 +10,27 @@ use crate::{
     Language,
 };
 
+fn has_intersection(
+    script: Script,
+    langs: &'static [Language],
+    script_langs: &AHashMap<Script, Map<Language, usize>>,
+) -> bool {
+    let mut res = false;
+    'a: for (&s, lang_cnt) in script_langs {
+        if s == script {
+            continue;
+        }
+        for &lang in langs {
+            if lang_cnt.contains_key(lang) {
+                res = true;
+                continue 'a;
+            }
+        }
+        return false;
+    }
+    res
+}
+
 pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>> {
     iter: I,
     next_char: Option<(Option<Script>, usize, char)>,
@@ -16,8 +38,8 @@ pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>
     word_start_index: usize,
     not_saved_word_end_index: usize,
     prev_char_script: Script,
-    prev_char_langs: Set<Language>,
-    word_script_langs: Vec<(Script, Set<Language>)>,
+    // prev_char_langs: Set<Language>,
+    word_script_langs: AHashMap<Script, Map<Language, usize>>,
     res: Option<WordData>,
 }
 
@@ -49,7 +71,7 @@ pub(crate) fn from_ch_iter(
         word_start_index: Default::default(),
         not_saved_word_end_index: Default::default(),
         prev_char_script: Script::Common,
-        prev_char_langs: Default::default(),
+        // prev_char_langs: Default::default(),
         word_script_langs: Default::default(),
         res: None,
     }
@@ -58,7 +80,7 @@ pub(crate) fn from_ch_iter(
 #[derive(Debug)]
 pub(crate) struct WordData {
     pub chars: Vec<char>,
-    pub script_langs: Vec<(Script, Set<Language>)>,
+    pub script_langs: AHashMap<Script, Map<Language, usize>>,
     pub range: Range<usize>,
 }
 
@@ -84,9 +106,10 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                 ch = '\'';
             }
 
-            let langs: Set<Language> = script
-                .map(|s| script_char_to_langs(s, ch).iter().copied().collect())
+            let langs = script
+                .map(|s| script_char_to_langs(s, ch))
                 .unwrap_or_default();
+            // println!("{:?}", langs);
 
             /* let langs: Set<Language> = script_alphabets
             .iter()
@@ -95,11 +118,15 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
             .copied()
             .collect(); */
 
-            let script = script.unwrap_or(Script::Common);
+            let script = script.unwrap_or(Script::Common); // why Common, maybe skip?
 
-            let langs_not_intersect = self.prev_char_script != script
-                && !self.prev_char_langs.is_empty()
-                && self.prev_char_langs.intersection(&langs).next().is_none();
+            let langs_not_intersect = if self.prev_char_script != script {
+                !has_intersection(script, langs, &self.word_script_langs)
+            } else {
+                false
+            };
+            // && !self.prev_char_langs.is_empty()
+            // && self.prev_char_langs.intersection(&langs).next().is_none();
 
             let ch_skip = if langs.is_empty() {
                 true
@@ -144,7 +171,8 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                         chars: std::mem::take(&mut self.word_buf),
                         script_langs: std::mem::take(&mut self.word_script_langs),
                         range: self.word_start_index..self.not_saved_word_end_index,
-                    })
+                    });
+                    // println!("{:?}", self.res);
 
                     // reset temp variables
                     // self.word_buf = Default::default();
@@ -157,10 +185,15 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
             if !ch_skip {
                 self.not_saved_word_end_index = ch_idx + ch.len_utf8();
                 self.word_buf.push(ch.to_lowercase().next().unwrap()); // maybe check each char?
-                self.word_script_langs.push((script, langs));
+                                                                       // self.word_script_langs.push((script, langs));
+                let script_entry = self.word_script_langs.entry(script).or_default();
+                for &lang in langs {
+                    let v = script_entry.entry(lang).or_default();
+                    *v = v.wrapping_add(1);
+                }
             }
             self.prev_char_script = script;
-            self.prev_char_langs = langs;
+            // self.prev_char_langs = langs;
         }
 
         self.res.take()

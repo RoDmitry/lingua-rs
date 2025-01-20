@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-use crate::alphabet_count::process_alphabets_count;
 use crate::constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE};
 use crate::json::load_json;
-use crate::lang::Alphabet;
+use crate::lang::Script;
+use crate::langs_count::process_langs_count;
 use crate::model::{JsonLanguageModel, TestDataLanguageModel};
 use crate::result::DetectionResult;
 use crate::{word_iter, Language};
@@ -28,6 +28,7 @@ use ::std::ops::Range;
 use ::std::sync::RwLock;
 use ahash::{AHashMap, AHashSet};
 use compact_str::CompactString;
+use fixed_map::Map;
 use fraction::Zero;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
@@ -48,11 +49,11 @@ static FIVEGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap
 pub struct Word {
     pub chars: Vec<char>,
     pub range: Range<usize>,
-    pub most_frequent_alphabet: Alphabet,
+    pub most_frequent_script: Script,
     /// Languages listed here are always from the most frequent Alphabet
-    pub checked_languages: Vec<(Language, Alphabet, f64)>,
+    pub checked_languages: Vec<(Language, Script, f64)>,
     /// can include most frequent Alphabet, but for different languages
-    pub unverified_alphabet_languages: AHashMap<Language, Vec<Alphabet>>,
+    pub unverified_alphabet_languages: AHashMap<Language, Vec<Script>>,
 }
 
 /// This struct detects the language of given input text.
@@ -608,13 +609,13 @@ impl LanguageDetector {
             return Vec::new();
         }
         let found_words_iter = word_iter::from_ch_iter(text_str.char_indices());
-        let words_with_langs_iter = found_words_iter.map(|mut wd| {
+        /* let words_with_langs_iter = found_words_iter.map(|mut wd| {
             let mut langs_alphabets =
-                process_alphabets_count(std::mem::take(&mut wd.script_alphabets));
+                process_alphabets_count(std::mem::take(&mut wd.script_langs));
             langs_alphabets.retain(|l, _| search_languages.contains(&l));
 
             (langs_alphabets, wd)
-        });
+        }); */
 
         /* if words.is_empty() || languages.is_empty() {
             return values;
@@ -720,11 +721,11 @@ impl LanguageDetector {
         let mut words = Vec::new();
         // let mut script_alphabets_iter = found_words.into_iter();
         // let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
-        let mut languages: AHashMap<Language, (usize, Vec<Alphabet>)> = AHashMap::new();
+        /* let mut languages: AHashMap<Language, (usize, Vec<Script>)> = AHashMap::new();
         for wd in found_words {
             let len = wd.chars.len();
             words.push(wd.chars);
-            let langs = process_alphabets_count(wd.script_alphabets);
+            let langs = process_langs_count(wd.script_langs);
             for (lang, alphs) in langs {
                 if search_languages.contains(&lang) {
                     let (cnt, alphabets) = languages.entry(lang).or_default();
@@ -736,6 +737,18 @@ impl LanguageDetector {
                     }
                 }
             }
+        } */
+        let mut languages: Map<Language, usize> = Default::default();
+        for wd in found_words {
+            let len = wd.chars.len();
+            words.push(wd.chars);
+            let langs = process_langs_count(wd.script_langs);
+            for &search_lang in search_languages {
+                if let Some(_cnt) = langs.get(search_lang) {
+                    let cnt = languages.entry(search_lang).or_default();
+                    *cnt += len;
+                }
+            }
         }
         if words.is_empty() || languages.is_empty() {
             return values;
@@ -744,15 +757,12 @@ impl LanguageDetector {
         languages.intersection(search_languages).copied().collect(); */
         // languages.retain(|l, _| search_languages.contains(l));
         // println!("filtered_languages {:?}", languages);
-        let lang_alphabets_count_max = languages
-            .iter()
-            .map(|(_, lcas)| lcas.0)
-            .fold(1, |acc, cnt| acc.max(cnt));
+        let lang_alphabets_count_max = languages.iter().fold(1, |acc, (_, &cnt)| acc.max(cnt));
 
-        languages.retain(|_, lcas| {
+        languages.retain(|_, cnt| {
             // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
             // let max = asc.iter().fold(1, |acc, (_, cnt)| acc.max(*cnt));
-            lcas.0 == lang_alphabets_count_max
+            *cnt == lang_alphabets_count_max
             // acs.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
             // !acs.is_empty()
         });
@@ -776,7 +786,7 @@ impl LanguageDetector {
         ); */
 
         if languages.len() == 1 {
-            let (&lang, _alphabets) = languages.iter().next().unwrap();
+            let (lang, _cnt) = languages.iter().next().unwrap();
             // todo: return alphabets also
             update_confidence_values(&mut values, lang, 1.0);
             values.sort_by(confidence_values_comparator);
@@ -1829,7 +1839,7 @@ mod tests {
             "上海大学是一个好大学. It is such a great university.",
             "上海大学是一个好大学. ",
             10,
-            Chinese,
+            ChineseSimplified,
             "It is such a great university.",
             6,
             English
@@ -2022,10 +2032,11 @@ mod tests {
         case(vec![English, Kazakh], "нормаланбайды", Some(Kazakh)),
         case(vec![English, Kazakh], "нормаланбайды I", Some(Kazakh)),
         case(vec![Kazakh, MongolianHalh], "Балаларды жүзуге үй-рету бассейнінің үй-жайы", Some(Kazakh)),
-        // case::simplified_chinese(vec![Chinese, Japanese], "经济", Some(Chinese)),
-        case::traditional_chinese(vec![Chinese, Japanese], "經濟", Some(Chinese)),
-        case::kanji(vec![Chinese, Japanese], "経済", Some(Japanese)),
-        case::kanji2(vec![Chinese, Japanese], "自動販売機", Some(Japanese)),
+        // case::simplified_chinese(vec![ChineseSimplified, ChineseTraditional, ChineseCantoneseTraditional, Japanese], "经济", Some(ChineseSimplified)),
+        // case::traditional_chinese(vec![ChineseSimplified, Japanese], "經濟", Some(ChineseSimplified)),
+        case::kanji(vec![ChineseSimplified, Japanese], "経済", Some(Japanese)),
+        case::kanji2(vec![ChineseSimplified, Japanese], "自動販売機", Some(Japanese)),
+        // case::arab(vec![Acehnese, Arabic], "والموضوع", Some(Arabic)),
     )]
     fn test_specific_language_detection_problems(
         builder_languages: Vec<Language>,

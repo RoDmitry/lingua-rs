@@ -426,7 +426,6 @@ macro_rules! ahashset {
 #[cfg(test)]
 use regex::Regex;
 
-mod alphabet_count;
 mod builder;
 mod constant;
 mod detector;
@@ -434,6 +433,7 @@ mod fraction;
 mod isocode;
 mod json;
 mod lang;
+mod langs_count;
 mod model;
 mod ngram;
 mod result;
@@ -443,7 +443,7 @@ mod writer;
 pub use builder::LanguageDetectorBuilder;
 pub use detector::LanguageDetector;
 pub use isocode::{IsoCode639_1, IsoCode639_3};
-pub use lang::{str_to_alphabets, Alphabet, Language};
+pub use lang::{str_to_langs, Alphabet, Language};
 pub use result::DetectionResult;
 #[cfg(target_family = "wasm")]
 pub use wasm::{

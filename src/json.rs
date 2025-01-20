@@ -43,8 +43,8 @@ use lingua_bosnian_language_model::BOSNIAN_MODELS_DIRECTORY;
 use lingua_bulgarian_language_model::BULGARIAN_MODELS_DIRECTORY;
 #[cfg(feature = "catalan")]
 use lingua_catalan_language_model::CATALAN_MODELS_DIRECTORY;
-#[cfg(feature = "chinese")]
-use lingua_chinese_language_model::CHINESE_MODELS_DIRECTORY;
+/* #[cfg(feature = "chinese")]
+use lingua_chinese_language_model::CHINESE_MODELS_DIRECTORY; */
 #[cfg(feature = "croatian")]
 use lingua_croatian_language_model::CROATIAN_MODELS_DIRECTORY;
 #[cfg(feature = "czech")]
@@ -225,8 +225,8 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
         #[cfg(feature = "catalan")]
         Language::Catalan => Some(CATALAN_MODELS_DIRECTORY),
 
-        #[cfg(feature = "chinese")]
-        Language::Chinese => Some(CHINESE_MODELS_DIRECTORY),
+        /* #[cfg(feature = "chinese")]
+        Language::ChineseSimplified => Some(CHINESE_MODELS_DIRECTORY), */
 
         #[cfg(feature = "croatian")]
         Language::Croatian => Some(CROATIAN_MODELS_DIRECTORY),

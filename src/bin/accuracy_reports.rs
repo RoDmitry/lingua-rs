@@ -37,7 +37,7 @@ use lingua_bokmal_language_model::BOKMAL_TESTDATA_DIRECTORY;
 use lingua_bosnian_language_model::BOSNIAN_TESTDATA_DIRECTORY;
 use lingua_bulgarian_language_model::BULGARIAN_TESTDATA_DIRECTORY;
 use lingua_catalan_language_model::CATALAN_TESTDATA_DIRECTORY;
-use lingua_chinese_language_model::CHINESE_TESTDATA_DIRECTORY;
+// use lingua_chinese_language_model::CHINESE_TESTDATA_DIRECTORY;
 use lingua_croatian_language_model::CROATIAN_TESTDATA_DIRECTORY;
 use lingua_czech_language_model::CZECH_TESTDATA_DIRECTORY;
 use lingua_danish_language_model::DANISH_TESTDATA_DIRECTORY;
@@ -612,7 +612,7 @@ fn map_whatlang_to_lingua(language: Option<WhatlangLanguage>) -> Option<Language
         Some(WhatlangLanguage::Bul) => Some(Language::Bulgarian),
         Some(WhatlangLanguage::Cat) => Some(Language::Catalan),
         Some(WhatlangLanguage::Ces) => Some(Language::Czech),
-        Some(WhatlangLanguage::Cmn) => Some(Language::Chinese),
+        // Some(WhatlangLanguage::Cmn) => Some(Language::Chinese),
         Some(WhatlangLanguage::Dan) => Some(Language::Danish),
         Some(WhatlangLanguage::Deu) => Some(Language::German),
         Some(WhatlangLanguage::Ell) => Some(Language::Greek),
@@ -665,7 +665,7 @@ fn map_whatlang_to_lingua(language: Option<WhatlangLanguage>) -> Option<Language
 fn map_whichlang_to_lingua(language: WhichlangLanguage) -> Option<Language> {
     match language {
         WhichlangLanguage::Ara => Some(Language::Arabic),
-        WhichlangLanguage::Cmn => Some(Language::Chinese),
+        // WhichlangLanguage::Cmn => Some(Language::Chinese),
         WhichlangLanguage::Deu => Some(Language::German),
         WhichlangLanguage::Eng => Some(Language::English),
         WhichlangLanguage::Fra => Some(Language::French),
@@ -680,6 +680,7 @@ fn map_whichlang_to_lingua(language: WhichlangLanguage) -> Option<Language> {
         WhichlangLanguage::Swe => Some(Language::Swedish),
         WhichlangLanguage::Tur => Some(Language::Turkish),
         WhichlangLanguage::Vie => Some(Language::Vietnamese),
+        _ => None,
     }
 }
 
@@ -697,7 +698,7 @@ fn get_test_data_directory(language: &Language) -> Option<Dir<'static>> {
         Language::Bosnian => Some(BOSNIAN_TESTDATA_DIRECTORY),
         Language::Bulgarian => Some(BULGARIAN_TESTDATA_DIRECTORY),
         Language::Catalan => Some(CATALAN_TESTDATA_DIRECTORY),
-        Language::Chinese => Some(CHINESE_TESTDATA_DIRECTORY),
+        // Language::Chinese => Some(CHINESE_TESTDATA_DIRECTORY),
         Language::Croatian => Some(CROATIAN_TESTDATA_DIRECTORY),
         Language::Czech => Some(CZECH_TESTDATA_DIRECTORY),
         Language::Danish => Some(DANISH_TESTDATA_DIRECTORY),

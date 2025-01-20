@@ -144,10 +144,11 @@ pub enum Language {
     #[strum(serialize = "hne")]
     Chhattisgarhi,
     #[strum(serialize = "zho")]
-    Chinese,
+    ChineseSimplified,
+    ChineseTraditional,
     #[strum(serialize = "yue")]
-    ChineseCantonese,
-    ChineseMandarin,
+    ChineseCantoneseTraditional,
+    ChineseMandarinBopomofo,
     ChineseTuhua,
     #[strum(serialize = "cjk")]
     Chokwe,
@@ -689,7 +690,7 @@ impl Language {
             Bosnian => IsoCode639_1::BS,
             Bulgarian => IsoCode639_1::BG,
             Catalan => IsoCode639_1::CA,
-            Chinese => IsoCode639_1::ZH,
+            ChineseSimplified => IsoCode639_1::ZH,
             Croatian => IsoCode639_1::HR,
             Czech => IsoCode639_1::CS,
             Danish => IsoCode639_1::DA,
@@ -772,7 +773,7 @@ impl Language {
             Bosnian => IsoCode639_3::BOS,
             Bulgarian => IsoCode639_3::BUL,
             Catalan => IsoCode639_3::CAT,
-            Chinese => IsoCode639_3::ZHO,
+            ChineseSimplified => IsoCode639_3::ZHO,
             Croatian => IsoCode639_3::HRV,
             Czech => IsoCode639_3::CES,
             Danish => IsoCode639_3::DAN,
@@ -905,7 +906,7 @@ impl Language {
             Language::Marathi => &[Script::Devanagari],
             Language::Armenian => &[Script::Armenian],
             Language::Bengali => &[Script::Bengali],
-            Language::Chinese => &[Script::Han],
+            Language::ChineseSimplified => &[Script::Han],
             Language::Georgian => &[Script::Georgian],
             Language::Greek => &[Script::Greek],
             Language::Gujarati => &[Script::Gujarati],

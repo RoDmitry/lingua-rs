@@ -83,7 +83,7 @@ impl TrainingDataLanguageModel {
         words_chars: &Vec<Vec<char>>,
         ngram_length: usize,
     ) -> AHashMap<Ngram, usize> {
-        let mut absolute_frequencies = AHashMap::new();
+        let mut absolute_frequencies: AHashMap<Ngram, usize> = AHashMap::new();
         /* let regex = Regex::new(&format!("^[{char_class}]+$")).unwrap_or_else(|_| {
             panic!(
                 "The character class '{char_class}' cannot be compiled to a valid regular expression"
@@ -103,10 +103,8 @@ impl TrainingDataLanguageModel {
                 let slice = &chars[i..i + ngram_length].iter().collect::<String>();
 
                 // if regex.is_match(slice) {
-                absolute_frequencies
-                    .entry(Ngram::new(slice))
-                    .and_modify(|c| *c += 1)
-                    .or_insert(1);
+                let v = absolute_frequencies.entry(Ngram::new(slice)).or_default();
+                *v = v.wrapping_add(1);
                 // }
             }
         }
@@ -303,10 +301,10 @@ impl<'a> TestDataLanguageModel<'a> {
             lower_order_ngrams.push(res);
         } */
         /* let ngrams = lower_order_ngrams
-            .into_iter()
-            .map(|v| v.into_iter())
-            .flatten()
-            .collect(); */
+        .into_iter()
+        .map(|v| v.into_iter())
+        .flatten()
+        .collect(); */
         // println!("words: {:?}", words);
         // println!("lower_order_ngrams {:?}", lower_order_ngrams);
         // println!("{:?}", ngrams);

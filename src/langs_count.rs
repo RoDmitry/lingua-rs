@@ -1,12 +1,64 @@
-use crate::{
-    lang::{Script, ScriptAlphabets},
-    Alphabet, Language,
-};
-// use ::std::collections::hash_map::Entry;
+use crate::{lang::Script, Language};
 use ahash::AHashMap;
-// use fixed_map::Map;
+// use ::std::collections::hash_map::Entry;
+use fixed_map::Map;
 
-pub(crate) fn process_alphabets_count<'t>(
+pub(crate) fn process_langs_count(
+    script_langs: AHashMap<Script, Map<Language, usize>>,
+) -> Map<Language, usize> {
+    if script_langs.is_empty() {
+        return Default::default();
+    }
+    // let script_alphabets_len = script_alphabets.len();
+
+    let mut script_langs_iter = script_langs.into_values();
+    let mut langs_count = script_langs_iter.next().unwrap();
+
+    for mut langs_cnt in script_langs_iter {
+        langs_count.retain(|l, count| {
+            let Some(cnt) = langs_cnt.remove(l) else {
+                return false;
+            };
+
+            *count = count.wrapping_add(cnt);
+            /* for (alphabet, cnt) in asc {
+                if count
+                    .iter_mut()
+                    .find(|(a, _)| *a == alphabet)
+                    .map(|(_, c)| *c = c.wrapping_add(cnt))
+                    .is_none()
+                {
+                    count.push((alphabet, cnt));
+                }
+            } */
+
+            true
+        });
+    }
+
+    // if script_alphabets_len == 1 {
+    let lang_count_max = langs_count
+        .iter()
+        .map(|(_, cnt)| cnt)
+        .fold(1, |acc, cnt| acc.max(*cnt));
+    // let lang_alphabets_count_half = lang_alphabets_count_max >> 1;
+
+    langs_count.retain(|_, cnt| {
+        // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
+        *cnt == lang_count_max
+    });
+
+    // langs_alphabets_count.sort_unstable_by(|(_, cnt1), (_, cnt2)| cnt2.cmp(cnt1));
+    // }
+
+    langs_count
+    /* langs_count
+    .into_iter()
+    .map(|(l, a)| (l, a.into_iter().map(|a| a.0).collect()))
+    .collect() */
+}
+
+/* pub(crate) fn process_alphabets_count<'t>(
     // word_alphabets_count: AHashMap<(Script, Alphabet), usize>,
     word_alphabets: Vec<(Script, ScriptAlphabets)>,
     // word_alphabets_count: Map<Alphabet, usize>,
@@ -16,7 +68,7 @@ pub(crate) fn process_alphabets_count<'t>(
         for alphabet in alphabets.iter() {
             word_alphabets_count
                 .entry((script, alphabet))
-                .and_modify(|c| *c = c.wrapping_add(1))
+                .and_modify(|c| *c = c.wrapping_add(1)) // todo rm and_modify
                 .or_insert(1);
             /* match cnt_entry {
                 Entry::Occupied(cnt_o) => {
@@ -88,7 +140,7 @@ pub(crate) fn process_alphabets_count<'t>(
         .into_iter()
         .map(|(l, a)| (l, a.into_iter().map(|a| a.0).collect()))
         .collect()
-}
+} */
 
 #[cfg(test)]
 mod test {
@@ -200,7 +252,7 @@ mod test {
         let found_words = word_iter::from_ch_iter(word.char_indices());
         let languages: AHashSet<_> = found_words
             .into_iter()
-            .map(|w| process_alphabets_count(w.script_alphabets))
+            .map(|w| process_langs_count(w.script_langs))
             .flatten()
             .map(|(l, _)| l)
             .collect();
@@ -237,8 +289,8 @@ mod test {
             "والموضوع", 
             ahashset!(
                 Uyghur, PersianWestern, ArabicSouthLevantine, Arabic, ArabicSouthernYemeni, Persian,
-                AzerbaijaniSouth, Kashmiri, KurdishCentral, Dari, KanuriCentral, Kurdish, Acehnese,
-                ArabicEgyptian, ArabicMesopotamian, Pashto, Urdu, ArabicMoroccan, Banjar,
+                AzerbaijaniSouth, Kashmiri, KurdishCentral, Dari, KanuriCentral, Kurdish, AcehneseJawi,
+                ArabicEgyptian, ArabicMesopotamian, Pashto, Urdu, ArabicMoroccan, BanjarJawi,
                 ArabicNorthLevantine, ArabicNajdi, ArabicTunisian, PastoSouthern, Sindhi
             )),
         case::ru1(
@@ -441,7 +493,7 @@ mod test {
                 Basque, Luxembourgish, French, Sundanese, Kikongo, OromoWestCentral, Xhosa, Nynorsk,
                 Sepedi, AlbanianTosk, Czech, Nyanja, Swati, Zulu, Sesotho, KurdishNorthern, Ewe,
                 Hungarian, English, Latvian, Rundi, Acehnese, Minangkabau, Turkish, Irish, Lombard,
-                Dyula, Balinese, Lingala, Maltese, KanuriCentral, MalayStandard, Slovene, Tsonga,
+                Dyula, Balinese, Lingala, Maltese, KanuriCentral, Slovene, Tsonga,
                 Sango, Tumbuka, Igbo, Afrikaans, Catalan, Buginese, Polish, Welsh, Croatian, Tswana,
                 FulfuldeNigerian, Wolof, AymaraCentral, Limburgish, AzerbaijaniNorth, Portuguese,
                 Finnish, Twi, Kikuyu, Banjar, Bosnian, Kabyle, Guarani, Yoruba, Sardinian, Javanese,
@@ -470,7 +522,7 @@ mod test {
         let found_words = word_iter::from_ch_iter(word.char_indices());
         let languages: AHashSet<_> = found_words
             .into_iter()
-            .map(|w| process_alphabets_count(w.script_alphabets))
+            .map(|w| process_langs_count(w.script_langs))
             .flatten()
             .map(|(l, _)| l)
             .collect();
@@ -486,7 +538,7 @@ mod test {
         text,
         expected_language,
         case::kanji("昨日、東京で大切な友達に会いました。", Japanese), // Kanji (Han) + Hiragana
-        case::chinese("也有越來越多的人開始飼養寵物", Chinese),
+        case::chinese("也有越來越多的人開始飼養寵物", ChineseSimplified),
     )]
     fn assert_language_detection_with_rules_text_works_correctly(
         text: &str,
@@ -495,7 +547,7 @@ mod test {
         let found_words = word_iter::from_ch_iter(text.char_indices());
         let languages: AHashSet<_> = found_words
             .into_iter()
-            .map(|w| process_alphabets_count(w.script_alphabets))
+            .map(|w| process_langs_count(w.script_langs))
             .flatten()
             .map(|(l, _)| l)
             .collect();

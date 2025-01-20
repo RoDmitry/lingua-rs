@@ -7,7 +7,7 @@ use cap::Cap;
 use clap::Parser;
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
-use lingua::{str_to_alphabets, Alphabet, Language, LanguageModelFilesWriter};
+use lingua::{str_to_langs, Alphabet, Language, LanguageModelFilesWriter};
 // use rayon::prelude::*;
 
 // #[cfg(not(target_env = "msvc"))]
@@ -148,27 +148,20 @@ fn main() {
                     return;
                 } */
 
-                let alphabets = str_to_alphabets(alph);
-                let Some(alphabet) = alphabets
-                    .iter()
-                    .find(|a| <&[Language]>::from(**a).contains(&lang))
-                else {
+                let langs = str_to_langs(alph);
+                if !langs.contains(&lang) {
                     panic!(
-                        "*{}* Not found alphabet for lang: {lang} in {:?}",
-                        file_name, alphabets
+                        "*{}* Not found lang: {lang} in {:?}",
+                        file_name, langs
                     );
                 };
                 // TODO: rm this filter
-                if !matches!(alphabet, Alphabet::Latin(_)) {
-                    return;
-                }
                 if !matches!(lang, Language::English) {
                     return;
                 }
                 println!("*{}* lang: {:?}", file_name, lang);
-                println!("*{}* alphabet: {:?}", file_name, alphabet);
 
-                let model_name = lang.to_string() + &alphabet.to_string();
+                let model_name = lang.to_string();
                 let mod_dir = stringcase::snake_case(&model_name);
 
                 let out_path = Path::new(&out_path);
@@ -229,9 +222,9 @@ fn main() {
                 {
                     let file_path = out_path.join("macros.rs");
                     let mut file = fs::File::options().append(true).open(file_path).unwrap();
-                    file.write_all(b"(Alphabet::").unwrap();
-                    file.write_all(alphabet.to_full_dbg().as_bytes()).unwrap();
-                    file.write_all(b",Language::").unwrap();
+                    // file.write_all(b"(Alphabet::").unwrap();
+                    // file.write_all(alphabet.to_full_dbg().as_bytes()).unwrap();
+                    file.write_all(b"(Language::").unwrap();
                     file.write_all(lang.to_string().as_bytes()).unwrap();
                     file.write_all(b") => Some(Box::new(parselang_models::").unwrap();
                     file.write_all(model_name.as_bytes()).unwrap();

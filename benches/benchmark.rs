@@ -24,9 +24,9 @@ use whichlang::detect_language as whichlang_detect_language;
 
 // This is the common subset of languages that is supported by all
 // language detection libraries in this benchmark.
-static COMMON_LANGUAGES: [Language; 16] = [
+static COMMON_LANGUAGES: [Language; 15] = [
     Language::Arabic,
-    Language::Chinese,
+    // Language::ChineseSimplified,
     Language::Dutch,
     Language::English,
     Language::French,
