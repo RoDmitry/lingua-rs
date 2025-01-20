@@ -70,10 +70,10 @@ pub fn alphabet_match(input: TokenStream) -> TokenStream {
 
     // Generate the entire match block
     let expanded = quote! {
-        Some(match ch {
+        match ch {
             #(#arms)*
             _ => &[#(#keys_all),*],
-        })
+        }
     };
 
     // Return the generated code as TokenStream

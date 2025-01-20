@@ -245,7 +245,7 @@ impl From<Alphabet> for &'static [Language] {
                     LubaKasai => &[Language::LubaKasai],
                     Luo => &[Language::Luo],
                     Luxembourgish => &[Language::Luxembourgish],
-                    Malay => &[Language::Malay, Language::MalayStandard],
+                    Malay => &[Language::Malay],
                     MalgasyPlateau => &[Language::MalgasyPlateau],
                     Maltese => &[Language::Maltese],
                     Maori => &[Language::Maori],
@@ -326,7 +326,7 @@ impl From<Alphabet> for &'static [Language] {
                     Ahom => &[Language::Ahom],
                     AnatolianHieroglyphs => &[Language::Luwian],
                     Arabic => &[
-                        Language::Acehnese,
+                        Language::AcehneseJawi,
                         Language::Arabic,
                         Language::ArabicEgyptian,
                         Language::ArabicMesopotamian,
@@ -337,7 +337,7 @@ impl From<Alphabet> for &'static [Language] {
                         Language::ArabicSouthLevantine,
                         Language::ArabicTunisian,
                         Language::AzerbaijaniSouth,
-                        Language::Banjar,
+                        Language::BanjarJawi,
                         Language::Dari,
                         Language::KanuriCentral,
                         Language::Kashmiri,
@@ -1107,91 +1107,124 @@ pub(crate) fn char_combine(s: Option<Script>, ch: char, extra: char) -> char {
     }
 }
 
-pub(crate) fn script_char_to_alphabets(script: Option<Script>, ch: char) -> ScriptAlphabets {
-    let alphabets = script.and_then(|s| script_char_match(s, ch));
+/* pub(crate) fn script_char_to_alphabets(script: Option<Script>, ch: char) -> ScriptAlphabets {
+    let alphabets = script.map(|s| script_char_match(s, ch));
     ScriptAlphabets::from((script, alphabets))
-}
+} */
 
 /// add all the leters of all the alphabets in the script group
 /// or not all, only if it does not require to exclude letters
 /// if the script group has only one language, then leave it empty
-fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
+pub(crate) fn script_char_to_langs(script: Script, ch: char) -> &'static [Language] {
+    use Script::*;
     match script {
-        /* Script::Adlam => alphabet_match!([(Alphabet::Adlam, [])]),
-        Script::Ahom => alphabet_match!([(Alphabet::Ahom, [])]),
-        Script::AnatolianHieroglyphs => {
-            alphabet_match!([(Alphabet::AnatolianHieroglyphs, [])])
-        }
-        Script::Arabic => alphabet_match!([(Alphabet::Arabic, []),]),
-        Script::Armenian => alphabet_match!([(Alphabet::Armenian, [])]),
-        Script::Avestan => alphabet_match!([(Alphabet::Avestan, [])]),
-        Script::Balinese => alphabet_match!([(Alphabet::Balinese, [])]),
-        Script::Bamum => alphabet_match!([(Alphabet::Bamum, [])]),
-        Script::BassaVah => alphabet_match!([(Alphabet::BassaVah, [])]),
-        Script::Batak => {
-            alphabet_match!([(Alphabet::Batak, []),])
-        }
-        Script::Bengali => alphabet_match!([(Alphabet::Bengali, []),]),
-        Script::Bhaiksuki => alphabet_match!([(Alphabet::Bhaiksuki, [])]),
-        Script::Bopomofo => alphabet_match!([(Alphabet::Bopomofo, [])]),
-        Script::Brahmi => alphabet_match!([(Alphabet::Brahmi, []),]),
-        Script::Braille => alphabet_match!([(Alphabet::Braille, [])]),
-        Script::Buginese => {
-            alphabet_match!([(Alphabet::Buginese, []),])
-        }
-        Script::Buhid => alphabet_match!([(Alphabet::Buhid, [])]),
-        Script::CanadianAboriginal => alphabet_match!([(Alphabet::CanadianAboriginal, []),]),
-        Script::Carian => alphabet_match!([(Alphabet::Carian, [])]),
-        Script::CaucasianAlbanian => alphabet_match!([(Alphabet::CaucasianAlbanian, [])]),
-        Script::Chakma => alphabet_match!([(Alphabet::Chakma, [])]),
-        Script::Cham => alphabet_match!([(Alphabet::Cham, [])]),
-        Script::Cherokee => alphabet_match!([(Alphabet::Cherokee, [])]),
-        Script::Chorasmian => alphabet_match!([(Alphabet::Chorasmian, [])]), */
+        Adlam => &[Language::Fulani, Language::Pular],
+        Ahom => &[Language::Ahom],
+        AnatolianHieroglyphs => &[Language::Luwian],
+        Arabic => &[
+            Language::AcehneseJawi,
+            Language::Arabic,
+            Language::ArabicEgyptian,
+            Language::ArabicMesopotamian,
+            Language::ArabicMoroccan,
+            Language::ArabicNajdi,
+            Language::ArabicNorthLevantine,
+            Language::ArabicSouthernYemeni,
+            Language::ArabicSouthLevantine,
+            Language::ArabicTunisian,
+            Language::AzerbaijaniSouth,
+            Language::BanjarJawi,
+            Language::Dari,
+            Language::KanuriCentral,
+            Language::Kashmiri,
+            Language::Kurdish,
+            Language::KurdishCentral,
+            Language::Pashto,
+            Language::PastoSouthern,
+            Language::Persian,
+            Language::PersianWestern,
+            Language::Sindhi,
+            Language::Urdu,
+            Language::Uyghur,
+        ],
+        Armenian => &[Language::Armenian],
+        Avestan => &[Language::Avestan],
+        Balinese => &[Language::Balinese],
+        Bamum => &[Language::Bamum],
+        BassaVah => &[Language::Bassa],
+        Batak => &[
+            Language::Angkola,
+            Language::Karo,
+            Language::Mandailing,
+            Language::Pakpak,
+            Language::Simalungun,
+            Language::Toba,
+        ],
+        Bengali => &[
+            Language::Assamese,
+            Language::Bengali,
+            Language::BishnupriyaManipuri,
+            Language::Meitei,
+        ],
+        Bhaiksuki => &[Language::Bhaiksuki],
+        Bopomofo => &[Language::ChineseMandarin],
+        Brahmi => &[Language::Sanskrit, Language::Prakrit],
+        Braille => &[Language::Braille],
+        Buginese => &[Language::Buginese, Language::Makassarese],
+        Buhid => &[Language::Buhid],
+        CanadianAboriginal => &[Language::Cree, Language::Inuktitut, Language::Ojibwe],
+        Carian => &[Language::Carian],
+        CaucasianAlbanian => &[Language::CaucasianAlbanian],
+        Chakma => &[Language::Chakma],
+        Cham => &[Language::Cham],
+        Cherokee => &[Language::Cherokee],
+        Nushu => &[Language::ChineseTuhua],
+        Chorasmian => &[Language::Chorasmian],
         // if you want to add something here, validate that char's range is active in `ucd.rs`
         // during parsing these considered as connectors, not chars of the word
         // example1: `can't` for english is one word, for other lang it is two words: `can, t`
         //   because if Alphabets of all 3 chars do not intersect, it will be two words
         // example2: `word1' word2` for all langs will be parsed as two words without `'`,
         //   because next char after `'` is space, which is not a char of any language
-        Script::Common => Some(match ch {
+        Common => match ch {
             '\'' => &[
-                Alphabet::Cyrillic(CyrillicAlphabet::Belarusian),
-                Alphabet::Latin(LatinAlphabet::Acehnese),
-                Alphabet::Latin(LatinAlphabet::Afrikaans),
-                Alphabet::Latin(LatinAlphabet::Albanian),
-                Alphabet::Latin(LatinAlphabet::AymaraCentral),
-                Alphabet::Latin(LatinAlphabet::Azerbaijani),
-                Alphabet::Latin(LatinAlphabet::Banjar),
-                Alphabet::Latin(LatinAlphabet::Bemba),
-                Alphabet::Latin(LatinAlphabet::Bokmal),
-                Alphabet::Latin(LatinAlphabet::Buginese),
-                Alphabet::Latin(LatinAlphabet::Catalan),
-                Alphabet::Latin(LatinAlphabet::CreoleHaitian),
-                Alphabet::Latin(LatinAlphabet::Danish),
-                Alphabet::Latin(LatinAlphabet::Dyula),
-                Alphabet::Latin(LatinAlphabet::English),
-                Alphabet::Latin(LatinAlphabet::Fon),
-                Alphabet::Latin(LatinAlphabet::French),
-                Alphabet::Latin(LatinAlphabet::Friulian),
-                Alphabet::Latin(LatinAlphabet::FulfuldeNigerian),
-                Alphabet::Latin(LatinAlphabet::GaelicScottish),
-                Alphabet::Latin(LatinAlphabet::Ganda),
-                Alphabet::Latin(LatinAlphabet::Guarani),
-                Alphabet::Latin(LatinAlphabet::MalgasyPlateau),
+                Language::Belarusian,
+                Language::Acehnese,
+                Language::Afrikaans,
+                Language::AlbanianTosk,
+                Language::AymaraCentral,
+                Language::AzerbaijaniNorth,
+                Language::Banjar,
+                Language::Bemba,
+                Language::Bokmal,
+                Language::Buginese,
+                Language::Catalan,
+                Language::CreoleHaitian,
+                Language::Danish,
+                Language::Dyula,
+                Language::English,
+                Language::Fon,
+                Language::French,
+                Language::Friulian,
+                Language::FulfuldeNigerian,
+                Language::GaelicScottish,
+                Language::Ganda,
+                Language::Guarani,
+                Language::MalgasyPlateau,
             ],
-            '¡' => &[Alphabet::Latin(LatinAlphabet::Spanish)],
-            '¿' => &[Alphabet::Latin(LatinAlphabet::Spanish)],
-            'ʻ' => &[Alphabet::Latin(LatinAlphabet::UzbekNorthern)],
+            '¡' => &[Language::Spanish],
+            '¿' => &[Language::Spanish],
+            'ʻ' => &[Language::UzbekNorthern],
             _ => &[], // must be always empty
-        }),
-        /* Script::Coptic => alphabet_match!([(Alphabet::Coptic, [])]),
-        Script::Cuneiform => alphabet_match!([(Alphabet::Cuneiform, []),]),
-        Script::Cypriot => alphabet_match!([(Alphabet::Cypriot, [])]),
-        Script::CyproMinoan => alphabet_match!([(Alphabet::CyproMinoan, [])]), */
-        Script::Cyrillic => alphabet_match!([
+        },
+        Coptic => &[Language::Coptic],
+        Cuneiform => &[Language::Akkadian, Language::Hittite, Language::Sumerian],
+        Cypriot => &[Language::AncientGreek],
+        CyproMinoan => &[Language::CyproMinoan],
+        Cyrillic => alphabet_match!([
             // TODO: Lost some alphabets from CyrillicAlphabet
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::Belarusian),
+                Language::Belarusian,
                 [
                     'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Е', 'е', 'Ё', 'ё', 'Ж', 'ж',
                     'З', 'з', 'І', 'і', 'Й', 'й', 'К', 'к', 'Л', 'л', 'М', 'м', 'Н', 'н', 'О', 'о',
@@ -1200,7 +1233,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::Bulgarian),
+                Language::Bulgarian,
                 [
                     'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Е', 'е', 'Ж', 'ж', 'З', 'з',
                     'И', 'и', 'Й', 'й', 'К', 'к', 'Л', 'л', 'М', 'м', 'Н', 'н', 'О', 'о', 'П', 'п',
@@ -1209,7 +1242,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::Kazakh),
+                Language::Kazakh,
                 [
                     'А', 'а', 'Ә', 'ә', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Ғ', 'ғ', 'Д', 'д', 'Е', 'е',
                     'Ё', 'ё', 'Ж', 'ж', 'З', 'з', 'И', 'и', 'Й', 'й', 'К', 'к', 'Қ', 'қ', 'Л', 'л',
@@ -1220,7 +1253,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::Macedonian),
+                Language::Macedonian,
                 [
                     'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Ѓ', 'ѓ', 'Е', 'е', 'Ж', 'ж',
                     'З', 'з', 'Ѕ', 'ѕ', 'И', 'и', 'Ј', 'ј', 'К', 'к', 'Л', 'л', 'Љ', 'љ', 'М', 'м',
@@ -1229,7 +1262,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::MongolianHalh),
+                Language::MongolianHalh,
                 [
                     'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Е', 'е', 'Ё', 'ё', 'Ж', 'ж',
                     'З', 'з', 'И', 'и', 'Й', 'й', 'К', 'к', 'Л', 'л', 'М', 'м', 'Н', 'н', 'О', 'о',
@@ -1239,7 +1272,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::OldChurchSlavonic),
+                Language::OldChurchSlavonic,
                 [
                     'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Є', 'є', 'Ж', 'ж', 'Ѕ', 'ѕ',
                     'З', 'з', 'Ꙁ', 'ꙁ', 'И', 'и', 'І', 'і', 'Ї', 'ї', 'К', 'к', 'Л', 'л', 'М', 'м',
@@ -1250,7 +1283,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::Russian),
+                Language::Russian,
                 [
                     'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Е', 'е', 'Ё', 'ё', 'Ж', 'ж',
                     'З', 'з', 'И', 'и', 'Й', 'й', 'К', 'к', 'Л', 'л', 'М', 'м', 'Н', 'н', 'О', 'о',
@@ -1260,7 +1293,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::Serbian),
+                Language::Serbian,
                 [
                     'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Ђ', 'ђ', 'Е', 'е', 'Ж', 'ж',
                     'З', 'з', 'И', 'и', 'Ј', 'ј', 'К', 'к', 'Л', 'л', 'Љ', 'љ', 'М', 'м', 'Н', 'н',
@@ -1269,7 +1302,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Cyrillic(CyrillicAlphabet::Ukrainian),
+                Language::Ukrainian,
                 [
                     'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Ґ', 'ґ', 'Д', 'д', 'Е', 'е', 'Є', 'є',
                     'Ж', 'ж', 'З', 'з', 'И', 'и', 'І', 'і', 'Ї', 'ї', 'Й', 'й', 'К', 'к', 'Л', 'л',
@@ -1279,28 +1312,45 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
         ]),
-        /* Script::Deseret => alphabet_match!([(Alphabet::Deseret, [])]),
-        Script::Devanagari => alphabet_match!([(Alphabet::Devanagari, []),]),
-        Script::DivesAkuru => alphabet_match!([(Alphabet::DivesAkuru, [])]),
-        Script::Dogra => alphabet_match!([(Alphabet::Dogra, [])]),
-        Script::Duployan => alphabet_match!([(Alphabet::Duployan, []),]),
-        Script::EgyptianHieroglyphs => alphabet_match!([(Alphabet::EgyptianHieroglyphs, [])]),
-        Script::Elbasan => alphabet_match!([(Alphabet::Elbasan, [])]),
-        Script::Elymaic => alphabet_match!([(Alphabet::Elymaic, [])]),
-        Script::Ethiopic => alphabet_match!([(Alphabet::Ethiopic, []),]),
-        Script::Garay => alphabet_match!([(Alphabet::Garay, [])]),
-        Script::Georgian => alphabet_match!([(Alphabet::Georgian, [])]),
-        Script::Glagolitic => alphabet_match!([(Alphabet::Glagolitic, [])]),
-        Script::Gothic => alphabet_match!([(Alphabet::Gothic, [])]),
-        Script::Grantha => alphabet_match!([(Alphabet::Grantha, [])]),
-        Script::Greek => alphabet_match!([(Alphabet::Greek, [])]),
-        Script::Gujarati => alphabet_match!([(Alphabet::Gujarati, [])]),
-        Script::GunjalaGondi => alphabet_match!([(Alphabet::GunjalaGondi, [])]),
-        Script::Gurmukhi => alphabet_match!([(Alphabet::Gurmukhi, [])]),
-        Script::GurungKhema => alphabet_match!([(Alphabet::GurungKhema, [])]), */
-        Script::Han => alphabet_match!([
+        Deseret => &[Language::EnglishMormon],
+        Devanagari => &[
+            Language::Awadhi,
+            Language::Bhojpuri,
+            Language::Chhattisgarhi,
+            Language::Hindi,
+            Language::Kashmiri,
+            Language::Magahi,
+            Language::Maithili,
+            Language::Marathi,
+            Language::Marathi,
+            Language::Nepali,
+            Language::Sanskrit,
+        ],
+        DivesAkuru => &[Language::MaldivianDhivehi],
+        Dogra => &[Language::Dogri],
+        Duployan => &[Language::EnglishDuployan, Language::FrenchDuployan],
+        EgyptianHieroglyphs => &[Language::EgyptianHieroglyphs],
+        Elbasan => &[Language::AlbanianHistorical],
+        Elymaic => &[Language::Elymaic],
+        Ethiopic => &[
+            Language::Amharic,
+            Language::Geez,
+            Language::Oromo,
+            Language::Tigrinya,
+        ],
+        Garay => &[Language::Wolof],
+        Georgian => &[Language::Georgian],
+        Glagolitic => &[Language::OldChurchSlavonic],
+        Gothic => &[Language::Gothic],
+        Grantha => &[Language::Sanskrit, Language::Tamil],
+        Greek => &[Language::Greek],
+        Gujarati => &[Language::Gujarati],
+        GunjalaGondi => &[Language::Gondi],
+        Gurmukhi => &[Language::PunjabiEastern],
+        GurungKhema => &[Language::Gurung],
+        Han => alphabet_match!([
             (
-                Alphabet::Han(HanAlphabet::ChineseSimplified),
+                Language::Chinese, // ChineseSimplified
                 [
                     // https://en.wikisource.org/wiki/Translation:List_of_Frequently_Used_Characters_in_Modern_Chinese
                     // https://www.tutormandarin.net/en/list-of-different-simplified-and-traditional-characters/
@@ -1389,11 +1439,11 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                     '窑', '乔', '四', '随', '历', '咽', '扩', '绪', '飞', '愿', '虫'
                 ]
             ),
-            (Alphabet::Han(HanAlphabet::ChineseTraditional), []),
-            (Alphabet::Han(HanAlphabet::Hanja), []),
+            (Language::Chinese, []), // ChineseTraditional
+            (Language::Korean, []),
             (
                 // it also uses all Traditional Chinese characters
-                Alphabet::Han(HanAlphabet::Kanji),
+                Language::Japanese,
                 [
                     // Jōyō kanji (https://en.wikipedia.org/wiki/List_of_j%C5%8Dy%C5%8D_kanji)
                     '亜', '悪', '圧', '囲', '医', '為', '壱', '逸', '隠', '栄', '営', '衛', '駅',
@@ -1446,14 +1496,18 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
         ]),
-        /* Script::Hangul => alphabet_match!([(Alphabet::Hangul, [])]),
-        Script::HanifiRohingya => alphabet_match!([(Alphabet::HanifiRohingya, [])]),
-        Script::Hanunoo => alphabet_match!([(Alphabet::Hanunoo, [])]),
-        Script::Hatran => alphabet_match!([(Alphabet::Hatran, [])]),
-        Script::Hebrew => alphabet_match!([(Alphabet::Hebrew, []),]),
-        Script::Hiragana => alphabet_match!([(Alphabet::Hiragana, [])]),
-        Script::ImperialAramaic => alphabet_match!([(Alphabet::ImperialAramaic, [])]), */
-        Script::Inherited => Some(&[]), /* match ch {
+        Hangul => &[Language::Korean],
+        HanifiRohingya => &[Language::Rohingya],
+        Hanunoo => &[Language::Hanunoo],
+        Hatran => &[Language::Aramaic],
+        Hebrew => &[
+            Language::Hebrew,
+            Language::Yiddish,
+            Language::YiddishEastern,
+        ],
+        Hiragana => &[Language::Japanese],
+        ImperialAramaic => &[Language::Aramaic],
+        Inherited => &[], /* match ch {
         /* '\u{307}' => &[
                 // Alphabet::ChechenLatin,
                 // Alphabet::OldIrishLatin,
@@ -1465,26 +1519,24 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
             ], */
             _ => &[], // must be always empty
         }, */
-        /* Script::InscriptionalPahlavi => {
-            alphabet_match!([(Alphabet::InscriptionalPahlavi, [])])
-        }
-        Script::InscriptionalParthian => alphabet_match!([(Alphabet::InscriptionalParthian, [])]),
-        Script::Javanese => alphabet_match!([(Alphabet::Javanese, [])]),
-        Script::Kaithi => alphabet_match!([(Alphabet::Kaithi, []),]),
-        Script::Kannada => alphabet_match!([(Alphabet::Kannada, [])]),
-        Script::Katakana => alphabet_match!([(Alphabet::Katakana, [])]),
-        Script::Kawi => alphabet_match!([(Alphabet::Kawi, []),]),
-        Script::KayahLi => alphabet_match!([(Alphabet::KayahLi, [])]),
-        Script::Kharoshthi => alphabet_match!([(Alphabet::Kharoshthi, [])]),
-        Script::KhitanSmallScript => alphabet_match!([(Alphabet::KhitanSmallScript, [])]),
-        Script::Khmer => alphabet_match!([(Alphabet::Khmer, [])]),
-        Script::Khojki => alphabet_match!([(Alphabet::Khojki, [])]),
-        Script::Khudawadi => alphabet_match!([(Alphabet::Khudawadi, [])]),
-        Script::KiratRai => alphabet_match!([(Alphabet::KiratRai, [])]),
-        Script::Lao => alphabet_match!([(Alphabet::Lao, [])]), */
-        Script::Latin => alphabet_match!([
+        InscriptionalPahlavi => &[Language::MiddlePersian],
+        InscriptionalParthian => &[Language::Parthian],
+        Javanese => &[Language::Javanese],
+        Kaithi => &[Language::Bhojpuri, Language::Magahi, Language::Maithili],
+        Kannada => &[Language::Kannada],
+        Katakana => &[Language::Japanese],
+        Kawi => &[Language::OldJavanese, Language::Sanskrit],
+        KayahLi => &[Language::KayahLi],
+        Kharoshthi => &[Language::Gandhari],
+        KhitanSmallScript => &[Language::Khitan],
+        Khmer => &[Language::Khmer],
+        Khojki => &[Language::Sindhi, Language::Khoja],
+        Khudawadi => &[Language::Sindhi],
+        KiratRai => &[Language::Bantawa],
+        Lao => &[Language::Lao],
+        Latin => alphabet_match!([
             (
-                Alphabet::Latin(LatinAlphabet::Acehnese), //+
+                Language::Acehnese, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', /* 'F', 'f', */ 'G',
                     'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O',
@@ -1494,7 +1546,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Afrikaans), //+
+                Language::Afrikaans, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1505,7 +1557,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Albanian), //+
+                Language::AlbanianTosk, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', /* 'Dh', 'dh', */ 'E',
                     'e', 'Ë', 'ë', 'F', 'f', 'G', 'g', /* 'Gj', 'gj', */ 'H', 'h', 'I', 'i',
@@ -1517,7 +1569,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Asturian), //+
+                Language::Asturian, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
@@ -1527,7 +1579,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::AymaraCentral), //+
+                Language::AymaraCentral, //+
                 [
                     'A', 'a', 'B', 'b', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'F',
                     'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l',
@@ -1538,7 +1590,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Azerbaijani), //+
+                Language::AzerbaijaniNorth, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'Ə', 'ə', 'F', 'f',
                     'G', 'g', 'Ğ', 'ğ', 'H', 'h', 'I', 'ı', 'İ', 'i', 'J', 'j', 'K', 'k', 'L', 'l',
@@ -1547,7 +1599,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Balinese), //+
+                Language::Balinese, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1555,7 +1607,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Bambara), //+
+                Language::Bambara, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
@@ -1564,7 +1616,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Banjar), //+
+                Language::Banjar, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1573,7 +1625,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Basque), //+
+                Language::Basque, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
@@ -1581,7 +1633,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Bemba), //+
+                Language::Bemba, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1589,7 +1641,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Bokmal), //+
+                Language::Bokmal, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1598,7 +1650,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Bosnian), //+
+                Language::Bosnian, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'Ć', 'ć', 'D', 'd', 'Đ', 'đ', 'E', 'e',
                     'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l',
@@ -1608,7 +1660,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Buginese), //+
+                Language::Buginese, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1616,7 +1668,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Catalan), //+
+                Language::Catalan, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1626,7 +1678,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Cebuano), //+
+                Language::Cebuano, //+
                 [
                     'A', 'a', 'B', 'b', /* 'C', 'c', */ 'D', 'd', 'E', 'e',
                     /* 'F', 'f', */ 'G', 'g', 'H', 'h', 'I', 'i', /* 'J', 'j', */ 'K',
@@ -1636,7 +1688,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Chokwe), //+
+                Language::Chokwe, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1644,7 +1696,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::CreoleHaitian), //+
+                Language::CreoleHaitian, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1653,7 +1705,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Croatian), //+
+                Language::Croatian, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'Ć', 'ć', 'D', 'd', 'Đ', 'đ', 'E', 'e',
                     'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l',
@@ -1663,7 +1715,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Czech), //+
+                Language::Czech, //+
                 [
                     'A', 'a', 'Á', 'á', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'Ď', 'ď', 'E', 'e',
                     'È', 'è', 'É', 'é', 'Ě', 'ě', 'F', 'f', 'G', 'g', 'H', 'h',
@@ -1675,7 +1727,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Danish), //+
+                Language::Danish, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1684,7 +1736,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::DinkaSouthwestern), //+
+                Language::DinkaSouthwestern, //+
                 [
                     'Ä', 'ä', 'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ë', 'ë', 'Ɛ', 'ɛ',
                     'G', 'g', 'Ɣ', 'ɣ', 'H', 'h', 'I', 'i', 'Ï', 'ï', 'J', 'j', 'K', 'k', 'L', 'l',
@@ -1693,7 +1745,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Dutch), //+
+                Language::Dutch, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1703,7 +1755,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Dyula), //+
+                Language::Dyula, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ɲ', 'ɲ',
@@ -1712,7 +1764,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::English),
+                Language::English,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1721,7 +1773,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Esperanto), //+
+                Language::Esperanto, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ĉ', 'ĉ', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'Ĝ', 'ĝ', 'H', 'h', 'Ĥ', 'ĥ', 'I', 'i', 'J', 'j', 'Ĵ', 'ĵ', 'K', 'k', 'L', 'l',
@@ -1730,7 +1782,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Estonian), //loanwords?
+                Language::Estonian, //loanwords?
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -1739,7 +1791,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Ewe), //+
+                Language::Ewe, //+
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'Ð', 'Ɖ', 'ɖ', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'Ƒ',
                     'ƒ', 'G', 'g', 'Ɣ', 'ɣ', 'H', 'h', 'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N',
@@ -1749,7 +1801,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Faroese), //+
+                Language::Faroese, //+
                 [
                     'A', 'a', 'Á', 'á', 'B', 'b', 'D', 'd', 'Ð', 'ð', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'Í', 'í', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -1758,7 +1810,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Fijian), //+
+                Language::Fijian, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -1766,7 +1818,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Finnish), //+
+                Language::Finnish, //+
                 [
                     'A', 'a', 'D', 'd', 'E', 'e', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k',
                     'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't',
@@ -1774,7 +1826,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Fon), //+
+                Language::Fon, //+
                 [
                     'A', 'a', 'À', 'à', 'Á', 'á', 'Ǎ', 'ǎ', 'B', 'b', 'C', 'c', 'D', 'd', 'Ð', 'Ɖ',
                     'ɖ', 'Ě', 'ě', 'É', 'é', 'È', 'è', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g', 'H',
@@ -1785,7 +1837,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::French), //+
+                Language::French, //+
                 [
                     'Æ', 'æ', 'À', 'à', 'Â', 'â', 'A', 'a', 'B', 'b', 'Ç', 'ç', 'C', 'c', 'D', 'd',
                     'É', 'é', 'E', 'e', 'Ê', 'ê', 'È', 'è', 'Ë', 'ë', 'F', 'f', 'G', 'g', 'H', 'h',
@@ -1796,7 +1848,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Friulian), //+
+                Language::Friulian, //+
                 [
                     'A', 'a', 'Â', 'â', 'À', 'à', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'Ê', 'ê',
                     'È', 'è', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'Ì', 'ì', 'Î', 'î',
@@ -1805,7 +1857,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::FulfuldeNigerian), //+ added extra `ŋ`
+                Language::FulfuldeNigerian, //+ added extra `ŋ`
                 [
                     'A', 'a', 'B', 'b', 'Ɓ', 'ɓ', 'C', 'c', 'D', 'd', 'Ɗ', 'ɗ', 'E', 'e', 'F', 'f',
                     'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -1814,7 +1866,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::GaelicScottish), //+
+                Language::GaelicScottish, //+
                 [
                     'À', 'à', 'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'È', 'è', 'F', 'f',
                     'G', 'g', 'H', 'h', 'Ì', 'ì', 'I', 'i', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
@@ -1822,7 +1874,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Galician), //+
+                Language::Galician, //+
                 [
                     'Á', 'á', 'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'É', 'é', 'E', 'e', 'F', 'f',
                     'G', 'g', 'H', 'h', 'Í', 'í', 'I', 'i', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ',
@@ -1831,7 +1883,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Ganda), //+
+                Language::Ganda, //+
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ŋ', 'ŋ', 'O', 'o',
@@ -1840,7 +1892,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::German), //+
+                Language::German, //+
                 [
                     'Ä', 'ä', 'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
@@ -1849,7 +1901,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Guarani), //+
+                Language::Guarani, //+
                 [
                     'Ã', 'ã', 'Á', 'á', 'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'Ẽ', 'ẽ', 'Ê', 'ê',
                     'E', 'e', 'É', 'é', 'G', 'g', 'H', 'h', 'Í', 'í', 'Ĩ', 'ĩ', 'Î', 'î', 'I', 'i',
@@ -1859,7 +1911,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Hausa),
+                Language::Hausa,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'R', 'r',
@@ -1868,7 +1920,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Hungarian),
+                Language::Hungarian,
                 [
                     'A', 'a', 'Á', 'á', 'B', 'b', 'C', 'c', /* 'Cs', 'cs', */ 'D', 'd',
                     /* 'Dz', 'dz', 'Dzs', 'dzs', */ 'E', 'e', 'É', 'é', 'F', 'f', 'G', 'g',
@@ -1881,7 +1933,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Icelandic),
+                Language::Icelandic,
                 [
                     'A', 'a', 'Á', 'á', 'B', 'b', 'D', 'd', 'Ð', 'ð', 'E', 'e', 'É', 'é', 'F', 'f',
                     'G', 'g', 'H', 'h', 'I', 'i', 'Í', 'í', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
@@ -1890,7 +1942,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Igbo),
+                Language::Igbo,
                 [
                     'A', 'a', 'B', 'b', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'F',
                     'f', 'G', 'g', /* 'Gb', 'gb', 'Gh', 'gh', */ 'H', 'h', 'I', 'i', 'Ị', 'ị',
@@ -1901,7 +1953,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Ilocano),
+                Language::Ilocano,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l',
                     'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
@@ -1909,7 +1961,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Indonesian),
+                Language::Indonesian,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1918,7 +1970,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Irish),
+                Language::Irish,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -1926,7 +1978,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Italian),
+                Language::Italian,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q', 'R', 'r',
@@ -1935,7 +1987,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Javanese),
+                Language::Javanese,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1944,7 +1996,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Jingpho),
+                Language::Jingpho,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1953,7 +2005,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Kabiye),
+                Language::Kabiye,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1961,7 +2013,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Kabuverdianu),
+                Language::Kabuverdianu,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1970,7 +2022,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Kabyle),
+                Language::Kabyle,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1979,7 +2031,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Kamba),
+                Language::Kamba,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'S', 's',
@@ -1987,7 +2039,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::KanuriCentral),
+                Language::KanuriCentral,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -1995,7 +2047,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Kikongo),
+                Language::Kikongo,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2003,7 +2055,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Kikuyu),
+                Language::Kikuyu,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2011,7 +2063,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Kimbundu),
+                Language::Kimbundu,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'S', 's', 'T', 't',
@@ -2019,7 +2071,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Kinyarwanda),
+                Language::Kinyarwanda,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2027,7 +2079,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::KurdishNorthern),
+                Language::KurdishNorthern,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'Ê', 'ê', 'F', 'f',
                     'G', 'g', 'H', 'h', 'I', 'i', 'Î', 'î', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
@@ -2036,7 +2088,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Latgalian),
+                Language::Latgalian,
                 [
                     'A', 'a', 'Ā', 'ā', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'Ē', 'ē',
                     'F', 'f', 'G', 'g', 'Ģ', 'ģ', 'H', 'h', 'I', 'i', 'Ī', 'ī', 'J', 'j', 'K', 'k',
@@ -2046,7 +2098,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Latin),
+                Language::Latin,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -2055,7 +2107,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Latvian),
+                Language::Latvian,
                 [
                     'A', 'a', 'Ā', 'ā', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'Ē', 'ē',
                     'F', 'f', 'G', 'g', 'Ģ', 'ģ', 'H', 'h', 'I', 'i', 'Ī', 'ī', 'J', 'j', 'K', 'k',
@@ -2065,7 +2117,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Ligurian),
+                Language::Ligurian,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2074,7 +2126,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Limburgish),
+                Language::Limburgish,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2085,7 +2137,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Lingala),
+                Language::Lingala,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -2093,7 +2145,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Lithuanian),
+                Language::Lithuanian,
                 [
                     'A', 'a', 'Ą', 'ą', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'Ę', 'ę',
                     'Ė', 'ė', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'Į', 'į', 'Y', 'y', 'J', 'j',
@@ -2102,7 +2154,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Lombard),
+                Language::Lombard,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2112,7 +2164,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::LubaKasai),
+                Language::LubaKasai,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2120,7 +2172,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Luo),
+                Language::Luo,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2128,7 +2180,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Luxembourgish),
+                Language::Luxembourgish,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2137,7 +2189,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Malay),
+                Language::Malay,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2146,7 +2198,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::MalgasyPlateau),
+                Language::MalgasyPlateau,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2154,7 +2206,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Maltese),
+                Language::Maltese,
                 [
                     'A', 'a', 'B', 'b', 'Ċ', 'ċ', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     /* 'Għ', 'għ', */ 'H', 'h', 'Ħ', 'ħ', 'I', 'i',
@@ -2164,7 +2216,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Maori),
+                Language::Maori,
                 [
                     'A', 'a', 'E', 'e', 'H', 'h', 'I', 'i', 'K', 'k', 'M', 'm', 'N', 'n', 'O', 'o',
                     'P', 'p', 'R', 'r', 'T', 't', 'U', 'u', 'W', 'w', /* 'Ng', 'ng', */ 'G',
@@ -2172,7 +2224,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Minangkabau),
+                Language::Minangkabau,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2181,7 +2233,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Mizo),
+                Language::Mizo,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2189,7 +2241,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Mossi),
+                Language::Mossi,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -2197,7 +2249,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Nuer),
+                Language::Nuer,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ɛ', 'ɛ', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ŋ', 'ŋ',
@@ -2205,7 +2257,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Nyanja),
+                Language::Nyanja,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2213,7 +2265,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Nynorsk),
+                Language::Nynorsk,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2222,7 +2274,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Occitan),
+                Language::Occitan,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2232,7 +2284,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::OromoWestCentral),
+                Language::OromoWestCentral,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2240,7 +2292,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Pangasinan),
+                Language::Pangasinan,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l',
                     'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
@@ -2248,7 +2300,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Papiamento),
+                Language::Papiamento,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2257,7 +2309,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Polish),
+                Language::Polish,
                 [
                     'A', 'a', 'Ą', 'ą', 'B', 'b', 'C', 'c', 'Ć', 'ć', 'D', 'd', 'E', 'e', 'Ę', 'ę',
                     'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'Ł', 'ł',
@@ -2266,7 +2318,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Portuguese),
+                Language::Portuguese,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2276,7 +2328,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::QuechuaAyacucho),
+                Language::QuechuaAyacucho,
                 [
                     'A', 'a', /* 'Ch', 'ch', */ 'C', 'c', 'D', 'd', 'E', 'e', 'H', 'h', 'I',
                     'i', 'K', 'k', 'L', 'l', /* 'Ll', 'll', */ 'M', 'm', 'N', 'n', 'Ñ', 'ñ',
@@ -2284,7 +2336,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Romanian),
+                Language::Romanian,
                 [
                     'A', 'a', 'Ă', 'ă', 'Â', 'â', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f',
                     'G', 'g', 'H', 'h', 'I', 'i', 'Î', 'î', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
@@ -2293,7 +2345,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Rundi),
+                Language::Rundi,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2301,14 +2353,14 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Samoan),
+                Language::Samoan,
                 [
                     'A', 'a', 'E', 'e', 'F', 'f', 'G', 'g', 'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm',
                     'N', 'n', 'O', 'o', 'P', 'p', 'S', 's', 'T', 't', 'U', 'u', 'V', 'v'
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Sango),
+                Language::Sango,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -2316,7 +2368,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Sardinian),
+                Language::Sardinian,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2326,7 +2378,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Sepedi),
+                Language::Sepedi,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'Ê', 'ê', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
@@ -2335,7 +2387,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Sesotho),
+                Language::Sesotho,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -2343,7 +2395,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Shona),
+                Language::Shona,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2352,7 +2404,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Sicilian),
+                Language::Sicilian,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2361,7 +2413,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Silesian),
+                Language::Silesian,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'Ł', 'ł', 'M', 'm', 'N', 'n',
@@ -2370,7 +2422,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Slovak),
+                Language::Slovak,
                 [
                     'A', 'a', 'Á', 'á', 'Ä', 'ä', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'Ď', 'ď',
                     'E', 'e', 'É', 'é', 'F', 'f', 'G', 'g', 'H', 'h', /* 'Ch', 'ch', */ 'I',
@@ -2381,7 +2433,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Slovene),
+                Language::Slovene,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Č', 'č', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
@@ -2390,7 +2442,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Somali),
+                Language::Somali,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Q', 'q',
@@ -2399,7 +2451,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Spanish),
+                Language::Spanish,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
@@ -2409,7 +2461,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Sundanese),
+                Language::Sundanese,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2418,7 +2470,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Swahili),
+                Language::Swahili,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2426,7 +2478,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Swati),
+                Language::Swati,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2434,7 +2486,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Swedish),
+                Language::Swedish,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2443,7 +2495,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Tagalog),
+                Language::Tagalog,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -2452,7 +2504,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Tamasheq),
+                Language::Tamasheq,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2460,7 +2512,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::TatarCrimean),
+                Language::TatarCrimean,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'H', 'h', 'I', 'ı', 'İ', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -2469,7 +2521,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::TokPisin),
+                Language::TokPisin,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2477,7 +2529,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Tsonga),
+                Language::Tsonga,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2486,7 +2538,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Tswana),
+                Language::Tswana,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r',
@@ -2494,7 +2546,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Tumbuka),
+                Language::Tumbuka,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2502,7 +2554,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Turkish),
+                Language::Turkish,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g',
                     'Ğ', 'ğ', 'H', 'h', 'I', 'ı', 'İ', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm',
@@ -2511,7 +2563,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Turkmen),
+                Language::Turkmen,
                 [
                     'A', 'a', 'B', 'b', 'Ç', 'ç', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'ı', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'Ö', 'ö',
@@ -2520,7 +2572,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Twi),
+                Language::Twi,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's',
@@ -2528,7 +2580,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Umbundu),
+                Language::Umbundu,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2536,7 +2588,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::UzbekNorthern),
+                Language::UzbekNorthern,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i',
                     'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -2544,7 +2596,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Venetian),
+                Language::Venetian,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2554,7 +2606,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Vietnamese),
+                Language::Vietnamese,
                 [
                     'A', 'a', 'Ă', 'ă', 'Â', 'â', 'B', 'b', 'C', 'c', 'D', 'd', 'Đ', 'đ', 'E', 'e',
                     'Ê', 'ê', 'G', 'g', 'H', 'h', 'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n',
@@ -2571,7 +2623,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Waray),
+                Language::Waray,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'G', 'g', 'H', 'h', 'I', 'i', 'K', 'k',
                     'L', 'l', 'M', 'm', 'N', 'n', /* 'Ng', 'ng', */ 'O', 'o', 'P', 'p', 'R',
@@ -2580,7 +2632,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Welsh),
+                Language::Welsh,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', /* 'Ch', 'ch', */ 'D', 'd',
                     /* 'Dd', 'dd', */ 'E', 'e', 'F', 'f', /* 'Ff', 'ff', */ 'G', 'g',
@@ -2592,7 +2644,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Wolof),
+                Language::Wolof,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'Ñ', 'ñ', 'O', 'o',
@@ -2601,7 +2653,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ],
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Xhosa),
+                Language::Xhosa,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q',
@@ -2610,7 +2662,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Yoruba),
+                Language::Yoruba,
                 [
                     'A', 'a', 'B', 'b', 'D', 'd', 'E', 'e', 'Ẹ', 'ẹ', 'F', 'f', 'G', 'g',
                     /* 'Gb', 'gb', */ 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M',
@@ -2620,7 +2672,7 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
             (
-                Alphabet::Latin(LatinAlphabet::Zulu),
+                Language::Zulu,
                 [
                     'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h',
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p',
@@ -2629,106 +2681,113 @@ fn script_char_match(script: Script, ch: char) -> Option<&'static [Alphabet]> {
                 ]
             ),
         ]),
-        /* Script::Lepcha => alphabet_match!([(Alphabet::Lepcha, [])]),
-        Script::Limbu => alphabet_match!([(Alphabet::Limbu, [])]),
-        Script::LinearA => alphabet_match!([(Alphabet::LinearA, [])]),
-        Script::LinearB => alphabet_match!([(Alphabet::LinearB, [])]),
-        Script::Lisu => alphabet_match!([(Alphabet::Lisu, [])]),
-        Script::Lycian => alphabet_match!([(Alphabet::Lycian, [])]),
-        Script::Lydian => alphabet_match!([(Alphabet::Lydian, [])]), */
-        /* Script::Mahajani => alphabet_match!([
-            (Alphabet::MahajaniHindi, []),
-            (Alphabet::MahajaniMarwari, []),
-            (Alphabet::MahajaniPunjabi, []),
-        ]), */
-        /* Script::Makasar => alphabet_match!([(Alphabet::Makasar, [])]),
-        Script::Malayalam => alphabet_match!([(Alphabet::Malayalam, [])]),
-        Script::Mandaic => alphabet_match!([(Alphabet::Mandaic, [])]),
-        Script::Manichaean => alphabet_match!([(Alphabet::Manichaean, []),]),
-        Script::Marchen => alphabet_match!([(Alphabet::Marchen, [])]),
-        Script::MasaramGondi => alphabet_match!([(Alphabet::MasaramGondi, [])]),
-        Script::Medefaidrin => alphabet_match!([(Alphabet::Medefaidrin, [])]),
-        Script::MeeteiMayek => alphabet_match!([(Alphabet::MeeteiMayek, [])]),
-        Script::MendeKikakui => alphabet_match!([(Alphabet::MendeKikakui, [])]),
-        Script::MeroiticCursive => alphabet_match!([(Alphabet::MeroiticCursive, [])]),
-        Script::MeroiticHieroglyphs => alphabet_match!([(Alphabet::MeroiticHieroglyphs, [])]),
-        Script::Miao => alphabet_match!([(Alphabet::Miao, [])]),
-        Script::Modi => alphabet_match!([(Alphabet::Modi, [])]),
-        Script::Mongolian => alphabet_match!([(Alphabet::Mongolian, [])]),
-        Script::Mro => alphabet_match!([(Alphabet::Mro, [])]),
-        Script::Multani => alphabet_match!([(Alphabet::Multani, [])]),
-        Script::Myanmar => alphabet_match!([(Alphabet::Myanmar, [])]),
-        Script::Nabataean => alphabet_match!([(Alphabet::Nabataean, [])]),
-        Script::NagMundari => alphabet_match!([(Alphabet::MundariNag, [])]),
-        Script::Nandinagari => alphabet_match!([(Alphabet::Nandinagari, [])]),
-        Script::NewTaiLue => alphabet_match!([(Alphabet::NewTaiLue, [])]),
-        Script::Newa => alphabet_match!([(Alphabet::Newa, [])]),
-        Script::Nko => alphabet_match!([(Alphabet::NKo, [])]),
-        Script::Nushu => alphabet_match!([(Alphabet::ChineseNushu, [])]),
-        Script::NyiakengPuachueHmong => alphabet_match!([(Alphabet::NyiakengPuachueHmong, [])]),
-        Script::Ogham => alphabet_match!([(Alphabet::Ogham, [])]),
-        Script::OlChiki => alphabet_match!([(Alphabet::OlChiki, [])]),
-        Script::OlOnal => alphabet_match!([(Alphabet::OlOnal, [])]),
-        Script::OldHungarian => alphabet_match!([(Alphabet::OldHungarian, [])]),
-        Script::OldItalic => alphabet_match!([(Alphabet::OldItalic, []),]),
-        Script::OldNorthArabian => alphabet_match!([(Alphabet::OldNorthArabian, [])]),
-        Script::OldPermic => alphabet_match!([(Alphabet::OldKomiPermic, [])]),
-        Script::OldPersian => alphabet_match!([(Alphabet::OldPersian, [])]),
-        Script::OldSogdian => alphabet_match!([(Alphabet::OldSogdian, [])]),
-        Script::OldSouthArabian => alphabet_match!([(Alphabet::OldSouthArabian, [])]),
-        Script::OldTurkic => alphabet_match!([(Alphabet::OldTurkic, [])]),
-        Script::OldUyghur => alphabet_match!([(Alphabet::OldUyghur, [])]),
-        Script::Oriya => alphabet_match!([(Alphabet::Oriya, [])]),
-        Script::Osage => alphabet_match!([(Alphabet::Osage, [])]),
-        Script::Osmanya => alphabet_match!([(Alphabet::Osmanya, [])]),
-        Script::PahawhHmong => alphabet_match!([(Alphabet::PahawhHmong, [])]),
-        Script::Palmyrene => alphabet_match!([(Alphabet::Palmyrene, [])]),
-        Script::PauCinHau => alphabet_match!([(Alphabet::PauCinHau, [])]),
-        Script::PhagsPa => alphabet_match!([(Alphabet::PhagsPa, []),]),
-        Script::Phoenician => alphabet_match!([(Alphabet::Phoenician, [])]),
-        Script::PsalterPahlavi => alphabet_match!([(Alphabet::PsalterPahlavi, [])]),
-        Script::Rejang => alphabet_match!([(Alphabet::Rejang, [])]),
-        Script::Runic => alphabet_match!([(Alphabet::Runic, []),]),
-        Script::Samaritan => alphabet_match!([(Alphabet::Samaritan, [])]),
-        Script::Saurashtra => alphabet_match!([(Alphabet::Saurashtra, [])]),
-        Script::Sharada => alphabet_match!([(Alphabet::Sharada, []),]),
-        Script::Shavian => alphabet_match!([(Alphabet::Shavian, [])]),
-        Script::Siddham => alphabet_match!([(Alphabet::Siddham, [])]),
-        Script::SignWriting => alphabet_match!([(Alphabet::SignlanguageWriting, [])]),
-        Script::Sinhala => alphabet_match!([(Alphabet::Sinhala, [])]),
-        Script::Sogdian => alphabet_match!([(Alphabet::Sogdian, [])]),
-        Script::SoraSompeng => alphabet_match!([(Alphabet::SoraSompeng, [])]),
-        Script::Soyombo => alphabet_match!([(Alphabet::Soyombo, []),]),
-        Script::Sundanese => alphabet_match!([(Alphabet::Sundanese, [])]),
-        Script::Sunuwar => alphabet_match!([(Alphabet::Sunuwar, [])]),
-        Script::SylotiNagri => alphabet_match!([(Alphabet::SylotiNagri, [])]),
-        Script::Syriac => alphabet_match!([(Alphabet::Syriac, [])]),
-        Script::Tagalog => alphabet_match!([(Alphabet::Tagalog, [])]),
-        Script::Tagbanwa => alphabet_match!([(Alphabet::Tagbanwa, [])]),
-        Script::TaiLe => alphabet_match!([(Alphabet::TaiLe, [])]),
-        Script::TaiTham => alphabet_match!([(Alphabet::TaiTham, []),]),
-        Script::TaiViet => alphabet_match!([(Alphabet::TaiViet, [])]),
-        Script::Takri => alphabet_match!([(Alphabet::Takri, [])]),
-        Script::Tamil => alphabet_match!([(Alphabet::Tamil, [])]),
-        Script::Tangsa => alphabet_match!([(Alphabet::Tangsa, [])]),
-        Script::Tangut => alphabet_match!([(Alphabet::Tangut, [])]),
-        Script::Telugu => alphabet_match!([(Alphabet::Telugu, [])]),
-        Script::Thaana => alphabet_match!([(Alphabet::Thaana, [])]),
-        Script::Thai => alphabet_match!([(Alphabet::Thai, [])]),
-        Script::Tibetan => alphabet_match!([(Alphabet::Tibetan, [])]),
-        Script::Tifinagh => alphabet_match!([(Alphabet::Tifinagh, [])]),
-        Script::Tirhuta => alphabet_match!([(Alphabet::Tirhuta, [])]),
-        Script::Todhri => alphabet_match!([(Alphabet::Todhri, [])]),
-        Script::Toto => alphabet_match!([(Alphabet::Toto, [])]),
-        Script::TuluTigalari => alphabet_match!([(Alphabet::TuluTigalari, []),]),
-        Script::Ugaritic => alphabet_match!([(Alphabet::Ugaritic, [])]),
-        Script::Vai => alphabet_match!([(Alphabet::Vai, [])]),
-        Script::Vithkuqi => alphabet_match!([(Alphabet::Vithkuqi, [])]),
-        Script::Wancho => alphabet_match!([(Alphabet::Wancho, [])]),
-        Script::WarangCiti => alphabet_match!([(Alphabet::WarangCiti, [])]),
-        Script::Yezidi => alphabet_match!([(Alphabet::Yezidi, [])]),
-        Script::Yi => alphabet_match!([(Alphabet::Yi, [])]),
-        Script::ZanabazarSquare => alphabet_match!([(Alphabet::ZanabazarSquare, []),]), */
-        _ => None,
+        Lepcha => &[Language::Lepcha],
+        Limbu => &[Language::Limbu],
+        LinearA => &[Language::Minoan],
+        LinearB => &[Language::MycenaeanGreek],
+        Lisu => &[Language::Lisu],
+        Lycian => &[Language::Lycian],
+        Lydian => &[Language::Lydian],
+        Mahajani => &[Language::Hindi, Language::Marwari, Language::PunjabiEastern],
+        Makasar => &[Language::Makasar],
+        Malayalam => &[Language::Malayalam],
+        Mandaic => &[Language::Mandaic, Language::Aramaic],
+        Manichaean => &[Language::MiddlePersian, Language::Sogdian],
+        Marchen => &[Language::BuddhistMarchen],
+        MasaramGondi => &[Language::Gondi],
+        Medefaidrin => &[Language::Medefaidrin],
+        MeeteiMayek => &[Language::ManipuriMeetei],
+        MendeKikakui => &[Language::Mende],
+        MeroiticCursive => &[Language::Meroitic],
+        MeroiticHieroglyphs => &[Language::Meroitic],
+        Miao => &[Language::Hmong],
+        Modi => &[Language::Marathi],
+        Mongolian => &[Language::MongolianHalh],
+        Mro => &[Language::Mro],
+        Multani => &[Language::Saraiki],
+        NagMundari => &[Language::Mundari],
+        Myanmar => &[Language::Burmese, Language::Shan],
+        Nabataean => &[Language::Aramaic],
+        Nandinagari => &[Language::Sanskrit],
+        Newa => &[Language::Newari],
+        NewTaiLue => &[Language::TaiLue],
+        Nko => &[Language::Mande],
+        NyiakengPuachueHmong => &[Language::Hmong],
+        Ogham => &[Language::OldIrish],
+        OlChiki => &[Language::Santali],
+        OldHungarian => &[Language::OldHungarian],
+        OldItalic => &[Language::Etruscan, Language::Oscan, Language::Umbrian],
+        OldPermic => &[Language::OldKomi],
+        OldNorthArabian => &[Language::OldNorthArabian],
+        OldPersian => &[Language::OldPersian],
+        OldSogdian => &[Language::OldSogdian],
+        OldSouthArabian => &[Language::OldSouthArabian],
+        OldTurkic => &[Language::OldTurkic],
+        OldUyghur => &[Language::OldUyghur],
+        OlOnal => &[Language::Ho],
+        Oriya => &[Language::Odia],
+        Osage => &[Language::Osage],
+        Osmanya => &[Language::Somali],
+        PahawhHmong => &[Language::Hmong],
+        Palmyrene => &[Language::Aramaic],
+        PauCinHau => &[Language::ZoLanguages],
+        PhagsPa => &[Language::MongolianHalh, Language::Tibetan],
+        Phoenician => &[Language::Phoenician],
+        PsalterPahlavi => &[Language::MiddlePersian],
+        Rejang => &[Language::Rejang],
+        Runic => &[Language::OldNorse, Language::OldEnglish],
+        Samaritan => &[Language::Hebrew],
+        Saurashtra => &[Language::Saurashtra],
+        Sharada => &[Language::Sanskrit, Language::Kashmiri],
+        Shavian => &[Language::EnglishPhonetic],
+        Siddham => &[Language::Sanskrit],
+        SignWriting => &[Language::Signlanguages],
+        Sinhala => &[Language::Sinhala],
+        Sogdian => &[Language::Sogdian],
+        SoraSompeng => &[Language::Sora],
+        Soyombo => &[
+            Language::MongolianHalh,
+            Language::Sanskrit,
+            Language::Tibetan,
+        ],
+        Sundanese => &[Language::Sundanese],
+        Sunuwar => &[Language::Sunuwar],
+        SylotiNagri => &[Language::Sylheti],
+        Syriac => &[Language::Syriac, Language::Aramaic],
+        Tagalog => &[Language::Tagalog],
+        Tagbanwa => &[Language::Tagbanwa],
+        TaiLe => &[Language::TaiLe],
+        TaiTham => &[Language::Lao, Language::NorthernThai, Language::TaiLue],
+        TaiViet => &[Language::TaiDam, Language::TaiDon],
+        Takri => &[Language::Dogri, Language::Kashmiri],
+        Tamil => &[Language::Tamil],
+        Tangsa => &[Language::Tangsa],
+        Tangut => &[Language::Tangut],
+        Telugu => &[Language::Telugu],
+        Thaana => &[Language::MaldivianDhivehi],
+        Thai => &[Language::Thai],
+        Tibetan => &[Language::Dzongkha, Language::Tibetan],
+        Tifinagh => &[
+            Language::Berber,
+            Language::Tamasheq,
+            Language::TamazightCentralAtlas,
+        ],
+        Tirhuta => &[Language::Maithili],
+        Todhri => &[Language::AlbanianHistorical],
+        Toto => &[Language::Toto],
+        TuluTigalari => &[Language::Sanskrit, Language::Tulu, Language::Kannada],
+        Ugaritic => &[Language::Ugaritic],
+        Vai => &[Language::Vai],
+        Vithkuqi => &[Language::AlbanianTosk],
+        Wancho => &[Language::Wancho],
+        WarangCiti => &[Language::Ho],
+        Yezidi => &[Language::Kurdish],
+        Yi => &[Language::Yi],
+        ZanabazarSquare => &[
+            Language::MongolianHalh,
+            Language::Sanskrit,
+            Language::Tibetan,
+        ],
+        // _ => None,
     }
 }

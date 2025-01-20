@@ -48,6 +48,7 @@ use strum_macros::{EnumIter, EnumString};
 pub enum Language {
     #[strum(serialize = "ace")]
     Acehnese,
+    AcehneseJawi,
     #[strum(serialize = "afr")]
     Afrikaans,
     Ahom,
@@ -100,6 +101,7 @@ pub enum Language {
     Bamum,
     #[strum(serialize = "bjn")]
     Banjar,
+    BanjarJawi,
     Bantawa,
     #[strum(serialize = "bak")]
     Bashkir,
@@ -330,11 +332,10 @@ pub enum Language {
     Maithili,
     Makasar,
     Makassarese,
+    #[strum(serialize = "zsm")]
     Malay,
     #[strum(serialize = "mal")]
     Malayalam,
-    #[strum(serialize = "zsm")]
-    MalayStandard,
     MaldivianDhivehi,
     #[strum(serialize = "plt")]
     MalgasyPlateau,

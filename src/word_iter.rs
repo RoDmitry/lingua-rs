@@ -3,8 +3,8 @@ use std::ops::Range;
 
 use crate::{
     lang::{
-        alphabet::{char_combine, script_char_to_alphabets},
-        Script, ScriptAlphabets,
+        alphabet::{char_combine, script_char_to_langs},
+        Script,
     },
     Language,
 };
@@ -17,7 +17,7 @@ pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>
     not_saved_word_end_index: usize,
     prev_char_script: Script,
     prev_char_langs: Set<Language>,
-    word_alphabets: Vec<(Script, ScriptAlphabets)>,
+    word_script_langs: Vec<(Script, Set<Language>)>,
     res: Option<WordData>,
 }
 
@@ -50,7 +50,7 @@ pub(crate) fn from_ch_iter(
         not_saved_word_end_index: Default::default(),
         prev_char_script: Script::Common,
         prev_char_langs: Default::default(),
-        word_alphabets: Default::default(),
+        word_script_langs: Default::default(),
         res: None,
     }
 }
@@ -58,7 +58,7 @@ pub(crate) fn from_ch_iter(
 #[derive(Debug)]
 pub(crate) struct WordData {
     pub chars: Vec<char>,
-    pub script_alphabets: Vec<(Script, ScriptAlphabets)>,
+    pub script_langs: Vec<(Script, Set<Language>)>,
     pub range: Range<usize>,
 }
 
@@ -84,14 +84,16 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                 ch = '\'';
             }
 
-            let script_alphabets = script_char_to_alphabets(script, ch);
+            let langs: Set<Language> = script
+                .map(|s| script_char_to_langs(s, ch).iter().copied().collect())
+                .unwrap_or_default();
 
-            let langs: Set<Language> = script_alphabets
-                .iter()
-                .map(|a| <&[Language]>::from(a))
-                .flatten()
-                .copied()
-                .collect();
+            /* let langs: Set<Language> = script_alphabets
+            .iter()
+            .map(|a| <&[Language]>::from(a))
+            .flatten()
+            .copied()
+            .collect(); */
 
             let script = script.unwrap_or(Script::Common);
 
@@ -99,7 +101,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                 && !self.prev_char_langs.is_empty()
                 && self.prev_char_langs.intersection(&langs).next().is_none();
 
-            let ch_skip = if script_alphabets.is_empty() {
+            let ch_skip = if langs.is_empty() {
                 true
             } else if script == Script::Common {
                 if self.prev_char_script == Script::Common || langs_not_intersect {
@@ -140,7 +142,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                     } */
                     self.res = Some(WordData {
                         chars: std::mem::take(&mut self.word_buf),
-                        script_alphabets: std::mem::take(&mut self.word_alphabets),
+                        script_langs: std::mem::take(&mut self.word_script_langs),
                         range: self.word_start_index..self.not_saved_word_end_index,
                     })
 
@@ -155,7 +157,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
             if !ch_skip {
                 self.not_saved_word_end_index = ch_idx + ch.len_utf8();
                 self.word_buf.push(ch.to_lowercase().next().unwrap()); // maybe check each char?
-                self.word_alphabets.push((script, script_alphabets));
+                self.word_script_langs.push((script, langs));
             }
             self.prev_char_script = script;
             self.prev_char_langs = langs;
