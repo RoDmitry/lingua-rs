@@ -15,7 +15,7 @@
  */
 
 use crate::constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION};
-use crate::langs_count::process_langs_count;
+use crate::langs_count::langs_count_max;
 use crate::model::TrainingDataLanguageModel;
 use crate::{word_iter, Language};
 use ::std::fs::{remove_file, File};
@@ -78,8 +78,8 @@ impl LanguageModelFilesWriter {
         let word_chars: Vec<Vec<char>> = words
             .into_iter()
             // filter
-            .map(|wd| (process_langs_count(wd.script_langs), wd.chars))
-            .filter(|(langs_cnt, _)| langs_cnt.contains_key(language))
+            .map(|wd| (langs_count_max(wd.langs_cnt), wd.chars))
+            .filter(|(langs_cnt, _)| langs_cnt.0.contains(&language))
             // .inspect(|wd| println!("{:?}", wd))
             .map(|(_, chars)| chars)
             // .map(|wd| wd.chars)

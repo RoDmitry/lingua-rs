@@ -17,7 +17,7 @@
 use crate::constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE};
 use crate::json::load_json;
 use crate::lang::Script;
-use crate::langs_count::process_langs_count;
+use crate::langs_count::langs_count_max;
 use crate::model::{JsonLanguageModel, TestDataLanguageModel};
 use crate::result::DetectionResult;
 use crate::{word_iter, Language};
@@ -742,10 +742,10 @@ impl LanguageDetector {
         for wd in found_words {
             let len = wd.chars.len();
             words.push(wd.chars);
-            let langs = process_langs_count(wd.script_langs);
-            for &search_lang in search_languages {
-                if let Some(_cnt) = langs.get(search_lang) {
-                    let cnt = languages.entry(search_lang).or_default();
+            let langs = langs_count_max(wd.langs_cnt).0;
+            for search_lang in search_languages {
+                if langs.contains(search_lang) {
+                    let cnt = languages.entry(*search_lang).or_default();
                     *cnt = cnt.wrapping_add(len);
                 }
             }

@@ -229,6 +229,7 @@ pub enum Language {
     Hanunoo,
     #[strum(serialize = "hau")]
     Hausa,
+    Hawaiian,
     #[strum(serialize = "heb")]
     Hebrew,
     #[strum(serialize = "hin")]

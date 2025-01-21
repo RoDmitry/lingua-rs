@@ -1,9 +1,24 @@
-use crate::{lang::Script, Language};
-use ahash::AHashMap;
-// use ::std::collections::hash_map::Entry;
+use crate::Language;
+use ahash::AHashSet;
 use fixed_map::Map;
 
-pub(crate) fn process_langs_count(
+pub(crate) fn langs_count_max(langs_cnt: Map<Language, usize>) -> (AHashSet<Language>, usize) {
+    let lang_count_max = langs_cnt
+        .iter()
+        .map(|(_, cnt)| cnt)
+        .fold(1, |acc, cnt| acc.max(*cnt));
+
+    (
+        langs_cnt
+            .into_iter()
+            .filter(|(_, cnt)| *cnt == lang_count_max)
+            .map(|(l, _)| l)
+            .collect(),
+        lang_count_max,
+    )
+}
+
+/* pub(crate) fn process_langs_count(
     script_langs: AHashMap<Script, Map<Language, usize>>,
 ) -> Map<Language, usize> {
     if script_langs.is_empty() {
@@ -28,7 +43,7 @@ pub(crate) fn process_langs_count(
     langs_count.retain(|_, cnt| *cnt == lang_count_max);
 
     langs_count
-}
+} */
 
 /* pub(crate) fn process_langs_count(
     script_langs: AHashMap<Script, Map<Language, usize>>,
@@ -160,78 +175,79 @@ mod test {
         expected_language,
         // words with unique characters
         case::czech("subjektů", Some(Czech)),
-        case::esperanto("nesufiĉecon", Some(Esperanto)),
-        case::esperanto("intermiksiĝis", Some(Esperanto)),
-        case::esperanto("monaĥinoj", Some(Esperanto)),
-        case::esperanto("kreitaĵoj", Some(Esperanto)),
-        case::esperanto("ŝpinante", Some(Esperanto)),
         case::esperanto("apenaŭ", Some(Esperanto)),
+        case::esperanto("intermiksiĝis", Some(Esperanto)),
+        case::esperanto("kreitaĵoj", Some(Esperanto)),
+        case::esperanto("monaĥinoj", Some(Esperanto)),
+        case::esperanto("nesufiĉecon", Some(Esperanto)),
+        case::esperanto("ŝpinante", Some(Esperanto)),
         case::german("groß", Some(German)),
         case::greek("σχέδια", Some(Greek)),
+        case::hawaiian("pu'u'ō'ō", Some(Hawaiian)),
         case::hungarian("fekvő", Some(Hungarian)),
         case::hungarian("meggyűrűzni", Some(Hungarian)),
         case::japanese("ヴェダイヤモンド", Some(Japanese)),
-        case::kazakh("әлем", Some(Kazakh)),
-        case::kazakh("шаруашылығы", Some(Kazakh)),
         case::kazakh("ақын", Some(Kazakh)),
+        case::kazakh("әлем", Some(Kazakh)),
         case::kazakh("оның", Some(Kazakh)),
+        case::kazakh("шаруашылығы", Some(Kazakh)),
         case::kazakh("шұрайлы", Some(Kazakh)),
-        case::lithuanian("mergelės", Some(Lithuanian)),
         case::lithuanian("įrengus", Some(Lithuanian)),
+        case::lithuanian("mergelės", Some(Lithuanian)),
         case::lithuanian("slegiamų", Some(Lithuanian)),
-        case::macedonian("припаѓа", Some(Macedonian)),
         case::macedonian("ќерка", Some(Macedonian)),
-        case::polish("państwowych", Some(Polish)),
-        case::polish("mniejszości", Some(Polish)),
+        case::macedonian("припаѓа", Some(Macedonian)),
         case::polish("groźne", Some(Polish)),
+        case::polish("mniejszości", Some(Polish)),
+        case::polish("państwowych", Some(Polish)),
         case::romanian("ialomiţa", Some(Romanian)),
         case::serbian("наслеђивања", Some(Serbian)),
         case::serbian("неисквареношћу", Some(Serbian)),
+        case::slovak("mŕtvych", Some(Slovak)),
         case::slovak("podĺa", Some(Slovak)),
         case::slovak("pohľade", Some(Slovak)),
-        case::slovak("mŕtvych", Some(Slovak)),
         case::ukrainian("ґрунтовому", Some(Ukrainian)),
         case::ukrainian("пропонує", Some(Ukrainian)),
+        case::vietnamese("biểu", Some(Vietnamese)),
+        case::vietnamese("bỡi", Some(Vietnamese)),
         case::vietnamese("cằm", Some(Vietnamese)),
-        case::vietnamese("thần", Some(Vietnamese)),
         case::vietnamese("chẳng", Some(Vietnamese)),
-        case::vietnamese("quẩy", Some(Vietnamese)),
-        case::vietnamese("sẵn", Some(Vietnamese)),
-        case::vietnamese("nhẫn", Some(Vietnamese)),
-        case::vietnamese("dắt", Some(Vietnamese)),
         case::vietnamese("chất", Some(Vietnamese)),
+        case::vietnamese("chỉnh", Some(Vietnamese)),
+        case::vietnamese("chức", Some(Vietnamese)),
+        case::vietnamese("của", Some(Vietnamese)),
         case::vietnamese("đạp", Some(Vietnamese)),
-        case::vietnamese("mặn", Some(Vietnamese)),
+        case::vietnamese("dắt", Some(Vietnamese)),
+        case::vietnamese("diễm", Some(Vietnamese)),
+        case::vietnamese("giới", Some(Vietnamese)),
         case::vietnamese("hậu", Some(Vietnamese)),
         case::vietnamese("hiền", Some(Vietnamese)),
-        case::vietnamese("lẻn", Some(Vietnamese)),
-        case::vietnamese("biểu", Some(Vietnamese)),
-        case::vietnamese("diễm", Some(Vietnamese)),
-        case::vietnamese("phế", Some(Vietnamese)),
-        case::vietnamese("việc", Some(Vietnamese)),
-        case::vietnamese("chỉnh", Some(Vietnamese)),
-        case::vietnamese("thơ", Some(Vietnamese)),
-        case::vietnamese("nguồn", Some(Vietnamese)),
-        case::vietnamese("thờ", Some(Vietnamese)),
-        case::vietnamese("sỏi", Some(Vietnamese)),
-        case::vietnamese("tổng", Some(Vietnamese)),
-        case::vietnamese("nhở", Some(Vietnamese)),
-        case::vietnamese("mỗi", Some(Vietnamese)),
-        case::vietnamese("bỡi", Some(Vietnamese)),
-        case::vietnamese("tốt", Some(Vietnamese)),
-        case::vietnamese("giới", Some(Vietnamese)),
-        case::vietnamese("một", Some(Vietnamese)),
         case::vietnamese("hợp", Some(Vietnamese)),
         case::vietnamese("hưng", Some(Vietnamese)),
-        case::vietnamese("từng", Some(Vietnamese)),
-        case::vietnamese("của", Some(Vietnamese)),
-        case::vietnamese("sử", Some(Vietnamese)),
-        case::vietnamese("những", Some(Vietnamese)),
-        case::vietnamese("chức", Some(Vietnamese)),
-        case::vietnamese("thực", Some(Vietnamese)),
         case::vietnamese("kỳ", Some(Vietnamese)),
         case::vietnamese("kỷ", Some(Vietnamese)),
+        case::vietnamese("lẻn", Some(Vietnamese)),
+        case::vietnamese("mặn", Some(Vietnamese)),
+        case::vietnamese("mỗi", Some(Vietnamese)),
+        case::vietnamese("một", Some(Vietnamese)),
         case::vietnamese("mỵ", Some(Vietnamese)),
+        case::vietnamese("nguồn", Some(Vietnamese)),
+        case::vietnamese("nhẫn", Some(Vietnamese)),
+        case::vietnamese("nhở", Some(Vietnamese)),
+        case::vietnamese("những", Some(Vietnamese)),
+        case::vietnamese("phế", Some(Vietnamese)),
+        case::vietnamese("quẩy", Some(Vietnamese)),
+        case::vietnamese("sẵn", Some(Vietnamese)),
+        case::vietnamese("sỏi", Some(Vietnamese)),
+        case::vietnamese("sử", Some(Vietnamese)),
+        case::vietnamese("thần", Some(Vietnamese)),
+        case::vietnamese("thơ", Some(Vietnamese)),
+        case::vietnamese("thờ", Some(Vietnamese)),
+        case::vietnamese("thực", Some(Vietnamese)),
+        case::vietnamese("tổng", Some(Vietnamese)),
+        case::vietnamese("tốt", Some(Vietnamese)),
+        case::vietnamese("từng", Some(Vietnamese)),
+        case::vietnamese("việc", Some(Vietnamese)),
         case::yoruba("aṣiwèrè", Some(Yoruba)),
         case::yoruba("ṣaaju", Some(Yoruba)),
         case("والموضوع", None),
@@ -257,9 +273,8 @@ mod test {
         let found_words = word_iter::from_ch_iter(word.char_indices());
         let languages: AHashSet<_> = found_words
             .into_iter()
-            .map(|w| process_langs_count(w.script_langs))
+            .map(|wd| langs_count_max(wd.langs_cnt).0)
             .flatten()
-            .map(|(l, _)| l)
             .collect();
 
         let language = if languages.len() > 1 {
@@ -519,7 +534,7 @@ mod test {
             ahashset!(Fon, Lombard, Friulian, Occitan, Catalan, Vietnamese, CreoleHaitian, Italian, Ewe, Limburgish, Sardinian)
         ),
         case("labâk", ahashset!(Romanian, French, Portuguese, Vietnamese)),
-        case("šefčovič's",
+        case::eng_like("šefčovič's",
             ahashset!(Slovak, Lithuanian, Silesian, Croatian, Latgalian, Czech, Bosnian, Latvian, Slovene)
         ),
     )]
@@ -530,9 +545,8 @@ mod test {
         let found_words = word_iter::from_ch_iter(word.char_indices());
         let languages: AHashSet<_> = found_words
             .into_iter()
-            .map(|w| process_langs_count(w.script_langs))
+            .map(|wd| langs_count_max(wd.langs_cnt).0)
             .flatten()
-            .map(|(l, _)| l)
             .collect();
 
         assert_eq!(
@@ -555,9 +569,8 @@ mod test {
         let found_words = word_iter::from_ch_iter(text.char_indices());
         let languages: AHashSet<_> = found_words
             .into_iter()
-            .map(|w| process_langs_count(w.script_langs))
+            .map(|wd| langs_count_max(wd.langs_cnt).0)
             .flatten()
-            .map(|(l, _)| l)
             .collect();
         /* let language = if languages.len() > 1 {
             None

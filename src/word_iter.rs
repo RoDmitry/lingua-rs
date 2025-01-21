@@ -1,4 +1,3 @@
-use ahash::AHashMap;
 use fixed_map::Map;
 use std::ops::Range;
 
@@ -10,27 +9,6 @@ use crate::{
     Language,
 };
 
-fn has_intersection(
-    script: Script,
-    langs: &'static [Language],
-    script_langs: &AHashMap<Script, Map<Language, usize>>,
-) -> bool {
-    let mut res = false;
-    'a: for (&s, lang_cnt) in script_langs {
-        if s == script {
-            continue;
-        }
-        for &lang in langs {
-            if lang_cnt.contains_key(lang) {
-                res = true;
-                continue 'a;
-            }
-        }
-        return false;
-    }
-    res
-}
-
 pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>> {
     iter: I,
     next_char: Option<(Option<Script>, usize, char)>,
@@ -39,7 +17,8 @@ pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>
     not_saved_word_end_index: usize,
     prev_char_script: Script,
     // prev_char_langs: Set<Language>,
-    word_script_langs: AHashMap<Script, Map<Language, usize>>,
+    word_langs_cnt: Map<Language, usize>,
+    word_common_langs_cnt: Map<Language, usize>,
     res: Option<WordData>,
 }
 
@@ -72,7 +51,8 @@ pub(crate) fn from_ch_iter(
         not_saved_word_end_index: Default::default(),
         prev_char_script: Script::Common,
         // prev_char_langs: Default::default(),
-        word_script_langs: Default::default(),
+        word_langs_cnt: Default::default(),
+        word_common_langs_cnt: Default::default(),
         res: None,
     }
 }
@@ -80,7 +60,7 @@ pub(crate) fn from_ch_iter(
 #[derive(Debug)]
 pub(crate) struct WordData {
     pub chars: Vec<char>,
-    pub script_langs: AHashMap<Script, Map<Language, usize>>,
+    pub langs_cnt: Map<Language, usize>,
     pub range: Range<usize>,
 }
 
@@ -120,7 +100,7 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
             let script = script.unwrap_or(Script::Common); // why Common, maybe skip?
 
             let langs_not_intersect = if self.prev_char_script != script {
-                !has_intersection(script, langs, &self.word_script_langs)
+                !langs.iter().any(|&l| self.word_langs_cnt.contains_key(l))
             } else {
                 false
             };
@@ -166,9 +146,14 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
                         };
                         words.insert(self.word_buf, word_data);
                     } */
+                    for (lang, cnt) in std::mem::take(&mut self.word_common_langs_cnt) {
+                        let v = self.word_langs_cnt.entry(lang).or_default();
+                        *v = v.wrapping_add(cnt);
+                    }
+
                     self.res = Some(WordData {
                         chars: std::mem::take(&mut self.word_buf),
-                        script_langs: std::mem::take(&mut self.word_script_langs),
+                        langs_cnt: std::mem::take(&mut self.word_langs_cnt),
                         range: self.word_start_index..self.not_saved_word_end_index,
                     });
 
@@ -183,10 +168,13 @@ impl<I: Iterator<Item = (Option<Script>, usize, char)>> Iterator for WordIterato
             if !ch_skip {
                 self.not_saved_word_end_index = ch_idx + ch.len_utf8();
                 self.word_buf.push(ch.to_lowercase().next().unwrap()); // maybe check each char?
-                                                                       // self.word_script_langs.push((script, langs));
-                let script_entry = self.word_script_langs.entry(script).or_default();
+                let langs_cnt = if script == Script::Common {
+                    &mut self.word_common_langs_cnt
+                } else {
+                    &mut self.word_langs_cnt
+                };
                 for &lang in langs {
-                    let v = script_entry.entry(lang).or_default();
+                    let v = langs_cnt.entry(lang).or_default();
                     *v = v.wrapping_add(1);
                 }
             }

@@ -1211,11 +1211,12 @@ pub(crate) fn script_char_to_langs(script: Script, ch: char) -> &'static [Langua
                 Language::GaelicScottish,
                 Language::Ganda,
                 Language::Guarani,
+                Language::Hawaiian,
                 Language::MalgasyPlateau,
             ],
             '¡' => &[Language::Spanish],
             '¿' => &[Language::Spanish],
-            'ʻ' => &[Language::UzbekNorthern],
+            'ʻ' => &[Language::UzbekNorthern, Language::Hawaiian],
             _ => &[], // must be always empty
         },
         Coptic => &[Language::Coptic],
@@ -1918,6 +1919,14 @@ pub(crate) fn script_char_to_langs(script: Script, ch: char) -> &'static [Langua
                     'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'R', 'r',
                     'S', 's', 'T', 't', 'U', 'u', 'W', 'w', 'Y', 'y', 'Ɓ', 'ɓ', 'Ɗ', 'ɗ', 'Ƙ', 'ƙ',
                     'Ƴ', 'ƴ'
+                ],
+            ),
+            (
+                Language::Hawaiian, //+
+                [
+                    'A', 'a', 'E', 'e', 'I', 'i', 'O', 'o', 'U', 'u', 'H', 'h', 'K', 'k', 'L', 'l',
+                    'M', 'm', 'N', 'n', 'P', 'p', 'W', 'w', 'Ā', 'ā', 'Ē', 'ē', 'Ī', 'ī', 'Ō', 'ō',
+                    'Ū', 'ū'
                 ],
             ),
             (
