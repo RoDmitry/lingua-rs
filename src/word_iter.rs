@@ -9,7 +9,7 @@ use crate::{
     Language,
 };
 
-pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>> {
+pub struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>> {
     iter: I,
     next_char: Option<(Option<Script>, usize, char)>,
     word_buf: Vec<char>,
@@ -25,7 +25,7 @@ pub(crate) struct WordIterator<I: Iterator<Item = (Option<Script>, usize, char)>
 /* impl<CT: Iterator<Item = (usize, char)>, I: Iterator<Item = (Option<Script>, usize, char)>> From<T>
     for WordIterator<I>
 { */
-pub(crate) fn from_ch_iter(
+pub fn from_ch_iter(
     ch_iter: impl Iterator<Item = (usize, char)>,
 ) -> WordIterator<impl Iterator<Item = (Option<Script>, usize, char)>> {
     let mut iter = ch_iter
@@ -58,7 +58,7 @@ pub(crate) fn from_ch_iter(
 }
 
 #[derive(Debug)]
-pub(crate) struct WordData {
+pub struct WordData {
     pub chars: Vec<char>,
     pub langs_cnt: Map<Language, usize>,
     pub range: Range<usize>,

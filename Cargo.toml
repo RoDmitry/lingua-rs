@@ -59,7 +59,7 @@ required-features = ["accuracy-reports"]
 [[bench]]
 name = "benchmark"
 harness = false
-required-features = ["benchmark"]
+# required-features = ["benchmark"]
 
 [dependencies]
 fixed-map = { path = "../fixed-map" }
@@ -266,7 +266,7 @@ default = [
     # "azerbaijani","mongolian","punjabi"
 ]
 accuracy-reports = ["cld2", "indoc", "titlecase", "whatlang", "whichlang"]
-benchmark = ["cld2", "whatlang", "whichlang"]
+# benchmark = ["cld2", "whatlang", "whichlang"]
 python = ["pyo3"]
 afrikaans = ["lingua-afrikaans-language-model"]
 # albanian = ["lingua-albanian-language-model"]

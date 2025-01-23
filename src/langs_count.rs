@@ -2,7 +2,7 @@ use crate::Language;
 use ahash::AHashSet;
 use fixed_map::Map;
 
-pub(crate) fn langs_count_max(langs_cnt: Map<Language, usize>) -> (AHashSet<Language>, usize) {
+pub fn langs_count_max(langs_cnt: Map<Language, usize>) -> (AHashSet<Language>, usize) {
     let lang_count_max = langs_cnt
         .iter()
         .map(|(_, cnt)| cnt)
