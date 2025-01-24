@@ -16,17 +16,16 @@
 
 use crate::constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE};
 use crate::json::load_json;
-use crate::lang::Script;
-use crate::langs_count::langs_count_max;
+// use crate::lang::Script;
 use crate::model::{JsonLanguageModel, TestDataLanguageModel};
 use crate::result::DetectionResult;
-use crate::{word_iter, Language};
 use ::std::cmp::Ordering;
 use ::std::collections::{HashMap, HashSet};
 use ::std::hash::{BuildHasher, Hash};
 use ::std::ops::Range;
 use ::std::sync::RwLock;
 use ahash::{AHashMap, AHashSet};
+use alphabet_detector::{langs_count_max, Language, Script};
 use compact_str::CompactString;
 use fixed_map::Map;
 use fraction::Zero;
@@ -608,7 +607,7 @@ impl LanguageDetector {
         if text_str.is_empty() {
             return Vec::new();
         }
-        let _found_words_iter = word_iter::from_ch_iter(text_str.char_indices());
+        let _found_words_iter = alphabet_detector::from_ch_iter(text_str.char_indices());
         /* let words_with_langs_iter = found_words_iter.map(|mut wd| {
             let mut langs_alphabets =
                 process_alphabets_count(std::mem::take(&mut wd.script_langs));
@@ -698,7 +697,7 @@ impl LanguageDetector {
             return Vec::new();
         }
         // println!("text_str {:?}", text_str);
-        let found_words = word_iter::from_ch_iter(text_str.char_indices());
+        let found_words = alphabet_detector::from_ch_iter(text_str.char_indices());
 
         /* let alphabets: AHashSet<_> = found_words
             .iter()

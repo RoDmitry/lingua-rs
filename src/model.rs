@@ -16,13 +16,13 @@
 
 use crate::fraction::Fraction;
 use crate::ngram::{Ngram /* NgramRef */};
-use crate::Language;
 use ::std::collections::BTreeMap;
 use ::std::fs::File;
 use ::std::io;
 use ::std::io::Write;
 use ::std::path::Path;
 use ahash::{AHashMap, AHashSet};
+use alphabet_detector::Language;
 use compact_str::CompactString;
 use fraction::GenericFraction;
 use itertools::Itertools;

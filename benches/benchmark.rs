@@ -72,26 +72,6 @@ static SENTENCES: [&str; 16] = [
     });
 } */
 
-fn benchmark_filter(c: &mut Criterion) {
-    let sentences = SENTENCES.repeat(125);
-
-    let mut group1 = c.benchmark_group("Filter");
-    group1.bench_function("run", |bencher| {
-        bencher.iter(|| {
-            sentences.iter().for_each(|sentence| {
-                let found_words = lingua::from_ch_iter(sentence.char_indices());
-                for wd in found_words {
-                    let langs = langs_count_max(wd.langs_cnt).0;
-                    if langs.is_empty() {
-                        panic!("empty langs");
-                    }
-                }
-            });
-        });
-    });
-    group1.finish();
-}
-
 fn benchmark_detector(c: &mut Criterion) {
     let low_accuracy_detector_for_all_languages = LanguageDetectorBuilder::from_all_languages()
         .with_low_accuracy_mode()
@@ -191,7 +171,6 @@ fn benchmark_detector(c: &mut Criterion) {
 criterion_group!(
     benches,
     // benchmark_preloading_all_language_models,
-    benchmark_filter,
     benchmark_detector,
 );
 
