@@ -1,5 +1,5 @@
 use super::{Language, Script};
-use ::std::fmt::Debug;
+// use ::std::fmt::Debug;
 use alphabet_match_macro::alphabet_match;
 /* use std::str::FromStr;
 use std::string::ToString;
@@ -41,13 +41,13 @@ macro_rules! main_alphabet {
 } */
 
 // main_alphabet!(
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display, fixed_map::Key)]
+/* #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display, fixed_map::Key)]
 pub enum Alphabet {
     Cyrillic(CyrillicAlphabet),
     Han(HanAlphabet),
     Latin(LatinAlphabet),
     Script(Script),
-}
+} */
 // );
 
 /* impl From<Alphabet> for Script {
@@ -122,7 +122,7 @@ impl Iterator for ScriptAlphabetIter {
     }
 } */
 
-fn type_of<T>(_: &T) -> &str {
+/* fn type_of<T>(_: &T) -> &str {
     std::any::type_name::<T>()
 }
 
@@ -148,7 +148,7 @@ impl Alphabet {
             v => v.to_string(),
         }
     }
-}
+} */
 
 /* impl From<Alphabet> for &'static [Language] {
     fn from(a: Alphabet) -> Self {
@@ -563,7 +563,7 @@ impl Alphabet {
     }
 } */
 
-macro_rules! alphabet_wrapper {
+/* macro_rules! alphabet_wrapper {
     (
         $( #[$meta:meta] )*
         $vis:vis enum $name:ident in $parent:ident {
@@ -585,9 +585,9 @@ macro_rules! alphabet_wrapper {
             };
         }
     };
-}
+} */
 
-alphabet_wrapper!(
+/* alphabet_wrapper!(
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, strum_macros::Display, fixed_map::Key)]
 pub enum HanAlphabet in Han {
     ChineseSimplified,
@@ -746,7 +746,7 @@ pub enum LatinAlphabet in Latin {
     Yoruba,
     Zulu,
 }
-);
+); */
 
 /*
 ace_Arab
