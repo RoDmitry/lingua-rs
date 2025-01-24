@@ -459,9 +459,6 @@ pub use writer::{LanguageModelFilesWriter, TestDataFilesWriter};
     fn modif<S: BuildHasher>(_: &mut HashMap<T, usize, S>) {}
 } */
 
-#[cfg(feature = "python")]
-mod python;
-
 #[cfg(target_family = "wasm")]
 mod wasm;
 
