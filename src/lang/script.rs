@@ -304,7 +304,7 @@ impl Script {
         CHAR_RANGES_SORTED
             .binary_search_by(|ra| compare(ra, ch))
             .ok()
-            .map(|i| unsafe { CHAR_RANGES_SORTED.get(i).unwrap() }.script) // todo: unchecked
+            .map(|i| unsafe { CHAR_RANGES_SORTED.get_unchecked(i) }.script)
     }
 }
 

@@ -15,7 +15,7 @@
  */
 
 use crate::fraction::Fraction;
-use crate::ngram::{Ngram, NgramRef};
+use crate::ngram::{Ngram /* NgramRef */};
 use crate::Language;
 use ::std::collections::BTreeMap;
 use ::std::fs::File;

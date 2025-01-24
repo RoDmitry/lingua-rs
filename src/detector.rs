@@ -608,7 +608,7 @@ impl LanguageDetector {
         if text_str.is_empty() {
             return Vec::new();
         }
-        let found_words_iter = word_iter::from_ch_iter(text_str.char_indices());
+        let _found_words_iter = word_iter::from_ch_iter(text_str.char_indices());
         /* let words_with_langs_iter = found_words_iter.map(|mut wd| {
             let mut langs_alphabets =
                 process_alphabets_count(std::mem::take(&mut wd.script_langs));
@@ -1276,9 +1276,9 @@ fn merge_adjacent_results(
 mod tests {
     use super::*;
     use crate::builder::LanguageDetectorBuilder;
-    use crate::ngram::NgramRef;
+    // use crate::ngram::NgramRef;
     use crate::Language::*;
-    use float_cmp::approx_eq;
+    // use float_cmp::approx_eq;
     use once_cell::sync::OnceCell;
     use rstest::*;
 
