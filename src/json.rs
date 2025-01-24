@@ -15,8 +15,8 @@
  */
 
 use crate::ngram::Ngram;
-use crate::Language;
 use ::std::io::{Cursor, ErrorKind, Read};
+use alphabet_detector::Language;
 use brotli::Decompressor;
 use include_dir::Dir;
 #[cfg(feature = "afrikaans")]
@@ -192,9 +192,8 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
         #[cfg(feature = "afrikaans")]
         Language::Afrikaans => Some(AFRIKAANS_MODELS_DIRECTORY),
 
-       /*  #[cfg(feature = "albanian")]
+        /*  #[cfg(feature = "albanian")]
         Language::AlbanianTosk => Some(ALBANIAN_MODELS_DIRECTORY), */
-
         #[cfg(feature = "arabic")]
         Language::Arabic => Some(ARABIC_MODELS_DIRECTORY),
 
@@ -203,7 +202,6 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
 
         /* #[cfg(feature = "azerbaijani")]
         Language::AzerbaijaniNorth => Some(AZERBAIJANI_MODELS_DIRECTORY), */
-
         #[cfg(feature = "basque")]
         Language::Basque => Some(BASQUE_MODELS_DIRECTORY),
 
@@ -227,7 +225,6 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
 
         /* #[cfg(feature = "chinese")]
         Language::ChineseSimplified => Some(CHINESE_MODELS_DIRECTORY), */
-
         #[cfg(feature = "croatian")]
         Language::Croatian => Some(CROATIAN_MODELS_DIRECTORY),
 
@@ -323,7 +320,6 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
 
         /* #[cfg(feature = "mongolian")]
         Language::MongolianHalh => Some(MONGOLIAN_MODELS_DIRECTORY), */
-
         #[cfg(feature = "nynorsk")]
         Language::Nynorsk => Some(NYNORSK_MODELS_DIRECTORY),
 
@@ -338,7 +334,6 @@ fn get_language_models_directory(language: Language) -> Option<Dir<'static>> {
 
         /* #[cfg(feature = "punjabi")]
         Language::PunjabiEastern => Some(PUNJABI_MODELS_DIRECTORY), */
-
         #[cfg(feature = "romanian")]
         Language::Romanian => Some(ROMANIAN_MODELS_DIRECTORY),
 

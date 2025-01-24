@@ -15,9 +15,8 @@
  */
 
 use crate::detector::LanguageDetector;
-use crate::isocode::{IsoCode639_1, IsoCode639_3};
-use crate::Language;
 use ahash::AHashSet;
+use alphabet_detector::{IsoCode639_1, IsoCode639_3, Language};
 
 pub(crate) const MISSING_LANGUAGE_MESSAGE: &str =
     "LanguageDetector needs at least 2 languages to choose from";

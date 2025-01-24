@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use crate::Language;
+use alphabet_detector::Language;
 
 /// This struct describes a contiguous single-language
 /// text section within a possibly mixed-language text.

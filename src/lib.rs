@@ -405,6 +405,7 @@ macro_rules! ahashmap {
         }
     };
 }
+
 #[allow(unused_macros)]
 macro_rules! ahashset {
     (@single $($x:tt)*) => (());
@@ -423,6 +424,7 @@ macro_rules! ahashset {
     };
 }
 
+pub use alphabet_detector::*;
 #[cfg(test)]
 use regex::Regex;
 
@@ -430,28 +432,20 @@ mod builder;
 mod constant;
 mod detector;
 mod fraction;
-mod isocode;
 mod json;
-mod lang;
-mod langs_count;
 mod model;
 mod ngram;
 mod result;
-mod word_iter;
 mod writer;
 
 pub use builder::LanguageDetectorBuilder;
 pub use detector::LanguageDetector;
-pub use isocode::{IsoCode639_1, IsoCode639_3};
-pub use lang::{str_to_langs, Language};
-pub use langs_count::langs_count_max;
 pub use result::DetectionResult;
 #[cfg(target_family = "wasm")]
 pub use wasm::{
     ConfidenceValue, DetectionResult as WasmDetectionResult,
     LanguageDetectorBuilder as WasmLanguageDetectorBuilder,
 };
-pub use word_iter::from_ch_iter;
 pub use writer::{LanguageModelFilesWriter, TestDataFilesWriter};
 
 /* pub(crate) trait ExtraCheck<T: Sized = Self> {

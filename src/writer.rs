@@ -15,12 +15,11 @@
  */
 
 use crate::constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION};
-use crate::langs_count::langs_count_max;
 use crate::model::TrainingDataLanguageModel;
-use crate::{word_iter, Language};
 use ::std::fs::{remove_file, File};
 use ::std::io::{self, BufRead, BufReader, LineWriter, Write};
 use ::std::path::Path;
+use alphabet_detector::{langs_count_max, Language};
 use itertools::Itertools;
 use regex::Regex;
 
@@ -69,7 +68,7 @@ impl LanguageModelFilesWriter {
         // let chars = text.map(|t| t.char_indices().collect::<Vec<_>>()).flatten();
         // let chars: Vec<_> = chars.collect();
         // println!("{:?}", chars);
-        let words = word_iter::from_ch_iter(text.char_indices());
+        let words = alphabet_detector::from_ch_iter(text.char_indices());
         /* let wrong_words: Vec<_> = words
             .iter()
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
