@@ -1,6 +1,6 @@
 ##### Hungarian #####
 
->>> Accuracy on average: 81.3%
+>>> Accuracy on average: 81.66%
 
 >> Detection of 1000 single words (average length: 9 chars)
 Accuracy: 73%
@@ -11,6 +11,6 @@ Accuracy: 88.8%
 Erroneously classified as Portuguese: 2.6%, Shona: 1.1%, Afrikaans: 1%, Estonian: 1%, Slovak: 0.9%, French: 0.6%, Spanish: 0.6%, Bokmal: 0.5%, Vietnamese: 0.4%, Tagalog: 0.3%, Czech: 0.2%, Finnish: 0.2%, Polish: 0.2%, Yoruba: 0.2%, Basque: 0.1%, Dutch: 0.1%, English: 0.1%, Ganda: 0.1%, German: 0.1%, Icelandic: 0.1%, Latin: 0.1%, Latvian: 0.1%, Romanian: 0.1%, Swahili: 0.1%, Tsonga: 0.1%, Tswana: 0.1%, Turkish: 0.1%, Zulu: 0.1%
 
 >> Detection of 1000 sentences (average length: 116 chars)
-Accuracy: 82.1%
-Erroneously classified as Portuguese: 10.3%, Afrikaans: 7.4%, Slovak: 0.2%
+Accuracy: 83.2%
+Erroneously classified as Portuguese: 9.2%, Afrikaans: 7.4%, Slovak: 0.2%
 

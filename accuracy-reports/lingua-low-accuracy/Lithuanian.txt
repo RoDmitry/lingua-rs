@@ -1,6 +1,6 @@
 ##### Lithuanian #####
 
->>> Accuracy on average: 90.06%
+>>> Accuracy on average: 89.9%
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 77.3%
@@ -11,6 +11,6 @@ Accuracy: 94.1%
 Erroneously classified as Esperanto: 0.9%, Latvian: 0.9%, Malay: 0.4%, Slovene: 0.4%, English: 0.3%, Welsh: 0.3%, Basque: 0.2%, Hungarian: 0.2%, Slovak: 0.2%, Spanish: 0.2%, Xhosa: 0.2%, Afrikaans: 0.1%, Catalan: 0.1%, Croatian: 0.1%, Czech: 0.1%, Danish: 0.1%, Estonian: 0.1%, Finnish: 0.1%, French: 0.1%, German: 0.1%, Italian: 0.1%, Latin: 0.1%, Polish: 0.1%, Romanian: 0.1%, Shona: 0.1%, Swahili: 0.1%, Swedish: 0.1%, Zulu: 0.1%
 
 >> Detection of 1000 sentences (average length: 108 chars)
-Accuracy: 98.8%
-Erroneously classified as Czech: 0.4%, Catalan: 0.1%, Esperanto: 0.1%, French: 0.1%, Indonesian: 0.1%, Italian: 0.1%, Latvian: 0.1%, Portuguese: 0.1%, Zulu: 0.1%
+Accuracy: 98.3%
+Erroneously classified as Czech: 0.8%, Catalan: 0.1%, Esperanto: 0.1%, French: 0.1%, Indonesian: 0.1%, Italian: 0.1%, Latvian: 0.1%, Polish: 0.1%, Portuguese: 0.1%, Zulu: 0.1%
 

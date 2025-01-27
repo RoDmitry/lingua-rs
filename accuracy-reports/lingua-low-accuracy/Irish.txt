@@ -12,5 +12,5 @@ Erroneously classified as Shona: 3.4%, English: 1.4%, Latin: 1.2%, Welsh: 1%, Fr
 
 >> Detection of 1000 sentences (average length: 113 chars)
 Accuracy: 66.2%
-Erroneously classified as Afrikaans: 12.6%, Shona: 8.4%, Spanish: 3.4%, French: 1.8%, Dutch: 1.7%, Hungarian: 1.4%, Portuguese: 1.2%, Czech: 0.9%, Catalan: 0.8%, Bokmal: 0.4%, Vietnamese: 0.3%, Slovak: 0.2%, Yoruba: 0.2%, Danish: 0.1%, Fon: 0.1%, Icelandic: 0.1%, Italian: 0.1%, Latin: 0.1%
+Erroneously classified as Afrikaans: 12.7%, Shona: 8.5%, Spanish: 3.4%, Dutch: 1.7%, French: 1.7%, Hungarian: 1.4%, Portuguese: 1.2%, Czech: 0.9%, Catalan: 0.8%, Bokmal: 0.4%, Vietnamese: 0.3%, Slovak: 0.2%, Yoruba: 0.2%, Danish: 0.1%, Icelandic: 0.1%, Italian: 0.1%, Latin: 0.1%
 
