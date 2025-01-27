@@ -25,9 +25,8 @@ use ::std::hash::{BuildHasher, Hash};
 use ::std::ops::Range;
 use ::std::sync::RwLock;
 use ahash::{AHashMap, AHashSet};
-use alphabet_detector::{langs_count_max, Language, Script};
+use alphabet_detector::{fulltext_langs, Language, Script};
 use compact_str::CompactString;
-use fixed_map::Map;
 use fraction::Zero;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
@@ -696,48 +695,10 @@ impl LanguageDetector {
         if text_str.is_empty() {
             return Vec::new();
         }
-        // println!("text_str {:?}", text_str);
-        let found_words = alphabet_detector::from_ch_iter(text_str.char_indices());
-
-        /* let alphabets: AHashSet<_> = found_words
-            .iter()
-            .map(|(_, w)| &w.alphabets_count)
-            .flatten()
-            .copied()
-            .collect();
-        println!("alphabets {:?}", alphabets); */
-
-        /* let mut languages: HashMap<_, Vec<_>, S> = found_words
-        .into_iter()
-        .map(|(_, w)| w.alphabets_count)
-        .flatten()
-        // .map(|(a, _)| <&[Language]>::from(*a))
-        // .flatten()
-        .collect(); */
-        // println!("languages {:?}", languages);
-        // println!("search_languages {:?}", search_languages);
+        /* let found_words = alphabet_detector::from_ch_iter(text_str.char_indices());
 
         let mut words = Vec::new();
-        // let mut script_alphabets_iter = found_words.into_iter();
-        // let mut langs_alphabets_count = script_alphabets_iter.next().unwrap();
-        /* let mut languages: AHashMap<Language, (usize, Vec<Script>)> = AHashMap::new();
-        for wd in found_words {
-            let len = wd.chars.len();
-            words.push(wd.chars);
-            let langs = process_langs_count(wd.script_langs);
-            for (lang, alphs) in langs {
-                if search_languages.contains(&lang) {
-                    let (cnt, alphabets) = languages.entry(lang).or_default();
-                    *cnt += len;
-                    for alph in alphs {
-                        if alphabets.iter().find(|a| **a == alph).is_none() {
-                            alphabets.push(alph);
-                        }
-                    }
-                }
-            }
-        } */
-        let mut languages: Map<Language, usize> = Default::default();
+        let mut languages: AHashMap<Language, usize> = Default::default();
         for wd in found_words {
             let len = wd.chars.len();
             words.push(wd.chars);
@@ -748,23 +709,18 @@ impl LanguageDetector {
                     *cnt = cnt.wrapping_add(len);
                 }
             }
-        }
-        if words.is_empty() || languages.is_empty() {
+        } */
+        let (words, mut filtered_languages) = fulltext_langs(text_str.char_indices());
+        filtered_languages.retain(|l| search_languages.contains(l));
+
+        if words.is_empty() || filtered_languages.is_empty() {
             return values;
         }
-        /* let filtered_languages: AHashSet<_> =
-        languages.intersection(search_languages).copied().collect(); */
-        // languages.retain(|l, _| search_languages.contains(l));
-        // println!("filtered_languages {:?}", languages);
-        let lang_alphabets_count_max = languages.iter().fold(1, |acc, (_, &cnt)| acc.max(cnt));
 
+        /* let lang_alphabets_count_max = languages.iter().fold(1, |acc, (_, &cnt)| acc.max(cnt));
         languages.retain(|_, cnt| {
-            // acs.retain(|(cnt, _)| *cnt > lang_alphabets_count_half);
-            // let max = asc.iter().fold(1, |acc, (_, cnt)| acc.max(*cnt));
             *cnt == lang_alphabets_count_max
-            // acs.retain(|(cnt, _)| *cnt == lang_alphabets_count_max);
-            // !acs.is_empty()
-        });
+        }); */
 
         // let language_detected_by_rules =
         // Self::find_most_frequent_opt(&mut total_language_counts);
@@ -784,15 +740,12 @@ impl LanguageDetector {
             filtered_languages,
         ); */
 
-        if languages.len() == 1 {
-            let (lang, _cnt) = languages.iter().next().unwrap();
-            // todo: return alphabets also
-            update_confidence_values(&mut values, lang, 1.0);
+        if filtered_languages.len() == 1 {
+            let lang = filtered_languages.iter().next().unwrap();
+            update_confidence_values(&mut values, *lang, 1.0);
             values.sort_by(confidence_values_comparator);
             return values;
         }
-
-        let filtered_languages = languages.into_iter().map(|(l, _)| l).collect();
 
         let character_count: usize = words.iter().map(|word| word.len()).sum();
 
