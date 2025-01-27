@@ -8,9 +8,9 @@ Erroneously classified as Croatian: 39.1%, Slovene: 6.9%, Latin: 2.1%, Slovak: 1
 
 >> Detection of 1000 word pairs (average length: 16 chars)
 Accuracy: 34.4%
-Erroneously classified as Croatian: 53.6%, Slovene: 4.6%, English: 0.7%, Esperanto: 0.7%, Latin: 0.5%, Afrikaans: 0.3%, Basque: 0.3%, Czech: 0.3%, German: 0.3%, Indonesian: 0.3%, Polish: 0.3%, Slovak: 0.3%, Swahili: 0.3%, Swedish: 0.3%, Yoruba: 0.3%, Lithuanian: 0.2%, Malay: 0.2%, Nynorsk: 0.2%, Shona: 0.2%, Tagalog: 0.2%, Bokmal: 0.1%, Catalan: 0.1%, Danish: 0.1%, Dutch: 0.1%, Estonian: 0.1%, Ganda: 0.1%, Italian: 0.1%, Romanian: 0.1%, Sesotho: 0.1%, Spanish: 0.1%, Tsonga: 0.1%, Tswana: 0.1%, Turkish: 0.1%, Xhosa: 0.1%, Zulu: 0.1%
+Erroneously classified as Croatian: 53.7%, Slovene: 4.6%, English: 0.7%, Esperanto: 0.7%, Latin: 0.5%, Afrikaans: 0.3%, Basque: 0.3%, Czech: 0.3%, German: 0.3%, Indonesian: 0.3%, Polish: 0.3%, Swahili: 0.3%, Swedish: 0.3%, Yoruba: 0.3%, Lithuanian: 0.2%, Malay: 0.2%, Nynorsk: 0.2%, Shona: 0.2%, Slovak: 0.2%, Tagalog: 0.2%, Bokmal: 0.1%, Catalan: 0.1%, Danish: 0.1%, Dutch: 0.1%, Estonian: 0.1%, Ganda: 0.1%, Italian: 0.1%, Romanian: 0.1%, Sesotho: 0.1%, Spanish: 0.1%, Tsonga: 0.1%, Tswana: 0.1%, Turkish: 0.1%, Xhosa: 0.1%, Zulu: 0.1%
 
 >> Detection of 1000 sentences (average length: 105 chars)
 Accuracy: 38.1%
-Erroneously classified as Croatian: 51.4%, Czech: 5.3%, Slovak: 1.7%, Esperanto: 0.5%, Bokmal: 0.3%, Slovene: 0.3%, Unknown: 0.2%, Afrikaans: 0.2%, French: 0.2%, German: 0.2%, Lithuanian: 0.2%, Malay: 0.2%, Spanish: 0.2%, Tagalog: 0.2%, Zulu: 0.2%, English: 0.1%, Latvian: 0.1%, Nynorsk: 0.1%, Polish: 0.1%, Romanian: 0.1%, Silesian: 0.1%
+Erroneously classified as Croatian: 51.6%, Czech: 5.4%, Slovak: 1.7%, Esperanto: 0.5%, Malay: 0.3%, Slovene: 0.3%, Unknown: 0.2%, Afrikaans: 0.2%, Bokmal: 0.2%, Lithuanian: 0.2%, Spanish: 0.2%, Tagalog: 0.2%, Zulu: 0.2%, English: 0.1%, French: 0.1%, German: 0.1%, Nynorsk: 0.1%, Polish: 0.1%, Romanian: 0.1%, Silesian: 0.1%
 

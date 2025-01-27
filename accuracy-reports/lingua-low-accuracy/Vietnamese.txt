@@ -1,14 +1,14 @@
 ##### Vietnamese #####
 
->>> Accuracy on average: 89.77%
+>>> Accuracy on average: 90.19%
 
 >> Detection of 879 single words (average length: 4 chars)
 Accuracy: 76.22%
 Erroneously classified as Portuguese: 2.04%, Welsh: 1.82%, Yoruba: 1.7%, Shona: 1.47%, Irish: 1.25%, Afrikaans: 1.13%, Icelandic: 1.02%, Tswana: 1.02%, Dutch: 0.91%, Tagalog: 0.91%, Tsonga: 0.91%, Romanian: 0.68%, Spanish: 0.68%, Catalan: 0.56%, French: 0.56%, Xhosa: 0.56%, Bosnian: 0.45%, English: 0.45%, German: 0.45%, Hungarian: 0.45%, Lithuanian: 0.45%, Croatian: 0.34%, Latin: 0.34%, Malay: 0.34%, Swahili: 0.34%, Czech: 0.22%, Danish: 0.22%, Estonian: 0.22%, Finnish: 0.22%, Ganda: 0.22%, Italian: 0.22%, Maori: 0.22%, Polish: 0.22%, Turkish: 0.22%, Esperanto: 0.11%, Fon: 0.11%, Sesotho: 0.11%, Slovak: 0.11%, Somali: 0.11%, Swedish: 0.11%, Zulu: 0.11%
 
 >> Detection of 957 word pairs (average length: 12 chars)
-Accuracy: 93.41%
-Erroneously classified as Shona: 1.56%, Afrikaans: 0.52%, English: 0.52%, Tagalog: 0.52%, Tsonga: 0.52%, Welsh: 0.41%, Catalan: 0.31%, Danish: 0.31%, French: 0.31%, Dutch: 0.2%, German: 0.2%, Romanian: 0.2%, Swahili: 0.2%, Yoruba: 0.2%, Italian: 0.1%, Maori: 0.1%, Portuguese: 0.1%, Somali: 0.1%, Swedish: 0.1%
+Accuracy: 94.67%
+Erroneously classified as Shona: 1.25%, Afrikaans: 0.41%, Tagalog: 0.41%, Tsonga: 0.41%, Welsh: 0.41%, Catalan: 0.31%, Danish: 0.2%, Dutch: 0.2%, English: 0.2%, French: 0.2%, German: 0.2%, Yoruba: 0.2%, Italian: 0.1%, Maori: 0.1%, Nynorsk: 0.1%, Portuguese: 0.1%, Romanian: 0.1%, Somali: 0.1%, Swahili: 0.1%, Swedish: 0.1%
 
 >> Detection of 1000 sentences (average length: 120 chars)
 Accuracy: 99.7%

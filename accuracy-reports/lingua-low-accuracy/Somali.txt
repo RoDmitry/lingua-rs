@@ -1,6 +1,6 @@
 ##### Somali #####
 
->>> Accuracy on average: 80.6%
+>>> Accuracy on average: 80.83%
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 68%
@@ -11,6 +11,6 @@ Accuracy: 91.3%
 Erroneously classified as Tagalog: 1.2%, Ganda: 0.7%, Yoruba: 0.6%, Zulu: 0.6%, Tsonga: 0.5%, Afrikaans: 0.4%, Estonian: 0.4%, Malay: 0.4%, Swahili: 0.4%, Tswana: 0.4%, Esperanto: 0.3%, Latin: 0.3%, Sesotho: 0.3%, Welsh: 0.3%, Hungarian: 0.2%, Turkish: 0.2%, Vietnamese: 0.2%, Xhosa: 0.2%, Basque: 0.1%, Croatian: 0.1%, Dutch: 0.1%, English: 0.1%, Finnish: 0.1%, French: 0.1%, German: 0.1%, Indonesian: 0.1%, Romanian: 0.1%, Spanish: 0.1%, Swedish: 0.1%
 
 >> Detection of 1000 sentences (average length: 124 chars)
-Accuracy: 82.5%
-Erroneously classified as Ganda: 5.9%, Tagalog: 4.3%, Afrikaans: 1.9%, Dutch: 0.8%, English: 0.7%, KanuriCentral: 0.7%, Malay: 0.6%, Tsonga: 0.5%, Bokmal: 0.3%, French: 0.3%, Indonesian: 0.3%, Xhosa: 0.3%, Romanian: 0.2%, German: 0.1%, Sesotho: 0.1%, Swahili: 0.1%, Swedish: 0.1%, Turkish: 0.1%, Yoruba: 0.1%, Zulu: 0.1%
+Accuracy: 83.2%
+Erroneously classified as Ganda: 5.9%, Tagalog: 4.3%, Afrikaans: 1.9%, Dutch: 0.7%, English: 0.7%, Malay: 0.6%, Tsonga: 0.5%, French: 0.4%, Bokmal: 0.3%, Indonesian: 0.3%, Xhosa: 0.3%, Romanian: 0.2%, German: 0.1%, Sesotho: 0.1%, Swahili: 0.1%, Swedish: 0.1%, Turkish: 0.1%, Yoruba: 0.1%, Zulu: 0.1%
 
