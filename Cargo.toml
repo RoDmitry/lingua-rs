@@ -64,7 +64,7 @@ harness = false
 [dependencies]
 alphabet_detector = { path = "../alphabet_detector" }
 # fixed-map = { path = "../fixed-map" }
-fixed-map = "0.9"
+# fixed-map = "0.9"
 stringcase = "0.3"
 # parselang_models = { path = "../parselang-models" }
 brotli = "7.0"
