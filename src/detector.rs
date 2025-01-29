@@ -710,7 +710,7 @@ impl LanguageDetector {
                 }
             }
         } */
-        let (words, mut filtered_languages) = fulltext_langs(text_str.char_indices());
+        let (words, mut filtered_languages, _) = fulltext_langs(text_str.char_indices());
         filtered_languages.retain(|l| search_languages.contains(l));
 
         if words.is_empty() || filtered_languages.is_empty() {
