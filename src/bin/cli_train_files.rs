@@ -174,9 +174,14 @@ fn main() {
                 let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
                     unreachable!()
                 };
-
-                let Ok(lang) = Language::from_str(lang) else {
-                    panic!("*{}* Not found lang: {}", file_name, lang);
+                let lang = match Language::from_str(&file_name)  {
+                    Ok(l) => l,
+                    _ => {
+                        let Ok(l) = Language::from_str(lang) else {
+                            panic!("*{}* Not found lang: {}", file_name, lang);
+                        };
+                        l
+                    }
                 };
                 // skip in order
                 /* if point.load(Ordering::SeqCst) {
