@@ -2,12 +2,14 @@ use ::std::fs;
 use ::std::io::Write;
 use ::std::path::Path;
 use ::std::str::FromStr;
+use ::std::sync::Arc;
+use ::std::sync::Mutex;
 use ::std::{thread, time::Duration};
 use cap::Cap;
 use clap::Parser;
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
-use lingua::{script_char_to_langs, Language, LanguageModelFilesWriter, Script};
+use lingua::{lang_arr_default, script_char_to_langs, Language, LanguageModelFilesWriter, Script};
 // use rayon::prelude::*;
 
 // #[cfg(not(target_env = "msvc"))]
@@ -57,7 +59,7 @@ fn str_to_langs(s: &str) -> &[Language] {
         "Tfng" => script_char_to_langs(Script::Tifinagh, char::default()),
         "Thai" => script_char_to_langs(Script::Thai, char::default()),
         "Tibt" => script_char_to_langs(Script::Tibetan, char::default()),
-        _ => &[],
+        _ => unreachable!(),
     }
 }
 
@@ -146,12 +148,14 @@ fn main() {
     .map(|path| (path.file_name().into_string().unwrap(), path.path()))
     .collect(); */
     let pool = threadpool::ThreadPool::new(THREADS);
+    let langs_seen = Arc::new(Mutex::new(lang_arr_default::<bool>()));
 
     // let point = Arc::new(AtomicBool::new(false));
     for path in paths {
         // files.into_par_iter().for_each(|(file_name, path)| {
         let out_path = args.out.clone();
         // let point = point.clone();
+        let langs_seen = langs_seen.clone();
         pool.execute(move || {
             let path = path.unwrap();
             let file_name = path.file_name().into_string().unwrap();
@@ -183,6 +187,14 @@ fn main() {
                         l
                     }
                 };
+                {
+                    let mut guard = langs_seen.lock().unwrap();
+                    let lang_seen = guard.get_mut(lang as usize).unwrap();
+                    if *lang_seen {
+                        panic!("*{}* Have already seen lang: {}", file_name, lang);
+                    }
+                    *lang_seen = true;
+                }
                 // skip in order
                 /* if point.load(Ordering::SeqCst) {
                 } else if lang == Language::UzbekNorthern {
