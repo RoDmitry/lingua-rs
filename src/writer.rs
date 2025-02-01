@@ -75,13 +75,12 @@ impl LanguageModelFilesWriter {
             .collect();
         println!("wrong_words {}", wrong_words.len()); */
         let word_chars: Vec<Vec<char>> = words
-            .into_iter()
-            // filter
-            .map(|wd| (langs_count_max(wd.langs_cnt), wd.chars))
-            .filter(|(langs_cnt, _)| langs_cnt.0.contains(&language))
+            // TODO: uncomment filter
+            // .map(|wd| (langs_count_max(wd.langs_cnt), wd.chars))
+            // .filter(|(langs_cnt, _)| langs_cnt.0.contains(&language))
             // .inspect(|wd| println!("{:?}", wd))
-            .map(|(_, chars)| chars)
-            // .map(|wd| wd.chars)
+            // .map(|(_, chars)| chars)
+            .map(|wd| wd.chars)
             .collect();
         drop(text);
         /* let words: Vec<Vec<char>> = lines
@@ -107,9 +106,10 @@ impl LanguageModelFilesWriter {
             3,
             bigram_model.absolute_frequencies.as_ref().unwrap(),
         );
-        bigram_model.to_match(&out_mod_path.join("bigrams.rs"))?;
+        bigram_model.to_match(&out_mod_path.join("bigrams.rs"))
 
-        trigram_model.to_match(&out_mod_path.join("trigrams.rs"))
+        // TODO: uncomment
+        // trigram_model.to_match(&out_mod_path.join("trigrams.rs"))
 
         /* let trigram_model = Self::create_language_model(
             input_file_path,
