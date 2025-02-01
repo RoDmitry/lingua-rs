@@ -211,20 +211,24 @@ fn main() {
                     );
                 };
                 // TODO: rm this filter
-                if !matches!(lang, Language::English) {
+                /* if !matches!(lang, Language::English) {
+                    return;
+                } */
+                // TODO: rm this filter
+                if alph != "Latn" {
                     return;
                 }
-                println!("*{}* lang: {:?}", file_name, lang);
 
                 let model_name = lang.to_string();
                 let mod_dir = stringcase::snake_case(&model_name);
 
                 let out_path = Path::new(&out_path);
                 let out_mod_path = out_path.join(&mod_dir);
-                if out_mod_path.join("trigrams.rs").exists() {
-                    println!("EXISTS: {}", file_name);
+                if out_mod_path.join("unigrams.rs").exists() {
+                    println!("EXISTS {} {:?}", file_name, lang);
                     return;
                 }
+                println!("*{}* started {:?}", file_name, lang);
 
                 /* let lines = io::stdin()
                 .lines()
