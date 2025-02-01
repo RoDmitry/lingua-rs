@@ -436,7 +436,6 @@ chemegol
 gwynt
 llwch
 cyfraith
-caviidae
 caiff
 messier
 cadeirydd
@@ -487,7 +486,6 @@ guiscard
 modrwyau
 mwyafrif
 cynhyrchu
-vistula
 mechain
 gynnwys
 brotestiadau
@@ -552,7 +550,6 @@ olympws
 athronydd
 dychmygol
 thrigain
-avent
 polisi
 chymhwyso
 syrthiodd
@@ -579,7 +576,6 @@ awstralia
 sefyll
 germanaidd
 ailenwyd
-sevagram
 wrthrychau
 teithiau
 sgwennwyd
@@ -634,7 +630,6 @@ potasiwm
 ohonynt
 gasglwyd
 asher
-fexico
 pentagon
 llawr
 ymunodd
@@ -759,7 +754,6 @@ burgess
 prioresau
 megis
 gordian
-voyager
 bengaleg
 joseph
 bwysicaf
@@ -778,7 +772,6 @@ lluoswm
 ymsefydlu
 dreftadaeth
 anghywir
-mitrovica
 personol
 waeth
 ffranciaid
@@ -864,7 +857,6 @@ hunangofiant
 bererindod
 gwyllt
 mcalpine
-virginia
 methodistiaid
 ddogfennau
 etholiadol
@@ -882,7 +874,6 @@ fawddach
 allant
 ganddi
 colum
-vegas
 asiantiaid
 glasuron
 niferoedd

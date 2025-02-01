@@ -1,6 +1,6 @@
 ##### Turkish #####
 
->>> Accuracy on average: 66.16%
+>>> Accuracy on average: 65.78%
 
 >> Detection of 1000 single words (average length: 9 chars)
 Accuracy: 30.4%
@@ -10,7 +10,7 @@ Erroneously classified as Unknown: 68.1%, AzerbaijaniNorth: 0.3%, Indonesian: 0.
 Accuracy: 71%
 Erroneously classified as Unknown: 26.2%, AzerbaijaniNorth: 1.4%, English: 0.7%, Czech: 0.2%, Malay: 0.2%, Nynorsk: 0.2%, Croatian: 0.1%
 
->> Detection of 1000 sentences (average length: 119 chars)
-Accuracy: 97.1%
-Erroneously classified as Unknown: 2.8%, Ganda: 0.1%
+>> Detection of 2075 sentences (average length: 109 chars)
+Accuracy: 95.95%
+Erroneously classified as Unknown: 3.18%, AzerbaijaniNorth: 0.38%, English: 0.33%, Bosnian: 0.09%, Latin: 0.04%
 

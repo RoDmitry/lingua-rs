@@ -1,14 +1,14 @@
 ##### Hungarian #####
 
->>> Accuracy on average: 86.16%
+>>> Accuracy on average: 86.13%
 
 >> Detection of 1000 single words (average length: 9 chars)
-Accuracy: 82.2%
-Erroneously classified as Portuguese: 1.8%, Slovak: 1.5%, Estonian: 1.4%, Shona: 1.4%, Basque: 0.9%, Afrikaans: 0.8%, French: 0.7%, Romanian: 0.6%, Swahili: 0.6%, Turkish: 0.6%, Latin: 0.5%, Czech: 0.4%, English: 0.4%, Lithuanian: 0.4%, Tsonga: 0.4%, Yoruba: 0.4%, Finnish: 0.3%, German: 0.3%, Italian: 0.3%, Polish: 0.3%, Sesotho: 0.3%, Welsh: 0.3%, Xhosa: 0.3%, Bokmal: 0.2%, Catalan: 0.2%, Esperanto: 0.2%, Icelandic: 0.2%, Indonesian: 0.2%, Nynorsk: 0.2%, Tagalog: 0.2%, Vietnamese: 0.2%, Bosnian: 0.1%, Danish: 0.1%, Dutch: 0.1%, Ganda: 0.1%, Irish: 0.1%, Latvian: 0.1%, Malay: 0.1%, Slovene: 0.1%, Somali: 0.1%, Spanish: 0.1%, Swedish: 0.1%, Tswana: 0.1%, Zulu: 0.1%
+Accuracy: 82.1%
+Erroneously classified as Portuguese: 1.7%, Slovak: 1.5%, Estonian: 1.4%, Shona: 1.4%, Basque: 0.9%, Turkish: 0.9%, French: 0.7%, Romanian: 0.6%, Swahili: 0.6%, Latin: 0.5%, Sesotho: 0.5%, Welsh: 0.5%, Afrikaans: 0.4%, Czech: 0.4%, English: 0.4%, Lithuanian: 0.4%, Xhosa: 0.4%, Yoruba: 0.4%, Finnish: 0.3%, Italian: 0.3%, Polish: 0.3%, Tsonga: 0.3%, Bokmal: 0.2%, Catalan: 0.2%, Esperanto: 0.2%, German: 0.2%, Icelandic: 0.2%, Indonesian: 0.2%, Nynorsk: 0.2%, Tagalog: 0.2%, Vietnamese: 0.2%, Bosnian: 0.1%, Danish: 0.1%, Dutch: 0.1%, Ganda: 0.1%, Irish: 0.1%, Latvian: 0.1%, Malay: 0.1%, Slovene: 0.1%, Somali: 0.1%, Spanish: 0.1%, Swedish: 0.1%, Tswana: 0.1%, Zulu: 0.1%
 
 >> Detection of 1000 word pairs (average length: 17 chars)
 Accuracy: 93.1%
-Erroneously classified as Portuguese: 2.3%, Afrikaans: 1.1%, Estonian: 0.7%, French: 0.4%, Slovak: 0.4%, Dutch: 0.3%, Vietnamese: 0.3%, Latin: 0.2%, Romanian: 0.2%, Basque: 0.1%, Bokmal: 0.1%, Danish: 0.1%, English: 0.1%, Ganda: 0.1%, German: 0.1%, Italian: 0.1%, Latvian: 0.1%, Shona: 0.1%, Swahili: 0.1%
+Erroneously classified as Portuguese: 2.3%, Afrikaans: 0.8%, Estonian: 0.7%, French: 0.4%, Slovak: 0.4%, Dutch: 0.3%, Turkish: 0.3%, Vietnamese: 0.3%, Latin: 0.2%, Romanian: 0.2%, Basque: 0.1%, Bokmal: 0.1%, Danish: 0.1%, English: 0.1%, Ganda: 0.1%, German: 0.1%, Italian: 0.1%, Latvian: 0.1%, Shona: 0.1%, Swahili: 0.1%
 
 >> Detection of 1000 sentences (average length: 116 chars)
 Accuracy: 83.2%
