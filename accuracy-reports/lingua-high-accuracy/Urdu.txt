@@ -1,16 +1,16 @@
 ##### Urdu #####
 
->>> Accuracy on average: 90.1%
+>>> Accuracy on average: 88.2%
 
 >> Detection of 1000 single words (average length: 6 chars)
-Accuracy: 80%
-Erroneously classified as Persian: 15.8%, Arabic: 4.2%
+Accuracy: 78.5%
+Erroneously classified as Persian: 16.4%, Arabic: 4.2%, Unknown: 0.8%, Sindhi: 0.1%
 
 >> Detection of 1000 word pairs (average length: 13 chars)
-Accuracy: 94.6%
-Erroneously classified as Persian: 4.7%, Arabic: 0.7%
+Accuracy: 91.2%
+Erroneously classified as Persian: 7.7%, Arabic: 0.7%, Unknown: 0.4%
 
 >> Detection of 1000 sentences (average length: 115 chars)
-Accuracy: 95.7%
-Erroneously classified as English: 3.9%, Persian: 0.4%
+Accuracy: 94.9%
+Erroneously classified as English: 3.9%, Persian: 0.8%, PersianDari: 0.2%, Unknown: 0.1%, Sindhi: 0.1%
 

@@ -12,5 +12,5 @@ Erroneously classified as Icelandic: 8.5%, Afrikaans: 2%, Czech: 1.1%, Slovak: 1
 
 >> Detection of 2075 sentences (average length: 109 chars)
 Accuracy: 99.03%
-Erroneously classified as English: 0.24%, Bosnian: 0.09%, Ganda: 0.09%, Slovene: 0.09%, Danish: 0.04%, Dutch: 0.04%, Esperanto: 0.04%, Italian: 0.04%, Spanish: 0.04%, Swahili: 0.04%, Swedish: 0.04%, Tswana: 0.04%, Welsh: 0.04%
+Erroneously classified as English: 0.24%, Ganda: 0.09%, Slovene: 0.09%, Bosnian: 0.04%, Catalan: 0.04%, Danish: 0.04%, Dutch: 0.04%, Esperanto: 0.04%, Italian: 0.04%, Spanish: 0.04%, Swahili: 0.04%, Swedish: 0.04%, Tswana: 0.04%, Welsh: 0.04%
 

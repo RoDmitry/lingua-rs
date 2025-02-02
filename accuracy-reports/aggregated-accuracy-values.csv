@@ -10,7 +10,7 @@ AlbanianToskVithkuqi,,,,,
 Amharic,,,,,
 AncientGreek,,,,,
 Angkola,,,,,
-Arabic,66,19,81,99,93,88,92,99,100,100,100,100,94,88,95,99,98,96,99,99
+Arabic,66,19,81,99,93,88,92,99,100,100,100,100,94,89,96,98,98,96,99,98
 ArabicEgyptian,,,,,
 ArabicMesopotamian,,,,,
 ArabicMoroccan,,,,,
@@ -52,7 +52,7 @@ Bhojpuri,,,,,
 BhojpuriKaithi,,,,,
 BishnupriyaManipuri,,,,,
 Bokmal,NaN,NaN,NaN,NaN,49,23,43,80,NaN,NaN,NaN,NaN,50,27,47,75,57,38,58,76
-Bosnian,18,4,15,36,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,29,23,28,34,33,29,34,38
+Bosnian,21,4,15,44,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,37,23,28,60,43,29,34,66
 Braille,,,,,
 BuddhistMarchen,,,,,
 Buginese,,,,,
@@ -61,7 +61,7 @@ Buhid,,,,,
 Bulgarian,65,31,72,92,69,44,67,96,NaN,NaN,NaN,NaN,79,58,82,97,86,70,91,99
 Burmese,,,,,
 Carian,,,,,
-Catalan,37,4,29,79,51,29,45,80,NaN,NaN,NaN,NaN,61,34,64,84,73,52,78,88
+Catalan,37,4,29,79,51,29,45,80,NaN,NaN,NaN,NaN,61,34,64,84,72,52,78,87
 CaucasianAlbanian,,,,,
 Cebuano,,,,,
 Chakma,,,,,
@@ -82,7 +82,6 @@ Croatian,51,33,46,72,61,34,54,94,NaN,NaN,NaN,NaN,58,37,57,82,71,53,73,86
 CyproMinoan,,,,,
 Czech,73,50,79,90,63,42,65,82,NaN,NaN,NaN,NaN,74,54,78,90,80,65,84,91
 Danish,59,26,56,94,54,31,46,84,NaN,NaN,NaN,NaN,70,45,70,95,80,61,83,97
-Dari,,,,,
 DinkaSouthwestern,,,,,
 Dogri,,,,,
 DogriDevanagari,,,,,
@@ -267,8 +266,9 @@ Pangasinan,,,,,
 Papiamento,,,,,
 Parthian,,,,,
 Pashto,,,,,
-PastoSouthern,,,,,
-Persian,61,12,72,99,72,49,68,99,NaN,NaN,NaN,NaN,79,61,80,97,90,77,93,99
+PashtoSouthern,,,,,
+Persian,61,12,72,99,72,49,68,99,NaN,NaN,NaN,NaN,85,68,87,99,90,78,93,99
+PersianDari,,,,,
 PersianWestern,,,,,
 Phoenician,,,,,
 Polish,74,37,86,99,81,64,81,99,NaN,NaN,NaN,NaN,91,77,96,99,94,85,98,99
@@ -369,7 +369,7 @@ Ugaritic,,,,,
 Ukrainian,77,45,87,98,85,69,88,98,NaN,NaN,NaN,NaN,90,77,94,98,93,85,97,98
 Umbrian,,,,,
 Umbundu,,,,,
-Urdu,61,8,75,99,68,45,63,95,NaN,NaN,NaN,NaN,79,64,78,94,90,80,94,95
+Urdu,61,8,75,99,68,45,63,95,NaN,NaN,NaN,NaN,85,74,86,94,88,78,91,94
 Uyghur,,,,,
 UzbekNorthern,,,,,
 Vai,,,,,
