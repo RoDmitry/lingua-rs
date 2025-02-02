@@ -12,5 +12,5 @@ Erroneously classified as English: 2.2%, Latin: 0.9%, Shona: 0.6%, Welsh: 0.5%, 
 
 >> Detection of 1581 sentences (average length: 176 chars)
 Accuracy: 90.38%
-Erroneously classified as Welsh: 2.71%, Shona: 1.64%, Spanish: 1.2%, Hungarian: 1.07%, Afrikaans: 0.94%, Portuguese: 0.44%, Czech: 0.37%, Dutch: 0.18%, Yoruba: 0.18%, English: 0.12%, French: 0.12%, German: 0.12%, Slovak: 0.12%, Vietnamese: 0.12%, Unknown: 0.06%, Basque: 0.06%, Esperanto: 0.06%
+Erroneously classified as Welsh: 2.71%, Shona: 1.64%, Spanish: 1.2%, Hungarian: 1.07%, Afrikaans: 0.94%, Portuguese: 0.5%, Czech: 0.37%, Dutch: 0.18%, Yoruba: 0.18%, English: 0.12%, French: 0.12%, German: 0.12%, Slovak: 0.12%, Vietnamese: 0.12%, Basque: 0.06%, Esperanto: 0.06%
 

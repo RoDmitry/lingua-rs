@@ -3033,7 +3033,7 @@ mod tests {
                 Uyghur, PersianWestern, ArabicSouthLevantine, Arabic, ArabicSouthernYemeni, Persian,
                 AzerbaijaniSouth, Kashmiri, KurdishCentral, Dari, KanuriCentral, Kurdish, Acehnese,
                 ArabicEgyptian, ArabicMesopotamian, Pashto, Urdu, ArabicMoroccan, Banjar,
-                ArabicNorthLevantine, ArabicNajdi, ArabicTunisian, PastoSouthern, Sindhi
+                ArabicNorthLevantine, ArabicNajdi, ArabicTunisian, PashtoSouthern, Sindhi
             )),
         case::ru1(
             "сопротивление",

@@ -12,5 +12,5 @@ Erroneously classified as English: 3.3%, Latin: 2.2%, Sesotho: 1%, Malay: 0.8%, 
 
 >> Detection of 1000 sentences (average length: 123 chars)
 Accuracy: 90.3%
-Erroneously classified as Sesotho: 1.2%, Tsonga: 1.2%, Yoruba: 1.2%, English: 1.1%, Turkish: 1.1%, Latin: 0.7%, Ganda: 0.6%, Shona: 0.5%, French: 0.3%, Bokmal: 0.2%, Czech: 0.2%, Dutch: 0.2%, Polish: 0.2%, Portuguese: 0.2%, Spanish: 0.2%, Afrikaans: 0.1%, Catalan: 0.1%, Esperanto: 0.1%, German: 0.1%, Hungarian: 0.1%, Icelandic: 0.1%
+Erroneously classified as Sesotho: 1.2%, Tsonga: 1.2%, English: 1.1%, Turkish: 1.1%, Yoruba: 1.1%, Latin: 0.7%, Ganda: 0.6%, Shona: 0.5%, French: 0.3%, Portuguese: 0.3%, Bokmal: 0.2%, Czech: 0.2%, Dutch: 0.2%, Polish: 0.2%, Spanish: 0.2%, Afrikaans: 0.1%, Catalan: 0.1%, Esperanto: 0.1%, German: 0.1%, Hungarian: 0.1%, Icelandic: 0.1%
 
