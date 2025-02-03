@@ -55,7 +55,7 @@ impl LanguageModelFilesWriter {
         // input_file_path: &Path,
         out_mod_path: &Path,
         // lines: Vec<&str>,
-        text: String,
+        ch_iter: impl Iterator<Item = (usize, char)>,
         language: Language,
     ) -> io::Result<()> {
         // check_input_file_path(input_file_path);
@@ -68,7 +68,7 @@ impl LanguageModelFilesWriter {
         // let chars = text.map(|t| t.char_indices().collect::<Vec<_>>()).flatten();
         // let chars: Vec<_> = chars.collect();
         // println!("{:?}", chars);
-        let words = alphabet_detector::word_iter::from_ch_iter(text.char_indices());
+        let words = alphabet_detector::word_iter::from_ch_iter(ch_iter);
         /* let wrong_words: Vec<_> = words
             .iter()
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
@@ -82,7 +82,6 @@ impl LanguageModelFilesWriter {
             // .map(|(_, chars)| chars)
             .map(|wd| wd.chars)
             .collect();
-        drop(text);
         /* let words: Vec<Vec<char>> = lines
         .into_iter()
         .map(|text| LanguageDetector::filter_text_to_words(text).into_iter())

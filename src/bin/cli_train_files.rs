@@ -1,4 +1,6 @@
 use ::std::fs;
+use ::std::fs::File;
+use ::std::io::BufReader;
 use ::std::io::Write;
 use ::std::path::Path;
 use ::std::str::FromStr;
@@ -7,9 +9,14 @@ use ::std::sync::Mutex;
 use ::std::{thread, time::Duration};
 use cap::Cap;
 use clap::Parser;
+
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
-use lingua::{lang_arr_default, script_char_to_langs, Language, LanguageModelFilesWriter, Script};
+use lingua::read_iter::ReadCharsChunks;
+use lingua::{
+    lang_arr_default, script_char_to_langs, str_to_langs, Language, LanguageModelFilesWriter,
+    Script,
+};
 // use rayon::prelude::*;
 
 // #[cfg(not(target_env = "msvc"))]
@@ -24,44 +31,6 @@ static ALLOCATOR: Cap<::std::alloc::System> = Cap::new(::std::alloc::System, usi
 // #[cfg(not(target_env = "msvc"))]
 // #[global_allocator]
 // static GLOBAL: Jemalloc = Jemalloc;
-
-fn str_to_langs(s: &str) -> &[Language] {
-    match s {
-        "Arab" => script_char_to_langs(Script::Arabic, char::default()),
-        "Armn" => script_char_to_langs(Script::Armenian, char::default()),
-        "Beng" => script_char_to_langs(Script::Bengali, char::default()),
-        "Cyrl" => script_char_to_langs(Script::Cyrillic, char::default()),
-        "Deva" => script_char_to_langs(Script::Devanagari, char::default()),
-        "Ethi" => script_char_to_langs(Script::Ethiopic, char::default()),
-        "Geor" => script_char_to_langs(Script::Georgian, char::default()),
-        "Grek" => script_char_to_langs(Script::Greek, char::default()),
-        "Gujr" => script_char_to_langs(Script::Gujarati, char::default()),
-        "Guru" => script_char_to_langs(Script::Gurmukhi, char::default()),
-        "Hang" => script_char_to_langs(Script::Hangul, char::default()),
-        "Hans" => &[Language::ChineseSimplified],
-        "Hant" => &[
-            Language::ChineseTraditional,
-            Language::ChineseCantoneseTraditional,
-        ],
-        "Hebr" => script_char_to_langs(Script::Hebrew, char::default()),
-        "Jpan" => &[Language::Japanese],
-        "Khmr" => script_char_to_langs(Script::Khmer, char::default()),
-        "Knda" => script_char_to_langs(Script::Kannada, char::default()),
-        "Laoo" => script_char_to_langs(Script::Lao, char::default()),
-        "Latn" => script_char_to_langs(Script::Latin, char::default()),
-        "Mlym" => script_char_to_langs(Script::Malayalam, char::default()),
-        "Mymr" => script_char_to_langs(Script::Myanmar, char::default()),
-        "Olck" => script_char_to_langs(Script::OlChiki, char::default()),
-        "Orya" => script_char_to_langs(Script::Oriya, char::default()),
-        "Sinh" => script_char_to_langs(Script::Sinhala, char::default()),
-        "Taml" => script_char_to_langs(Script::Tamil, char::default()),
-        "Telu" => script_char_to_langs(Script::Telugu, char::default()),
-        "Tfng" => script_char_to_langs(Script::Tifinagh, char::default()),
-        "Thai" => script_char_to_langs(Script::Thai, char::default()),
-        "Tibt" => script_char_to_langs(Script::Tibetan, char::default()),
-        _ => unreachable!(),
-    }
-}
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -159,7 +128,7 @@ fn main() {
         pool.execute(move || {
             let path = path.unwrap();
             let file_name = path.file_name().into_string().unwrap();
-            println!("New: {}", file_name);
+            println!("*{}* New", file_name);
             while ALLOCATOR.allocated() > MEM_LIMIT_SLEEP {
                 println!(
                     "*{}* Mem allocated: {}MB Sleeping...",
@@ -191,6 +160,7 @@ fn main() {
                     let mut guard = langs_seen.lock().unwrap();
                     let lang_seen = guard.get_mut(lang as usize).unwrap();
                     if *lang_seen {
+                        drop(guard);
                         panic!("*{}* Have already seen lang: {}", file_name, lang);
                     }
                     *lang_seen = true;
@@ -235,13 +205,17 @@ fn main() {
                 .lines()
                 .map(|r| r.unwrap())
                 .filter(|line| !line.trim().is_empty()); */
-                let text = fs::read_to_string(path.path()).unwrap();
+
+                // let text = fs::read_to_string(path.path()).unwrap();
+
+                let file = BufReader::new(File::open(path.path()).expect("open failed"));
+                let ch_iter = file.chars_chunks(b'\n').map(|v| (0, v.unwrap()));
                 let result = LanguageModelFilesWriter::create_and_write_language_model(
                     &out_mod_path,
-                    text,
+                    ch_iter,
                     lang,
                 );
-                println!("*{}* {:?}", file_name, result);
+                println!("*{}* done model {:?}", file_name, result);
 
                 {
                     let file_path = out_mod_path.join("mod.rs");
