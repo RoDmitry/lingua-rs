@@ -68,7 +68,7 @@ impl LanguageModelFilesWriter {
         // let chars = text.map(|t| t.char_indices().collect::<Vec<_>>()).flatten();
         // let chars: Vec<_> = chars.collect();
         // println!("{:?}", chars);
-        let words = alphabet_detector::from_ch_iter(text.char_indices());
+        let words = alphabet_detector::word_iter::from_ch_iter(text.char_indices());
         /* let wrong_words: Vec<_> = words
             .iter()
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
