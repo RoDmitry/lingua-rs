@@ -1,6 +1,6 @@
 ##### French #####
 
->>> Accuracy on average: 89.36%
+>>> Accuracy on average: 89.3%
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 74.5%
@@ -11,6 +11,6 @@ Accuracy: 94.4%
 Erroneously classified as Latin: 1.1%, English: 0.8%, Romanian: 0.5%, Catalan: 0.4%, Italian: 0.4%, Portuguese: 0.3%, Welsh: 0.3%, Finnish: 0.2%, German: 0.2%, Sesotho: 0.2%, Swahili: 0.2%, Swedish: 0.2%, Afrikaans: 0.1%, Bokmal: 0.1%, Dutch: 0.1%, Esperanto: 0.1%, Nynorsk: 0.1%, Shona: 0.1%, Slovene: 0.1%, Tswana: 0.1%
 
 >> Detection of 1000 sentences (average length: 112 chars)
-Accuracy: 99.2%
-Erroneously classified as English: 0.3%, German: 0.1%, Guarani: 0.1%, Hungarian: 0.1%, Indonesian: 0.1%, Latin: 0.1%
+Accuracy: 99%
+Erroneously classified as English: 0.3%, Unknown: 0.1%, Catalan: 0.1%, Finnish: 0.1%, German: 0.1%, Hungarian: 0.1%, Indonesian: 0.1%, Latin: 0.1%
 

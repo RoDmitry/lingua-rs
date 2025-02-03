@@ -12,5 +12,5 @@ Erroneously classified as Nynorsk: 23.7%, Danish: 12.7%, Swedish: 1.4%, German: 
 
 >> Detection of 1000 sentences (average length: 98 chars)
 Accuracy: 76.4%
-Erroneously classified as Nynorsk: 20.8%, Danish: 2%, Swedish: 0.3%, Czech: 0.1%, Dutch: 0.1%, English: 0.1%, French: 0.1%, German: 0.1%
+Erroneously classified as Nynorsk: 20.9%, Danish: 2%, Swedish: 0.2%, Czech: 0.1%, Dutch: 0.1%, English: 0.1%, French: 0.1%, German: 0.1%
 
