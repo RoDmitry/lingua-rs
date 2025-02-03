@@ -25,7 +25,7 @@ use ::std::hash::{BuildHasher, Hash};
 use ::std::ops::Range;
 use ::std::sync::RwLock;
 use ahash::{AHashMap, AHashSet};
-use alphabet_detector::{fulltext_langs, Language, Script};
+use alphabet_detector::{fulltext_langs_best, Language, Script};
 use compact_str::CompactString;
 use fraction::Zero;
 use itertools::Itertools;
@@ -710,8 +710,9 @@ impl LanguageDetector {
                 }
             }
         } */
-        let (words, mut filtered_languages, _) = fulltext_langs(text_str.char_indices());
-        filtered_languages.retain(|l| search_languages.contains(l));
+        let (words, langs) = fulltext_langs_best(text_str.char_indices());
+        let filtered_languages: AHashSet<_> =
+            langs.filter(|l| search_languages.contains(l)).collect();
 
         if words.is_empty() || filtered_languages.is_empty() {
             return values;
