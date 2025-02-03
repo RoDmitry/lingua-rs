@@ -606,7 +606,7 @@ impl LanguageDetector {
         if text_str.is_empty() {
             return Vec::new();
         }
-        let _found_words_iter = alphabet_detector::from_ch_iter(text_str.char_indices());
+        let _found_words_iter = alphabet_detector::word_iter::from_ch_iter(text_str.char_indices());
         /* let words_with_langs_iter = found_words_iter.map(|mut wd| {
             let mut langs_alphabets =
                 process_alphabets_count(std::mem::take(&mut wd.script_langs));
