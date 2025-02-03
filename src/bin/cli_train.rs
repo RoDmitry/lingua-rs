@@ -102,7 +102,7 @@ fn main() {
     let output_directory_path = Path::new(&args.out);
     let result = LanguageModelFilesWriter::create_and_write_language_model(
         output_directory_path,
-        text,
+        text.char_indices(),
         Language::Japanese,
     );
     println!("{:?}", result)
