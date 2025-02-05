@@ -1,6 +1,6 @@
 ##### Polish #####
 
->>> Accuracy on average: 94.53%
+>>> Accuracy on average: 94.66%
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 85.5%
@@ -11,6 +11,6 @@ Accuracy: 98.7%
 Erroneously classified as Bosnian: 0.2%, Dutch: 0.2%, Latin: 0.2%, Slovak: 0.2%, Czech: 0.1%, Indonesian: 0.1%, Latvian: 0.1%, Nynorsk: 0.1%, Xhosa: 0.1%
 
 >> Detection of 1000 sentences (average length: 99 chars)
-Accuracy: 99.4%
-Erroneously classified as Unknown: 0.2%, Afrikaans: 0.2%, English: 0.1%, Venetian: 0.1%
+Accuracy: 99.8%
+Erroneously classified as Unknown: 0.1%, Latin: 0.1%
 

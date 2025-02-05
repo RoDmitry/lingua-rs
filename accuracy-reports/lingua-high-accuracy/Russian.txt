@@ -12,5 +12,5 @@ Erroneously classified as Ukrainian: 1.9%, Bulgarian: 1.4%, Serbian: 1.2%, Kazak
 
 >> Detection of 1000 sentences (average length: 65 chars)
 Accuracy: 98%
-Erroneously classified as Ukrainian: 0.7%, Bulgarian: 0.5%, Serbian: 0.4%, Macedonian: 0.3%, Belarusian: 0.1%
+Erroneously classified as Ukrainian: 0.7%, Bulgarian: 0.4%, Macedonian: 0.4%, Serbian: 0.4%, Belarusian: 0.1%
 

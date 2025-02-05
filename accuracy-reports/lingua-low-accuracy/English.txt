@@ -1,6 +1,6 @@
 ##### English #####
 
->>> Accuracy on average: 63.4%
+>>> Accuracy on average: 63.36%
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 30.4%
@@ -11,6 +11,6 @@ Accuracy: 63.2%
 Erroneously classified as French: 6.3%, Latin: 4.4%, Tagalog: 2.5%, Catalan: 1.7%, Portuguese: 1.7%, German: 1.4%, Danish: 1.3%, Esperanto: 1.2%, Dutch: 1.1%, Bokmal: 1%, Romanian: 1%, Spanish: 0.9%, Nynorsk: 0.8%, Swedish: 0.8%, Xhosa: 0.8%, Basque: 0.7%, Ganda: 0.7%, Sesotho: 0.7%, Afrikaans: 0.6%, Italian: 0.6%, Tsonga: 0.6%, Indonesian: 0.5%, Maori: 0.5%, Turkish: 0.5%, Welsh: 0.5%, Zulu: 0.5%, Finnish: 0.4%, Malay: 0.4%, Swahili: 0.4%, Estonian: 0.3%, Hungarian: 0.3%, Czech: 0.2%, Irish: 0.2%, Latvian: 0.2%, Lithuanian: 0.2%, Polish: 0.2%, Shona: 0.2%, Yoruba: 0.2%, Icelandic: 0.1%, Slovene: 0.1%, Tswana: 0.1%
 
 >> Detection of 1000 sentences (average length: 108 chars)
-Accuracy: 96.6%
-Erroneously classified as French: 0.7%, Latin: 0.5%, Tagalog: 0.4%, Nynorsk: 0.3%, Bokmal: 0.2%, Finnish: 0.2%, Romanian: 0.2%, Spanish: 0.2%, Swedish: 0.2%, Ganda: 0.1%, German: 0.1%, Italian: 0.1%, Polish: 0.1%, Shona: 0.1%
+Accuracy: 96.5%
+Erroneously classified as French: 0.7%, Latin: 0.7%, Tagalog: 0.4%, Nynorsk: 0.3%, Bokmal: 0.2%, Finnish: 0.2%, Romanian: 0.2%, Spanish: 0.2%, Ganda: 0.1%, German: 0.1%, Italian: 0.1%, Polish: 0.1%, Shona: 0.1%, Swedish: 0.1%
 

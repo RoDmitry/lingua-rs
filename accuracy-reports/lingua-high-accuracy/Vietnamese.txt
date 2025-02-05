@@ -12,5 +12,5 @@ Erroneously classified as Shona: 0.73%, English: 0.52%, Tagalog: 0.52%, Afrikaan
 
 >> Detection of 1000 sentences (average length: 120 chars)
 Accuracy: 99.7%
-Erroneously classified as French: 0.2%, Tsonga: 0.1%
+Erroneously classified as Afrikaans: 0.1%, Italian: 0.1%, Tswana: 0.1%
 
