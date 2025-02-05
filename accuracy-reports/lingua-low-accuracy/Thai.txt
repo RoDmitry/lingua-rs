@@ -12,5 +12,5 @@ Erroneously classified as
 
 >> Detection of 1000 sentences (average length: 116 chars)
 Accuracy: 99.3%
-Erroneously classified as English: 0.4%, Bokmal: 0.1%, Tagalog: 0.1%, Welsh: 0.1%
+Erroneously classified as English: 0.3%, Bokmal: 0.1%, Italian: 0.1%, Tagalog: 0.1%, Welsh: 0.1%
 

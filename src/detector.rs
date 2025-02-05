@@ -711,8 +711,11 @@ impl LanguageDetector {
             }
         } */
         let (words, langs) = fulltext_langs_best(text_str.char_indices());
-        let filtered_languages: AHashSet<_> =
-            langs.filter(|l| search_languages.contains(l)).collect();
+        let filtered_languages: AHashSet<_> = langs
+            .into_iter()
+            .filter(|(l, _)| search_languages.contains(l))
+            .map(|(l, _)| l) // todo: maybe use count?
+            .collect();
 
         if words.is_empty() || filtered_languages.is_empty() {
             return values;

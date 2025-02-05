@@ -12,5 +12,5 @@ Erroneously classified as
 
 >> Detection of 1000 sentences (average length: 87 chars)
 Accuracy: 99.9%
-Erroneously classified as Swedish: 0.1%
+Erroneously classified as Yoruba: 0.1%
 

@@ -12,5 +12,5 @@ Erroneously classified as Shona: 1.25%, Welsh: 0.52%, Afrikaans: 0.41%, Tagalog:
 
 >> Detection of 1000 sentences (average length: 120 chars)
 Accuracy: 99.6%
-Erroneously classified as French: 0.2%, Finnish: 0.1%, Tsonga: 0.1%
+Erroneously classified as Afrikaans: 0.1%, Finnish: 0.1%, Portuguese: 0.1%, Tsonga: 0.1%
 

@@ -1,6 +1,6 @@
 ##### Catalan #####
 
->>> Accuracy on average: 72.89%
+>>> Accuracy on average: 72.82%
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 52.6%
@@ -11,6 +11,6 @@ Accuracy: 78.3%
 Erroneously classified as Spanish: 8.9%, Portuguese: 3.7%, Latin: 1.9%, English: 1.6%, French: 1.5%, Italian: 1.1%, Romanian: 0.4%, Swahili: 0.4%, Dutch: 0.3%, Welsh: 0.3%, Basque: 0.2%, Esperanto: 0.2%, Slovak: 0.2%, Tagalog: 0.2%, Afrikaans: 0.1%, Finnish: 0.1%, German: 0.1%, Hungarian: 0.1%, Lithuanian: 0.1%, Nynorsk: 0.1%, Tsonga: 0.1%, Yoruba: 0.1%
 
 >> Detection of 999 sentences (average length: 103 chars)
-Accuracy: 87.78%
-Erroneously classified as Spanish: 7%, English: 1.7%, French: 0.9%, Latin: 0.5%, Portuguese: 0.5%, Basque: 0.3%, Finnish: 0.2%, German: 0.2%, Italian: 0.2%, Czech: 0.1%, Danish: 0.1%, Romanian: 0.1%, Slovene: 0.1%, Tagalog: 0.1%, Welsh: 0.1%, Yoruba: 0.1%
+Accuracy: 87.58%
+Erroneously classified as Spanish: 6.7%, English: 1.8%, French: 0.9%, Latin: 0.8%, Portuguese: 0.5%, Basque: 0.3%, Finnish: 0.2%, German: 0.2%, Italian: 0.2%, Swahili: 0.2%, Danish: 0.1%, Romanian: 0.1%, Slovene: 0.1%, Tagalog: 0.1%, Welsh: 0.1%, Yoruba: 0.1%
 

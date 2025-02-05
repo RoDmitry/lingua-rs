@@ -1,6 +1,6 @@
 ##### Bosnian #####
 
->>> Accuracy on average: 44.02%
+>>> Accuracy on average: 44.36%
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 29.3%
@@ -11,6 +11,6 @@ Accuracy: 34.4%
 Erroneously classified as Croatian: 53.7%, Slovene: 4.6%, English: 0.7%, Esperanto: 0.7%, Latin: 0.5%, Afrikaans: 0.3%, Basque: 0.3%, Czech: 0.3%, German: 0.3%, Indonesian: 0.3%, Polish: 0.3%, Swahili: 0.3%, Swedish: 0.3%, Yoruba: 0.3%, Lithuanian: 0.2%, Malay: 0.2%, Nynorsk: 0.2%, Shona: 0.2%, Slovak: 0.2%, Tagalog: 0.2%, Turkish: 0.2%, Bokmal: 0.1%, Catalan: 0.1%, Danish: 0.1%, Dutch: 0.1%, Estonian: 0.1%, Ganda: 0.1%, Italian: 0.1%, Romanian: 0.1%, Sesotho: 0.1%, Tsonga: 0.1%, Tswana: 0.1%, Xhosa: 0.1%, Zulu: 0.1%
 
 >> Detection of 3613 sentences (average length: 125 chars)
-Accuracy: 68.36%
-Erroneously classified as Croatian: 28.06%, Czech: 0.99%, Slovak: 0.47%, English: 0.38%, Slovene: 0.27%, German: 0.22%, Esperanto: 0.19%, Sesotho: 0.19%, Lithuanian: 0.11%, Shona: 0.08%, Romanian: 0.05%, Silesian: 0.05%, Turkish: 0.05%, Xhosa: 0.05%, Unknown: 0.02%, Afrikaans: 0.02%, Bokmal: 0.02%, Hungarian: 0.02%, Italian: 0.02%, Latin: 0.02%, Malay: 0.02%, Nynorsk: 0.02%, Polish: 0.02%, Spanish: 0.02%, Swahili: 0.02%, Swedish: 0.02%, Tagalog: 0.02%, Welsh: 0.02%, Zulu: 0.02%
+Accuracy: 69.38%
+Erroneously classified as Croatian: 29.22%, Slovene: 0.35%, English: 0.33%, German: 0.19%, Xhosa: 0.08%, Esperanto: 0.05%, Slovak: 0.05%, Italian: 0.02%, Latin: 0.02%, Malay: 0.02%, Polish: 0.02%, Shona: 0.02%, Spanish: 0.02%, Swahili: 0.02%, Swedish: 0.02%, Tagalog: 0.02%, Welsh: 0.02%, Zulu: 0.02%
 

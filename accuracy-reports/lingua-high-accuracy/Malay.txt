@@ -1,6 +1,6 @@
 ##### Malay #####
 
->>> Accuracy on average: 51.27%
+>>> Accuracy on average: 51.53%
 
 >> Detection of 1000 single words (average length: 7 chars)
 Accuracy: 26.1%
@@ -11,6 +11,6 @@ Accuracy: 38.5%
 Erroneously classified as Indonesian: 44%, English: 3.7%, Swahili: 1.4%, Tagalog: 1.4%, German: 1.2%, Latin: 1%, Shona: 0.8%, Tsonga: 0.6%, Basque: 0.5%, Esperanto: 0.5%, Welsh: 0.5%, Italian: 0.4%, Turkish: 0.4%, Xhosa: 0.4%, Yoruba: 0.4%, Afrikaans: 0.3%, Danish: 0.3%, Nynorsk: 0.3%, Portuguese: 0.3%, Sesotho: 0.3%, Zulu: 0.3%, Bokmal: 0.2%, Dutch: 0.2%, Estonian: 0.2%, Finnish: 0.2%, French: 0.2%, Ganda: 0.2%, Maori: 0.2%, Romanian: 0.2%, Somali: 0.2%, Swedish: 0.2%, Tswana: 0.2%, Czech: 0.1%, Lithuanian: 0.1%, Spanish: 0.1%
 
 >> Detection of 2471 sentences (average length: 126 chars)
-Accuracy: 89.23%
-Erroneously classified as Indonesian: 9.51%, Yoruba: 0.2%, English: 0.12%, Shona: 0.12%, Turkish: 0.12%, French: 0.08%, German: 0.08%, Hungarian: 0.08%, Tagalog: 0.08%, Basque: 0.04%, Croatian: 0.04%, Ewe: 0.04%, Maori: 0.04%, Polish: 0.04%, Sesotho: 0.04%, Slovene: 0.04%, Spanish: 0.04%, Swahili: 0.04%
+Accuracy: 90%
+Erroneously classified as Indonesian: 9.67%, English: 0.12%, Tagalog: 0.08%, Esperanto: 0.04%, Swahili: 0.04%, Turkish: 0.04%
 
