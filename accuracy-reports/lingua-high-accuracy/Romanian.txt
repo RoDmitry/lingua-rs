@@ -12,5 +12,5 @@ Erroneously classified as Latin: 1.6%, English: 0.7%, Portuguese: 0.6%, Spanish:
 
 >> Detection of 1000 sentences (average length: 118 chars)
 Accuracy: 95.7%
-Erroneously classified as Polish: 2.6%, Czech: 0.7%, Slovak: 0.4%, Portuguese: 0.2%, Catalan: 0.1%, Finnish: 0.1%, Latin: 0.1%, Swedish: 0.1%
+Erroneously classified as Polish: 2.6%, Czech: 0.8%, Slovak: 0.4%, Portuguese: 0.2%, Finnish: 0.1%, Latin: 0.1%, Swedish: 0.1%
 

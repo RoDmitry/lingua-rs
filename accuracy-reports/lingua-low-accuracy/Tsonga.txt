@@ -8,7 +8,7 @@ Erroneously classified as Zulu: 6.9%, Xhosa: 5.8%, Sesotho: 3.7%, Shona: 3.6%, G
 
 >> Detection of 1000 word pairs (average length: 16 chars)
 Accuracy: 75.5%
-Erroneously classified as Zulu: 4.5%, Xhosa: 3.8%, Sesotho: 2%, Shona: 1.7%, English: 1.5%, Ganda: 1.4%, Swahili: 1.2%, Tswana: 1.1%, Indonesian: 1%, Malay: 0.9%, Basque: 0.6%, Latin: 0.5%, Tagalog: 0.5%, French: 0.3%, Portuguese: 0.3%, Turkish: 0.3%, Bokmal: 0.2%, Czech: 0.2%, Finnish: 0.2%, Maori: 0.2%, Nynorsk: 0.2%, Romanian: 0.2%, Slovene: 0.2%, Swedish: 0.2%, Welsh: 0.2%, Catalan: 0.1%, Croatian: 0.1%, Danish: 0.1%, Esperanto: 0.1%, Estonian: 0.1%, German: 0.1%, Hungarian: 0.1%, Icelandic: 0.1%, Lithuanian: 0.1%, Slovak: 0.1%, Yoruba: 0.1%
+Erroneously classified as Zulu: 4.5%, Xhosa: 3.8%, Sesotho: 2%, Shona: 1.8%, English: 1.5%, Ganda: 1.4%, Swahili: 1.2%, Tswana: 1.1%, Indonesian: 1%, Malay: 0.9%, Basque: 0.6%, Latin: 0.5%, Tagalog: 0.5%, French: 0.3%, Portuguese: 0.3%, Turkish: 0.3%, Bokmal: 0.2%, Czech: 0.2%, Finnish: 0.2%, Nynorsk: 0.2%, Romanian: 0.2%, Slovene: 0.2%, Swedish: 0.2%, Welsh: 0.2%, Catalan: 0.1%, Croatian: 0.1%, Danish: 0.1%, Esperanto: 0.1%, Estonian: 0.1%, German: 0.1%, Hungarian: 0.1%, Icelandic: 0.1%, Lithuanian: 0.1%, Maori: 0.1%, Slovak: 0.1%, Yoruba: 0.1%
 
 >> Detection of 1000 sentences (average length: 121 chars)
 Accuracy: 96.6%

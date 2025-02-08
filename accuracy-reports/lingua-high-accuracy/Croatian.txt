@@ -1,6 +1,6 @@
 ##### Croatian #####
 
->>> Accuracy on average: 72.46%
+>>> Accuracy on average: 72.5%
 
 >> Detection of 1000 single words (average length: 8 chars)
 Accuracy: 53.5%
@@ -11,6 +11,6 @@ Accuracy: 73.7%
 Erroneously classified as Bosnian: 18.7%, Slovene: 3.2%, Slovak: 0.6%, English: 0.5%, Latin: 0.3%, Basque: 0.2%, Czech: 0.2%, German: 0.2%, Lithuanian: 0.2%, Nynorsk: 0.2%, Polish: 0.2%, Shona: 0.2%, Swahili: 0.2%, Turkish: 0.2%, Afrikaans: 0.1%, Danish: 0.1%, Esperanto: 0.1%, Estonian: 0.1%, Italian: 0.1%, Portuguese: 0.1%, Romanian: 0.1%, Sesotho: 0.1%, Somali: 0.1%, Tagalog: 0.1%, Vietnamese: 0.1%, Xhosa: 0.1%
 
 >> Detection of 1000 sentences (average length: 127 chars)
-Accuracy: 90.2%
-Erroneously classified as Bosnian: 9.4%, Czech: 0.1%, German: 0.1%, Polish: 0.1%, Shona: 0.1%
+Accuracy: 90.3%
+Erroneously classified as Bosnian: 9.4%, Czech: 0.1%, Polish: 0.1%, Shona: 0.1%
 

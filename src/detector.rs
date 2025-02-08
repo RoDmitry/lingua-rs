@@ -1886,7 +1886,7 @@ mod tests {
         expected_third_language: Language,
     ) {
         let results = detector_for_all_languages.detect_multiple_languages_of(sentence);
-        assert_eq!(results.len(), 3, "{:?}", results);
+        assert_eq!(results.len(), 3, "{} {:?}", sentence, results);
 
         let first_result = &results[0];
         let first_substring = &sentence[first_result.start_index()..first_result.end_index()];

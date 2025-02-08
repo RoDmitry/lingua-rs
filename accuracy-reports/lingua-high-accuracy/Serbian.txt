@@ -12,5 +12,5 @@ Erroneously classified as Macedonian: 5.2%, Bulgarian: 1.9%, Russian: 1.6%, Ukra
 
 >> Detection of 1000 sentences (average length: 100 chars)
 Accuracy: 99.1%
-Erroneously classified as Macedonian: 0.6%, Dutch: 0.1%, English: 0.1%, Russian: 0.1%
+Erroneously classified as Macedonian: 0.7%, Dutch: 0.1%, English: 0.1%
 

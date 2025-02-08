@@ -8,7 +8,7 @@ Erroneously classified as Nynorsk: 6.3%, Danish: 4.2%, Bokmal: 3.6%, German: 2.3
 
 >> Detection of 1000 word pairs (average length: 17 chars)
 Accuracy: 88.5%
-Erroneously classified as Danish: 2.6%, Nynorsk: 1.9%, Bokmal: 1.4%, German: 1.1%, French: 0.5%, Latin: 0.5%, Dutch: 0.4%, Estonian: 0.4%, Catalan: 0.3%, English: 0.3%, Afrikaans: 0.2%, Finnish: 0.2%, Shona: 0.2%, Tagalog: 0.2%, Bosnian: 0.1%, Croatian: 0.1%, Esperanto: 0.1%, Icelandic: 0.1%, Latvian: 0.1%, Portuguese: 0.1%, Romanian: 0.1%, Slovene: 0.1%, Somali: 0.1%, Turkish: 0.1%, Welsh: 0.1%, Xhosa: 0.1%, Yoruba: 0.1%
+Erroneously classified as Danish: 2.6%, Nynorsk: 1.9%, Bokmal: 1.4%, German: 1%, French: 0.5%, Latin: 0.5%, Dutch: 0.4%, Estonian: 0.4%, Catalan: 0.3%, English: 0.3%, Afrikaans: 0.2%, Finnish: 0.2%, Shona: 0.2%, Tagalog: 0.2%, Bosnian: 0.1%, Croatian: 0.1%, Esperanto: 0.1%, Icelandic: 0.1%, Latvian: 0.1%, Portuguese: 0.1%, Romanian: 0.1%, Slovak: 0.1%, Slovene: 0.1%, Somali: 0.1%, Turkish: 0.1%, Welsh: 0.1%, Xhosa: 0.1%, Yoruba: 0.1%
 
 >> Detection of 1000 sentences (average length: 90 chars)
 Accuracy: 98.8%

@@ -12,5 +12,5 @@ Erroneously classified as Zulu: 22.7%, Tsonga: 2.2%, Sesotho: 1%, Swahili: 1%, G
 
 >> Detection of 1363 sentences (average length: 98 chars)
 Accuracy: 83.56%
-Erroneously classified as Zulu: 14.15%, Tsonga: 0.36%, Ganda: 0.29%, Swahili: 0.22%, English: 0.14%, Sesotho: 0.14%, Shona: 0.14%, Welsh: 0.14%, Afrikaans: 0.07%, Basque: 0.07%, French: 0.07%, Indonesian: 0.07%, Latin: 0.07%, Maori: 0.07%, Portuguese: 0.07%, Slovak: 0.07%, Somali: 0.07%, Spanish: 0.07%, Tswana: 0.07%
+Erroneously classified as Zulu: 14.15%, Tsonga: 0.36%, Ganda: 0.29%, Swahili: 0.22%, English: 0.14%, Indonesian: 0.14%, Sesotho: 0.14%, Shona: 0.14%, Welsh: 0.14%, Afrikaans: 0.07%, Basque: 0.07%, French: 0.07%, Latin: 0.07%, Portuguese: 0.07%, Slovak: 0.07%, Somali: 0.07%, Spanish: 0.07%, Tswana: 0.07%
 
