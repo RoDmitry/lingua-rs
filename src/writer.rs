@@ -19,7 +19,7 @@ use crate::model::TrainingDataLanguageModel;
 use ::std::fs::{remove_file, File};
 use ::std::io::{self, BufRead, BufReader, LineWriter, Write};
 use ::std::path::Path;
-use alphabet_detector::{langs_count_max, Language};
+use alphabet_detector::{langs_filter_max, Language};
 use itertools::Itertools;
 use regex::Regex;
 
@@ -75,12 +75,16 @@ impl LanguageModelFilesWriter {
             .collect();
         println!("wrong_words {}", wrong_words.len()); */
         let word_chars: Vec<Vec<char>> = words
-            // TODO: uncomment filter
-            // .map(|wd| (langs_count_max(wd.langs_cnt), wd.chars))
-            // .filter(|(langs_cnt, _)| langs_cnt.0.contains(&language))
             // .inspect(|wd| println!("{:?}", wd))
-            // .map(|(_, chars)| chars)
-            .map(|wd| wd.chars)
+            // filter
+            .filter_map(|wd| {
+                if langs_filter_max(wd.langs_cnt).0.contains(&language) {
+                    Some(wd.chars)
+                } else {
+                    None
+                }
+            })
+            // .map(|wd| wd.chars)
             .collect();
         /* let words: Vec<Vec<char>> = lines
         .into_iter()
@@ -105,10 +109,9 @@ impl LanguageModelFilesWriter {
             3,
             bigram_model.absolute_frequencies.as_ref().unwrap(),
         );
-        bigram_model.to_match(&out_mod_path.join("bigrams.rs"))
+        bigram_model.to_match(&out_mod_path.join("bigrams.rs"))?;
 
-        // TODO: uncomment
-        // trigram_model.to_match(&out_mod_path.join("trigrams.rs"))
+        trigram_model.to_match(&out_mod_path.join("trigrams.rs"))
 
         /* let trigram_model = Self::create_language_model(
             input_file_path,
