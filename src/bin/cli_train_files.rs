@@ -185,8 +185,7 @@ fn main() {
                     return;
                 } */
                 // TODO: rm this filter
-                // if alph != "Latn" {
-                if alph != "Arab" {
+                if alph != "Latn" {
                     return;
                 }
 
