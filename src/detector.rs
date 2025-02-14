@@ -1516,7 +1516,7 @@ mod tests {
 
     #[fixture]
     fn detector_for_all_languages() -> LanguageDetector {
-        LanguageDetector::from(Language::all(), 0.0, true, false)
+        LanguageDetector::from(Language::all().collect(), 0.0, true, false)
     }
 
     // ##############################
