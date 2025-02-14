@@ -16,7 +16,7 @@
 
 use crate::detector::LanguageDetector;
 use ahash::AHashSet;
-use alphabet_detector::{IsoCode639_1, IsoCode639_3, Language};
+use alphabet_detector::{IsoCode639_1, IsoCode639_3, Language, Script};
 
 pub(crate) const MISSING_LANGUAGE_MESSAGE: &str =
     "LanguageDetector needs at least 2 languages to choose from";
@@ -37,7 +37,7 @@ pub struct LanguageDetectorBuilder {
 impl LanguageDetectorBuilder {
     /// Creates and returns an instance of `LanguageDetectorBuilder` with all built-in languages.
     pub fn from_all_languages() -> Self {
-        Self::from(Language::all())
+        Self::from(Language::all().collect())
     }
 
     /// Creates and returns an instance of `LanguageDetectorBuilder`
@@ -47,27 +47,14 @@ impl LanguageDetectorBuilder {
     }
 
     /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with all built-in languages supporting the Arabic script.
-    pub fn from_all_languages_with_arabic_script() -> Self {
-        Self::from(Language::all_with_arabic_script())
-    }
-
-    /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with all built-in languages supporting the Cyrillic script.
-    pub fn from_all_languages_with_cyrillic_script() -> Self {
-        Self::from(Language::all_with_cyrillic_script())
-    }
-
-    /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with all built-in languages supporting the Devanagari script.
-    pub fn from_all_languages_with_devanagari_script() -> Self {
-        Self::from(Language::all_with_devanagari_script())
-    }
-
-    /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with all built-in languages supporting the Latin script.
-    pub fn from_all_languages_with_latin_script() -> Self {
-        Self::from(Language::all_with_latin_script())
+    /// with languages supporting selected `Script`
+    pub fn from_languages_with_script(script: Script) -> Self {
+        Self::from(
+            Language::all_with_script(script)
+                .into_iter()
+                .copied()
+                .collect(),
+        )
     }
 
     /// Creates and returns an instance of `LanguageDetectorBuilder`
@@ -76,12 +63,13 @@ impl LanguageDetectorBuilder {
     /// ⚠ Panics if less than two `languages` are used to build the
     /// `LanguageDetector`.
     pub fn from_all_languages_without(languages: &[Language]) -> Self {
-        let mut languages_to_load = Language::all();
-        languages_to_load.retain(|it| !languages.contains(it));
-        if languages_to_load.len() < 2 {
+        let languages: AHashSet<_> = Language::all()
+            .filter(|it| !languages.contains(it))
+            .collect();
+        if languages.len() < 2 {
             panic!("{}", MISSING_LANGUAGE_MESSAGE);
         }
-        Self::from(languages_to_load)
+        Self::from(languages)
     }
 
     /// Creates and returns an instance of `LanguageDetectorBuilder`
@@ -205,11 +193,12 @@ impl LanguageDetectorBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use strum::IntoEnumIterator;
 
     #[test]
     fn assert_detector_can_be_built_from_all_languages() {
         let mut builder = LanguageDetectorBuilder::from_all_languages();
-        assert_eq!(builder.languages, Language::all());
+        assert_eq!(builder.languages, Language::all().collect::<AHashSet<_>>());
         assert_eq!(builder.minimum_relative_distance, 0.0);
 
         builder.with_minimum_relative_distance(0.2);
@@ -227,27 +216,17 @@ mod tests {
     }
 
     #[test]
-    fn assert_detector_can_be_built_from_languages_with_arabic_script() {
-        let builder = LanguageDetectorBuilder::from_all_languages_with_arabic_script();
-        assert_eq!(builder.languages, Language::all_with_arabic_script());
-    }
-
-    #[test]
-    fn assert_detector_can_be_built_from_languages_with_cyrillic_script() {
-        let builder = LanguageDetectorBuilder::from_all_languages_with_cyrillic_script();
-        assert_eq!(builder.languages, Language::all_with_cyrillic_script());
-    }
-
-    #[test]
-    fn assert_detector_can_be_built_from_languages_with_devanagari_script() {
-        let builder = LanguageDetectorBuilder::from_all_languages_with_devanagari_script();
-        assert_eq!(builder.languages, Language::all_with_devanagari_script());
-    }
-
-    #[test]
-    fn assert_detector_can_be_built_from_languages_with_latin_script() {
-        let builder = LanguageDetectorBuilder::from_all_languages_with_latin_script();
-        assert_eq!(builder.languages, Language::all_with_latin_script());
+    fn assert_detector_can_be_built_from_languages_with_script() {
+        for script in Script::iter() {
+            let builder = LanguageDetectorBuilder::from_languages_with_script(script);
+            assert_eq!(
+                builder.languages,
+                Language::all_with_script(script)
+                    .into_iter()
+                    .copied()
+                    .collect::<AHashSet<_>>()
+            );
+        }
     }
 
     #[test]
@@ -257,8 +236,9 @@ mod tests {
             Language::Romanian,
         ]);
         let expected_languages = Language::all()
+            .collect::<AHashSet<_>>()
             .difference(&ahashset!(Language::Turkish, Language::Romanian))
-            .cloned()
+            .copied()
             .collect::<AHashSet<Language>>();
 
         assert_eq!(builder.languages, expected_languages);
@@ -268,8 +248,9 @@ mod tests {
     #[should_panic(expected = "LanguageDetector needs at least 2 languages to choose from")]
     fn assert_detector_cannot_be_built_from_too_long_blacklist() {
         let languages = Language::all()
+            .collect::<AHashSet<_>>()
             .difference(&ahashset!(Language::German))
-            .cloned()
+            .copied()
             .collect::<Vec<_>>();
 
         LanguageDetectorBuilder::from_all_languages_without(&languages);
