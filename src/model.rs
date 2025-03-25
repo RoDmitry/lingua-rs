@@ -104,7 +104,7 @@ impl TrainingDataLanguageModel {
 
                 // if regex.is_match(slice) {
                 let v = absolute_frequencies.entry(Ngram::new(slice)).or_default();
-                *v = v.wrapping_add(1);
+                *v += 1;
                 // }
             }
         }

@@ -690,7 +690,7 @@ impl LanguageDetector {
             for search_lang in search_languages {
                 if langs.contains(search_lang) {
                     let cnt = languages.entry(*search_lang).or_default();
-                    *cnt = cnt.wrapping_add(len);
+                    *cnt += len;
                 }
             }
         } */
