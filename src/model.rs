@@ -16,11 +16,7 @@
 
 use crate::fraction::Fraction;
 use crate::ngram::{Ngram /* NgramRef */};
-use ::std::collections::BTreeMap;
-use ::std::fs::File;
-use ::std::io;
-use ::std::io::Write;
-use ::std::path::Path;
+use ::std::{collections::BTreeMap, fs::File, io, io::Write, path::Path};
 use ahash::{AHashMap, AHashSet};
 use alphabet_detector::Language;
 use compact_str::CompactString;
@@ -177,7 +173,7 @@ impl TrainingDataLanguageModel {
             create_dir_all(parent)?;
         }
         let mut file = File::create(file_path)?;
-        file.write_all(b"#![cfg_attr(rustfmt,rustfmt_skip)]\n#[inline]\n")?;
+        file.write_all(b"#![cfg_attr(rustfmt,rustfmt_skip)]\n")?;
         if self.ngram_length == 1 {
             file.write_all(b"pub(super) fn prob(c:char) -> f64 {\nmatch c {\n")?;
         } else {
@@ -247,7 +243,10 @@ impl TrainingDataLanguageModel {
     }
 }
 
-pub(crate) fn prepare_ngrams<'a>(words: impl Iterator<Item = &'a [char]>, ngram_length: usize) -> Vec<Vec<&'a [char]>> {
+pub(crate) fn prepare_ngrams<'a>(
+    words: impl Iterator<Item = &'a [char]>,
+    ngram_length: usize,
+) -> AHashSet<&'a [char]> {
     debug_assert!(
         (1..6).contains(&ngram_length),
         "ngram length {ngram_length} is not in range 1..6"
@@ -258,7 +257,7 @@ pub(crate) fn prepare_ngrams<'a>(words: impl Iterator<Item = &'a [char]>, ngram_
     for word in words {
         let chars_count = word.len();
 
-        if chars_count >= ngram_length {
+        if ngram_length <= chars_count {
             for i in 0..=chars_count - ngram_length {
                 // let slice = get_utf8_slice(word, i, i + ngram_length);
                 // ngrams.insert(NgramRef::new(slice));
@@ -267,48 +266,17 @@ pub(crate) fn prepare_ngrams<'a>(words: impl Iterator<Item = &'a [char]>, ngram_
         }
     }
 
-    let mut lower_order_ngrams = Vec::with_capacity(ngrams.len());
-
+    /* let mut lower_order_ngrams = Vec::with_capacity(ngrams.len());
     for ngram in ngrams {
         let mut ngrams = Vec::with_capacity(ngram.len());
         for i in (1..=ngram.len()).rev() {
             ngrams.push(&ngram[0..i]);
         }
         lower_order_ngrams.push(ngrams);
-    }
-    /* for ngram in ngrams {
-        let mut res = Vec::new();
-        // let len = ngram.value.chars().count();
-        // if len > 1 {
-        for (i, _) in ngram.value.char_indices() {
-            /* let mut iter = ngram.value.char_indices().skip(i).take(ngram_length);
-            let first = iter.next().unwrap();
-            let last = iter.last().unwrap_or(first);
-            res.push(NgramRef::new(
-                &ngram.value[first.0..last.0 + last.1.len_utf8()],
-            )); */
-            let ngram = NgramRef::new(&ngram.value[i..]);
-            ngram
-                .range_of_lower_order_ngrams()
-                .for_each(|v| res.push(v));
-        }
-        // }
-        lower_order_ngrams.push(res);
     } */
-    /* let ngrams = lower_order_ngrams
-    .into_iter()
-    .map(|v| v.into_iter())
-    .flatten()
-    .collect(); */
-    // println!("words: {:?}", words);
-    // println!("lower_order_ngrams {:?}", lower_order_ngrams);
-    // println!("{:?}", ngrams);
 
-    /* Self {
-        ngrams: lower_order_ngrams,
-        // ngrams: vec![ngrams.into_iter().collect()],
-    } */
-    lower_order_ngrams
+    // lower_order_ngrams
+    ngrams
 }
 
 /* fn get_utf8_slice(string: &str, start: usize, end: usize) -> &str {

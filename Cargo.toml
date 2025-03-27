@@ -35,7 +35,7 @@ default-run = "cli_train_files"
 [profile.dev]
 opt-level = 1
 
-# [profile.dev.package.parselang_models]
+# [profile.dev.package.lang_models]
 # opt-level = 0
 
 [lib]

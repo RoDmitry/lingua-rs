@@ -895,15 +895,18 @@ impl LanguageDetector {
 
     fn look_up_language_models<'a>(
         &'a self,
-        words: impl Iterator<Item = &'a [char]>,
+        words_iter: impl Iterator<Item = &'a [char]>,
         ngram_length: usize,
         filtered_languages: &AHashSet<Language>,
     ) -> (AHashMap<Language, f64>, Option<AHashMap<Language, usize>>) {
-        let ngrams = prepare_ngrams(words, ngram_length);
+        let ngrams = prepare_ngrams(words_iter, ngram_length);
 
         self.get_language_models(ngram_length, filtered_languages, |language_models| {
-            let probabilities =
-                self.compute_language_probabilities(&ngrams, filtered_languages, &language_models);
+            let probabilities = self.compute_language_probabilities(
+                ngrams.iter().copied(),
+                filtered_languages,
+                &language_models,
+            );
 
             let unigram_counts = if ngram_length == 1 {
                 let languages = probabilities.keys().collect_vec();
@@ -917,7 +920,7 @@ impl LanguageDetector {
                     filtered_languages.clone()
                 };
                 Some(self.count_unigrams(
-                    &ngrams,
+                    ngrams.iter().copied(),
                     &intersected_languages,
                     language_models[0].unwrap(),
                 ))
@@ -929,15 +932,19 @@ impl LanguageDetector {
         })
     }
 
-    fn compute_language_probabilities(
-        &self,
-        ngrams: &[Vec<&[char]>],
+    fn compute_language_probabilities<'a>(
+        &'a self,
+        ngrams_iter: impl Iterator<Item = &'a [char]> + Clone,
         filtered_languages: &AHashSet<Language>,
         language_models: &LanguageModelArray,
     ) -> AHashMap<Language, f64> {
         let mut probabilities = AHashMap::with_capacity(filtered_languages.len());
         for language in filtered_languages.iter() {
-            let sum = self.compute_sum_of_ngram_probabilities(language, ngrams, language_models);
+            let sum = self.compute_sum_of_ngram_probabilities(
+                language,
+                ngrams_iter.clone(),
+                language_models,
+            );
             if sum < 0.0 {
                 probabilities.insert(*language, sum);
             }
@@ -985,10 +992,10 @@ impl LanguageDetector {
         values.sort_by(confidence_values_comparator);
     }
 
-    fn compute_sum_of_ngram_probabilities(
-        &self,
+    fn compute_sum_of_ngram_probabilities<'a>(
+        &'a self,
         language: &Language,
-        ngrams: &[Vec<&[char]>],
+        ngrams_iter: impl Iterator<Item = &'a [char]>,
         language_models: &LanguageModelArray,
     ) -> f64 {
         let models = [
@@ -999,8 +1006,9 @@ impl LanguageDetector {
             language_models[4].as_ref().and_then(|m| m.get(language)),
         ];
         let mut sum = 0.0;
-        for ngrams in ngrams.iter() {
-            for ngram in ngrams {
+        for ngram in ngrams_iter {
+            for len in (1..=ngram.len()).rev() {
+                let ngram = &ngram[0..len];
                 let probability = models[ngram.len() - 1]
                     .and_then(|m| m.get(ngram.iter().copied().collect::<String>().as_str())) // todo: remove collect
                     .copied()
@@ -1015,9 +1023,9 @@ impl LanguageDetector {
         sum
     }
 
-    fn count_unigrams(
-        &self,
-        ngrams: &[Vec<&[char]>],
+    fn count_unigrams<'a>(
+        &'a self,
+        ngrams_iter: impl Iterator<Item = &'a [char]> + Clone,
         filtered_languages: &AHashSet<Language>,
         language_models: &AHashMap<Language, AHashMap<CompactString, f64>>,
     ) -> AHashMap<Language, usize> {
@@ -1028,17 +1036,9 @@ impl LanguageDetector {
                 None => continue,
             };
 
-            for unigrams in ngrams.iter() {
+            for unigram in ngrams_iter.clone() {
                 let probability = model
-                    .get(
-                        unigrams
-                            .first()
-                            .unwrap()
-                            .iter()
-                            .copied()
-                            .collect::<String>()
-                            .as_str(),
-                    ) // todo: remove collect
+                    .get(unigram.iter().copied().collect::<String>().as_str()) // todo: remove collect
                     .copied()
                     .unwrap_or(0.0);
 

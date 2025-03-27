@@ -194,7 +194,7 @@ fn main() {
 
                 let out_path = Path::new(&out_path);
                 let out_mod_path = out_path.join(&mod_dir);
-                if out_mod_path.join("unigrams.rs").exists() {
+                if out_mod_path.join("quadrigrams.rs").exists() {
                     println!("EXISTS {} {:?}", file_name, lang);
                     return;
                 }
@@ -219,7 +219,7 @@ fn main() {
                 {
                     let file_path = out_mod_path.join("mod.rs");
                     let mut file = fs::File::create(file_path).unwrap();
-                    file.write_all(b"mod bigrams;\nmod trigrams;\nmod unigrams;\n\n")
+                    file.write_all(b"mod unigrams;\nmod bigrams;\nmod trigrams;\nmod quadrigrams;\nmod fivegrams;\n\n")
                         .unwrap();
                     file.write_all(b"pub struct ").unwrap();
                     file.write_all(model_name.as_bytes()).unwrap();
@@ -227,15 +227,23 @@ fn main() {
                     file.write_all(model_name.as_bytes()).unwrap();
                     file.write_all(b"Model {\n").unwrap();
                     file.write_all(
-                        b"    fn check_unigram(c: char) -> f64 {\n        unigrams::prob(c)\n    }\n",
+                        b"    #[inline(always)]\n    fn check_unigram(c: char) -> f64 {\n        unigrams::prob(c)\n    }\n",
                     )
                     .unwrap();
                     file.write_all(
-                        b"    fn check_bigram(g: &[char; 2]) -> f64 {\n        bigrams::prob(g)\n    }\n",
+                        b"    #[inline(always)]\n    fn check_bigram(g: &[char; 2]) -> f64 {\n        bigrams::prob(g)\n    }\n",
                     )
                     .unwrap();
                     file.write_all(
-                        b"    fn check_trigram(g: &[char; 3]) -> f64 {\n        trigrams::prob(g)\n    }\n",
+                        b"    #[inline(always)]\n    fn check_trigram(g: &[char; 3]) -> f64 {\n        trigrams::prob(g)\n    }\n",
+                    )
+                    .unwrap();
+                    file.write_all(
+                        b"    #[inline(always)]\n    fn check_quadrigram(g: &[char; 4]) -> f64 {\n        quadrigrams::prob(g)\n    }\n",
+                    )
+                    .unwrap();
+                    file.write_all(
+                        b"    #[inline(always)]\n    fn check_fivegram(g: &[char; 5]) -> f64 {\n        fivegrams::prob(g)\n    }\n",
                     )
                     .unwrap();
                     file.write_all(b"}\n").unwrap();
@@ -259,7 +267,7 @@ fn main() {
                     // file.write_all(alphabet.to_full_dbg().as_bytes()).unwrap();
                     file.write_all(b"Language::").unwrap();
                     file.write_all(lang.to_string().as_bytes()).unwrap();
-                    file.write_all(b" => Some(Box::new(parselang_models::").unwrap();
+                    file.write_all(b" => Some(Box::new(lang_models::").unwrap();
                     file.write_all(model_name.as_bytes()).unwrap();
                     file.write_all(b"Model)),\n").unwrap();
                 }

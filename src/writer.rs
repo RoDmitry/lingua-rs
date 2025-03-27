@@ -110,8 +110,24 @@ impl LanguageModelFilesWriter {
             bigram_model.absolute_frequencies.as_ref().unwrap(),
         );
         bigram_model.to_match(&out_mod_path.join("bigrams.rs"))?;
+        
+        let quadrigram_model = TrainingDataLanguageModel::from_text(
+            &word_chars,
+            4,
+            trigram_model.absolute_frequencies.as_ref().unwrap(),
+        );
 
-        trigram_model.to_match(&out_mod_path.join("trigrams.rs"))
+        trigram_model.to_match(&out_mod_path.join("trigrams.rs"))?;
+        
+        let fivegram_model = TrainingDataLanguageModel::from_text(
+            &word_chars,
+            5,
+            quadrigram_model.absolute_frequencies.as_ref().unwrap(),
+        );
+
+        quadrigram_model.to_match(&out_mod_path.join("quadrigrams.rs"))?;
+
+        fivegram_model.to_match(&out_mod_path.join("fivegrams.rs"))
 
         /* let trigram_model = Self::create_language_model(
             input_file_path,
