@@ -1,21 +1,21 @@
-use ::std::fs;
-use ::std::fs::File;
-use ::std::io::BufReader;
-use ::std::io::Write;
-use ::std::path::Path;
-use ::std::str::FromStr;
-use ::std::sync::Arc;
-use ::std::sync::Mutex;
-use ::std::{thread, time::Duration};
+use ::std::{
+    fs,
+    fs::File,
+    io::{BufReader, Write},
+    path::Path,
+    str::FromStr,
+    sync::{Arc, Mutex},
+    thread,
+    time::Duration,
+};
 use cap::Cap;
 use clap::Parser;
 
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
-use lingua::read_iter::ReadCharsChunks;
 use lingua::{
-    lang_arr_default, script_char_to_langs, str_to_langs, Language, LanguageModelFilesWriter,
-    Script,
+    lang_arr_default, read_iter::ReadCharsChunks, script_char_to_langs, str_to_langs, Language,
+    LanguageModelFilesWriter, Script,
 };
 // use rayon::prelude::*;
 

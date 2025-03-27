@@ -1,13 +1,16 @@
-use crate::constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE};
-use crate::json::load_json;
-// use crate::lang::Script;
-use crate::model::{JsonLanguageModel, TestDataLanguageModel};
-use crate::result::DetectionResult;
-use ::std::cmp::Ordering;
-use ::std::collections::{HashMap, HashSet};
-use ::std::hash::{BuildHasher, Hash};
-use ::std::ops::Range;
-use ::std::sync::RwLock;
+use crate::{
+    constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE},
+    json::load_json,
+    model::{prepare_ngrams, JsonLanguageModel},
+    result::DetectionResult,
+};
+use ::std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+    hash::{BuildHasher, Hash},
+    ops::Range,
+    sync::RwLock,
+};
 use ahash::{AHashMap, AHashSet};
 use alphabet_detector::{fulltext_langs_best, Language, Script};
 use compact_str::CompactString;
@@ -581,81 +584,24 @@ impl LanguageDetector {
         text_str: &str,
         search_languages: &HashSet<Language, S>,
     ) -> Vec<Word> {
-        let mut values = Vec::with_capacity(search_languages.len());
-
-        for language in search_languages {
-            values.push((*language, 0.0));
-        }
-
         if text_str.is_empty() {
             return Vec::new();
         }
-        let _found_words_iter = alphabet_detector::word_iter::from_ch_iter(text_str.char_indices());
-        /* let words_with_langs_iter = found_words_iter.map(|mut wd| {
-            let mut langs_alphabets =
-                process_alphabets_count(std::mem::take(&mut wd.script_langs));
-            langs_alphabets.retain(|l, _| search_languages.contains(&l));
 
-            (langs_alphabets, wd)
-        }); */
+        let mut values = Vec::with_capacity(search_languages.len());
 
-        /* if words.is_empty() || languages.is_empty() {
-            return values;
-        } */
-
-        /* if languages.len() == 1 {
-            let (&lang, _alphabets) = languages.iter().next().unwrap();
-            // todo: return alphabets also
-            update_confidence_values(&mut values, lang, 1.0);
-            values.sort_by(confidence_values_comparator);
-            return values;
-        } */
-
-        /* let character_count: usize = words.iter().map(|word| word.chars().count()).sum();
-
-        if self.is_low_accuracy_mode_enabled && character_count < 3 {
-            values.sort_by(confidence_values_comparator);
-            return values;
-        }
-
-        let ngram_length_range = if character_count >= 120 || self.is_low_accuracy_mode_enabled {
-            3..4usize
-        } else {
-            1..6usize
-        }; */
-
-        todo!();
-        /* #[allow(clippy::type_complexity)]
-        let all_probabilities_and_unigram_counts: Vec<(
-            AHashMap<Language, f64>,
-            Option<AHashMap<Language, usize>>,
-        )> = ngram_length_range
+        let (words, langs) = fulltext_langs_best(text_str.char_indices());
+        let filtered_languages: Vec<_> = langs
             .into_iter()
-            .filter(|i| character_count >= *i)
-            .map(|ngram_length| {
-                self.look_up_language_models(&words, ngram_length, &filtered_languages)
-            })
+            .filter(|(l, _)| search_languages.contains(l))
+            .map(|(l, _)| l) // todo: maybe use count?
             .collect();
 
-        let probability_maps = all_probabilities_and_unigram_counts
-            .iter()
-            .map(|(probabilities, _)| probabilities)
-            .collect::<Vec<_>>();
-
-        let unigram_counts = &all_probabilities_and_unigram_counts[0].1;
-
-        let summed_up_probabilities =
-            self.sum_up_probabilities(&probability_maps, unigram_counts, filtered_languages);
-
-        if summed_up_probabilities.is_empty() {
-            values.sort_by(confidence_values_comparator);
+        if words.is_empty() || filtered_languages.is_empty() {
             return values;
         }
 
-        self.compute_confidence_values(&mut values, probability_maps, summed_up_probabilities);
-        // println!("res {:?}", &values[..values.len().min(5)]);
-
-        values */
+        todo!();
     }
 
     fn compute_language_confidence_values_for_languages<S: BuildHasher + Default>(
@@ -663,6 +609,10 @@ impl LanguageDetector {
         text_str: &str,
         search_languages: &HashSet<Language, S>,
     ) -> Vec<(Language, f64)> {
+        if text_str.is_empty() {
+            return Vec::new();
+        }
+
         let mut values = Vec::with_capacity(search_languages.len());
 
         for language in search_languages {
@@ -676,9 +626,6 @@ impl LanguageDetector {
 
         // let filtered_languages = Self::process_words(&words, search_languages);
 
-        if text_str.is_empty() {
-            return Vec::new();
-        }
         /* let found_words = alphabet_detector::from_ch_iter(text_str.char_indices());
 
         let mut words = Vec::new();
@@ -735,7 +682,7 @@ impl LanguageDetector {
             return values;
         }
 
-        let character_count: usize = words.iter().map(|word| word.len()).sum();
+        let character_count: usize = words.iter().map(|wd| wd.chars.len()).sum();
 
         if self.is_low_accuracy_mode_enabled && character_count < 3 {
             values.sort_by(confidence_values_comparator);
@@ -754,28 +701,35 @@ impl LanguageDetector {
             Option<AHashMap<Language, usize>>,
         )> = ngram_length_range
             .into_iter()
-            .filter(|i| character_count >= *i)
+            .filter(|i| *i <= character_count)
             .map(|ngram_length| {
-                self.look_up_language_models(&words, ngram_length, &filtered_languages)
+                self.look_up_language_models(
+                    words.iter().map(|wd| wd.chars.as_ref()),
+                    ngram_length,
+                    &filtered_languages,
+                )
             })
             .collect();
 
-        let probability_maps = all_probabilities_and_unigram_counts
+        let mut probability_maps = all_probabilities_and_unigram_counts
             .iter()
-            .map(|(probabilities, _)| probabilities)
-            .collect::<Vec<_>>();
+            .map(|(probabilities, _)| probabilities);
 
         let unigram_counts = &all_probabilities_and_unigram_counts[0].1;
 
         let summed_up_probabilities =
-            self.sum_up_probabilities(&probability_maps, unigram_counts, filtered_languages);
+            self.sum_up_probabilities(probability_maps.clone(), unigram_counts, filtered_languages);
 
         if summed_up_probabilities.is_empty() {
             values.sort_by(confidence_values_comparator);
             return values;
         }
 
-        self.compute_confidence_values(&mut values, probability_maps, summed_up_probabilities);
+        self.compute_confidence_values(
+            &mut values,
+            probability_maps.next(),
+            summed_up_probabilities,
+        );
         // println!("res {:?}", &values[..values.len().min(5)]);
 
         values
@@ -939,20 +893,17 @@ impl LanguageDetector {
         callback_handler(models)
     }
 
-    fn look_up_language_models(
-        &self,
-        words: &[Vec<char>],
+    fn look_up_language_models<'a>(
+        &'a self,
+        words: impl Iterator<Item = &'a [char]>,
         ngram_length: usize,
         filtered_languages: &AHashSet<Language>,
     ) -> (AHashMap<Language, f64>, Option<AHashMap<Language, usize>>) {
-        let test_data_model = TestDataLanguageModel::from(words, ngram_length);
+        let ngrams = prepare_ngrams(words, ngram_length);
 
         self.get_language_models(ngram_length, filtered_languages, |language_models| {
-            let probabilities = self.compute_language_probabilities(
-                &test_data_model,
-                filtered_languages,
-                &language_models,
-            );
+            let probabilities =
+                self.compute_language_probabilities(&ngrams, filtered_languages, &language_models);
 
             let unigram_counts = if ngram_length == 1 {
                 let languages = probabilities.keys().collect_vec();
@@ -966,7 +917,7 @@ impl LanguageDetector {
                     filtered_languages.clone()
                 };
                 Some(self.count_unigrams(
-                    &test_data_model,
+                    &ngrams,
                     &intersected_languages,
                     language_models[0].unwrap(),
                 ))
@@ -980,13 +931,13 @@ impl LanguageDetector {
 
     fn compute_language_probabilities(
         &self,
-        model: &TestDataLanguageModel,
+        ngrams: &[Vec<&[char]>],
         filtered_languages: &AHashSet<Language>,
         language_models: &LanguageModelArray,
     ) -> AHashMap<Language, f64> {
         let mut probabilities = AHashMap::with_capacity(filtered_languages.len());
         for language in filtered_languages.iter() {
-            let sum = self.compute_sum_of_ngram_probabilities(language, model, language_models);
+            let sum = self.compute_sum_of_ngram_probabilities(language, ngrams, language_models);
             if sum < 0.0 {
                 probabilities.insert(*language, sum);
             }
@@ -997,7 +948,7 @@ impl LanguageDetector {
     fn compute_confidence_values(
         &self,
         values: &mut Vec<(Language, f64)>,
-        probability_maps: Vec<&AHashMap<Language, f64>>,
+        probability_map: Option<&AHashMap<Language, f64>>,
         probabilities: AHashMap<Language, f64>,
     ) {
         let denominator: f64 = probabilities.values().sum();
@@ -1007,8 +958,8 @@ impl LanguageDetector {
         // So we simply set the probability of the most likely language to 1.0 and
         // leave the other languages at 0.0.
         if denominator.is_zero() {
-            // For very long inputs, only trigrams are used, so we safely access them at index 0.
-            let probability_map = probability_maps[0];
+            // For very long inputs, only trigrams are used, so we safely access first.
+            let probability_map = probability_map.unwrap();
             let most_likely_language = *probability_map
                 .iter()
                 .max_by(|(_, first_probability), (_, second_probability)| {
@@ -1037,7 +988,7 @@ impl LanguageDetector {
     fn compute_sum_of_ngram_probabilities(
         &self,
         language: &Language,
-        ngram_model: &TestDataLanguageModel,
+        ngrams: &[Vec<&[char]>],
         language_models: &LanguageModelArray,
     ) -> f64 {
         let models = [
@@ -1048,7 +999,7 @@ impl LanguageDetector {
             language_models[4].as_ref().and_then(|m| m.get(language)),
         ];
         let mut sum = 0.0;
-        for ngrams in ngram_model.ngrams.iter() {
+        for ngrams in ngrams.iter() {
             for ngram in ngrams {
                 let probability = models[ngram.len() - 1]
                     .and_then(|m| m.get(ngram.iter().copied().collect::<String>().as_str())) // todo: remove collect
@@ -1066,7 +1017,7 @@ impl LanguageDetector {
 
     fn count_unigrams(
         &self,
-        unigram_model: &TestDataLanguageModel,
+        ngrams: &[Vec<&[char]>],
         filtered_languages: &AHashSet<Language>,
         language_models: &AHashMap<Language, AHashMap<CompactString, f64>>,
     ) -> AHashMap<Language, usize> {
@@ -1077,7 +1028,7 @@ impl LanguageDetector {
                 None => continue,
             };
 
-            for unigrams in unigram_model.ngrams.iter() {
+            for unigrams in ngrams.iter() {
                 let probability = model
                     .get(
                         unigrams
@@ -1099,16 +1050,16 @@ impl LanguageDetector {
         unigram_counts
     }
 
-    fn sum_up_probabilities(
-        &self,
-        probability_maps: &[&AHashMap<Language, f64>],
+    fn sum_up_probabilities<'a>(
+        &'a self,
+        probability_maps: impl Iterator<Item = &'a AHashMap<Language, f64>> + Clone,
         unigram_counts: &Option<AHashMap<Language, usize>>,
         filtered_languages: AHashSet<Language>,
     ) -> AHashMap<Language, f64> {
         let mut summed_up_probabilities = AHashMap::with_capacity(filtered_languages.len());
         for language in filtered_languages.iter() {
             let mut sum: f64 = probability_maps
-                .iter()
+                .clone()
                 .map(|it| match it.get(language) {
                     Some(probability) => *probability,
                     None => 0.0,
@@ -1159,6 +1110,7 @@ impl LanguageDetector {
     }
 }
 
+// TODO: rewrite
 fn confidence_values_comparator(first: &(Language, f64), second: &(Language, f64)) -> Ordering {
     let sorted_by_probability = second.1.partial_cmp(&first.1).unwrap();
     let sorted_by_language = first.0.partial_cmp(&second.0).unwrap();
