@@ -1170,7 +1170,7 @@ mod tests {
     use crate::builder::LanguageDetectorBuilder;
     // use crate::ngram::NgramRef;
     use crate::Language::*;
-    // use float_cmp::approx_eq;
+    use float_cmp::approx_eq;
     use once_cell::sync::OnceCell;
     use rstest::*;
 
@@ -1399,28 +1399,6 @@ mod tests {
     }
 
     // ##############################
-    // TEST DATA MODELS
-    // ##############################
-
-    /* #[fixture(strs=vec![])]
-    fn test_data_model(strs: Vec<Vec<&'static str>>) -> TestDataLanguageModel<'static> {
-        let strs: Vec<_> = strs
-            .into_iter()
-            .map(|v| {
-                v.into_iter()
-                    .map(|s| s.chars().collect::<Vec<_>>())
-                    .collect::<Vec<_>>()
-            })
-            .collect();
-        let ngrams = strs
-            .iter()
-            .map(|ns| ns.iter().map(|c| c.as_slice()).collect::<Vec<_>>())
-            .collect::<Vec<_>>();
-
-        TestDataLanguageModel { ngrams }
-    } */
-
-    // ##############################
     // DETECTORS
     // ##############################
 
@@ -1502,27 +1480,27 @@ mod tests {
         );
     }
 
-    /* #[rstest(
-        test_data_model,
+    #[rstest(
+        ngrams,
         expected_sum_of_probabilities,
         case(
-            test_data_model(vec![vec!["a"], vec!["l"], vec!["t"], vec!["e"], vec!["r"]]),
+            vec![vec!['a'], vec!['l'], vec!['t'], vec!['e'], vec!['r']],
             0.01_f64.ln() + 0.02_f64.ln() + 0.03_f64.ln() + 0.04_f64.ln() + 0.05_f64.ln()
         ),
         case(
             // back off unknown Trigram("tez") to known Bigram("te")
-            test_data_model(vec![vec!["alt", "al", "a"], vec!["lte", "lt", "l"], vec!["tez", "te", "t"]]),
+            vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'z']],
             0.19_f64.ln() + 0.2_f64.ln() + 0.13_f64.ln()
         ),
         case(
             // back off unknown Fivegram("aquas") to known Unigram("a")
-            test_data_model(vec![vec!["aquas", "aqua", "aqu", "aq", "a"]]),
+            vec![vec!['a', 'q', 'u', 'a', 's']],
             0.01_f64.ln()
         )
     )]
     fn assert_summation_of_ngram_probabilities_works_correctly(
         detector_for_english_and_german: LanguageDetector,
-        test_data_model: TestDataLanguageModel,
+        ngrams: Vec<Vec<char>>,
         expected_sum_of_probabilities: f64,
     ) {
         let sum_of_probabilities = detector_for_english_and_german.get_language_models(
@@ -1531,7 +1509,7 @@ mod tests {
             |language_models| {
                 detector_for_english_and_german.compute_sum_of_ngram_probabilities(
                     &English,
-                    &test_data_model,
+                    ngrams.iter().map(|v| v.as_ref()),
                     &language_models,
                 )
             },
@@ -1547,30 +1525,30 @@ mod tests {
             "expected sum {} for language '{:?}' and ngrams {:?}, got {}",
             expected_sum_of_probabilities,
             English,
-            test_data_model.ngrams,
+            ngrams,
             sum_of_probabilities
         );
     }
 
     #[rstest(
-        test_data_model,
+        ngrams,
         expected_probabilities,
         case::unigram_model(
-            test_data_model(vec![vec!["a"], vec!["l"], vec!["t"], vec!["e"], vec!["r"]]),
+            vec![vec!['a'], vec!['l'], vec!['t'], vec!['e'], vec!['r']],
             ahashmap!(
                 English => 0.01_f64.ln() + 0.02_f64.ln() + 0.03_f64.ln() + 0.04_f64.ln() + 0.05_f64.ln(),
                 German => 0.06_f64.ln() + 0.07_f64.ln() + 0.08_f64.ln() + 0.09_f64.ln() + 0.1_f64.ln()
             )
         ),
         case::trigram_model(
-            test_data_model(vec![vec!["alt", "al", "a"], vec!["lte", "lt", "l"], vec!["ter", "te", "t"], vec!["wxy", "wx", "w"]]),
+            vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'r'], vec!['w', 'x', 'y']],
             ahashmap!(
                 English => 0.19_f64.ln() + 0.2_f64.ln() + 0.21_f64.ln(),
                 German => 0.22_f64.ln() + 0.23_f64.ln() + 0.24_f64.ln()
             )
         ),
         case::quadrigram_model(
-            test_data_model(vec![vec!["alte", "alt", "al", "a"], vec!["lter", "lte", "lt", "l"], vec!["wxyz", "wxy", "wx", "w"]]),
+            vec![vec!['a', 'l', 't', 'e'], vec!['l', 't', 'e', 'r'], vec!['w', 'x', 'y', 'z']],
             ahashmap!(
                 English => 0.25_f64.ln() + 0.26_f64.ln(),
                 German => 0.27_f64.ln() + 0.28_f64.ln()
@@ -1579,14 +1557,14 @@ mod tests {
     )]
     fn assert_computation_of_language_probabilities_works_correctly(
         detector_for_english_and_german: LanguageDetector,
-        test_data_model: TestDataLanguageModel,
+        ngrams: Vec<Vec<char>>,
         expected_probabilities: AHashMap<Language, f64>,
     ) {
         let languages = ahashset!(English, German);
         let probabilities =
             detector_for_english_and_german.get_language_models(5, &languages, |language_models| {
                 detector_for_english_and_german.compute_language_probabilities(
-                    &test_data_model,
+                    ngrams.iter().map(|v| v.as_ref()),
                     &languages,
                     &language_models,
                 )
@@ -1603,7 +1581,7 @@ mod tests {
                 probability
             );
         }
-    } */
+    }
 
     #[rstest(
         text,
@@ -1977,11 +1955,7 @@ mod tests {
         );
     }
 
-    /* #[rstest(
-        text,
-        expected_language,
-        case("I know you әлем", Some(English)),
-    )]
+    #[rstest(text, expected_language, case("I know you әлем", Some(English)))]
     fn assert_language_detection_correct(
         detector_for_all_languages: LanguageDetector,
         text: &str,
@@ -1991,7 +1965,7 @@ mod tests {
             detector_for_all_languages.detect_language_of(text),
             expected_language
         );
-    } */
+    }
 
     #[rstest(text, languages,
         case(
