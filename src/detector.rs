@@ -666,14 +666,14 @@ impl LanguageDetector {
         if filtered_languages.len() == 1 {
             let lang = filtered_languages.iter().next().unwrap();
             update_confidence_values(&mut values, *lang, 1.0);
-            values.sort_by(confidence_values_comparator);
+            values.sort_by(order_by_probability);
             return values;
         }
 
         let character_count: usize = words.iter().map(|wd| wd.chars.len()).sum();
 
         if self.is_low_accuracy_mode_enabled && character_count < 3 {
-            values.sort_by(confidence_values_comparator);
+            values.sort_by(order_by_probability);
             return values;
         }
 
@@ -709,7 +709,7 @@ impl LanguageDetector {
             self.sum_up_probabilities(probability_maps.clone(), unigram_counts, filtered_languages);
 
         if summed_up_probabilities.is_empty() {
-            values.sort_by(confidence_values_comparator);
+            values.sort_by(order_by_probability);
             return values;
         }
 
@@ -956,7 +956,7 @@ impl LanguageDetector {
             }
         }
 
-        values.sort_by(confidence_values_comparator);
+        values.sort_by(order_by_probability);
     }
 
     fn compute_sum_of_ngram_probabilities<'a>(
@@ -1107,11 +1107,8 @@ impl LanguageDetector {
     }
 }
 
-// TODO: rewrite
-fn confidence_values_comparator(first: &(Language, f64), second: &(Language, f64)) -> Ordering {
-    let sorted_by_probability = second.1.partial_cmp(&first.1).unwrap();
-    let sorted_by_language = first.0.partial_cmp(&second.0).unwrap();
-    sorted_by_probability.then(sorted_by_language)
+fn order_by_probability(first: &(Language, f64), second: &(Language, f64)) -> Ordering {
+    second.1.partial_cmp(&first.1).unwrap()
 }
 
 fn update_confidence_values(
