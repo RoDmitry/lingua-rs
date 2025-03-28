@@ -844,6 +844,7 @@ dependencies = [
  "cld2",
  "compact_str",
  "criterion",
+ "debug_unsafe",
  "float-cmp",
  "fraction",
  "include_dir",
