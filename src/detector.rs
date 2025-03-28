@@ -9,26 +9,26 @@ use ::std::{
     collections::{HashMap, HashSet},
     hash::{BuildHasher, Hash},
     ops::Range,
-    sync::RwLock,
+    sync::{LazyLock, RwLock},
 };
 use ahash::{AHashMap, AHashSet};
 use alphabet_detector::{fulltext_langs_best, Language, Script};
 use compact_str::CompactString;
 use fraction::Zero;
 use itertools::Itertools;
-use once_cell::sync::Lazy;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
 
-type LazyLanguageModelMap = Lazy<RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>>;
-type StaticLanguageModelMap = &'static RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>;
-type LanguageModelArray<'a> = [Option<&'a AHashMap<Language, AHashMap<CompactString, f64>>>; 5];
+type ModelsData = AHashMap<Language, AHashMap<CompactString, f64>>;
+type ModelsDataLock = RwLock<ModelsData>;
+type StaticLanguageModelMap = &'static ModelsDataLock;
+type LanguageModelArray<'a> = [Option<&'a ModelsData>; 5];
 
-static UNIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
-static BIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
-static TRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
-static QUADRIGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
-static FIVEGRAM_MODELS: LazyLanguageModelMap = Lazy::new(|| RwLock::new(AHashMap::new()));
+static UNIGRAM_MODELS: LazyLock<ModelsDataLock> = LazyLock::new(|| RwLock::new(AHashMap::new()));
+static BIGRAM_MODELS: LazyLock<ModelsDataLock> = LazyLock::new(|| RwLock::new(AHashMap::new()));
+static TRIGRAM_MODELS: LazyLock<ModelsDataLock> = LazyLock::new(|| RwLock::new(AHashMap::new()));
+static QUADRIGRAM_MODELS: LazyLock<ModelsDataLock> = LazyLock::new(|| RwLock::new(AHashMap::new()));
+static FIVEGRAM_MODELS: LazyLock<ModelsDataLock> = LazyLock::new(|| RwLock::new(AHashMap::new()));
 
 /// final result
 pub struct Word {
@@ -63,7 +63,7 @@ impl LanguageDetector {
         is_every_language_model_preloaded: bool,
         is_low_accuracy_mode_enabled: bool,
     ) -> Self {
-        let mut detector = Self {
+        let detector = Self {
             languages: languages.clone(),
             minimum_relative_distance,
             is_low_accuracy_mode_enabled,
@@ -83,13 +83,13 @@ impl LanguageDetector {
         detector
     }
 
-    fn preload_language_models(&mut self, languages: &AHashSet<Language>) {
+    fn preload_language_models(&self, languages: &AHashSet<Language>) {
         #[cfg(not(target_family = "wasm"))]
         let languages_iter = languages.par_iter();
         #[cfg(target_family = "wasm")]
         let languages_iter = languages.iter();
 
-        languages_iter.for_each(|language| {
+        languages_iter.for_each(|&language| {
             self.load_language_models(self.trigram_language_models, language, 3);
 
             if !self.is_low_accuracy_mode_enabled {
@@ -848,35 +848,35 @@ impl LanguageDetector {
         let mut model_read_locks = [None, None, None, None, None];
 
         if ngram_length >= 1 {
-            for language in filtered_languages {
+            for &language in filtered_languages {
                 self.load_language_models(self.unigram_language_models, language, 1);
             }
             model_read_locks[0] = Some(self.unigram_language_models.read().unwrap());
         }
 
         if ngram_length >= 2 {
-            for language in filtered_languages {
+            for &language in filtered_languages {
                 self.load_language_models(self.bigram_language_models, language, 2);
             }
             model_read_locks[1] = Some(self.bigram_language_models.read().unwrap());
         }
 
         if ngram_length >= 3 {
-            for language in filtered_languages {
+            for &language in filtered_languages {
                 self.load_language_models(self.trigram_language_models, language, 3);
             }
             model_read_locks[2] = Some(self.trigram_language_models.read().unwrap());
         }
 
         if ngram_length >= 4 {
-            for language in filtered_languages {
+            for &language in filtered_languages {
                 self.load_language_models(self.quadrigram_language_models, language, 4);
             }
             model_read_locks[3] = Some(self.quadrigram_language_models.read().unwrap());
         }
 
         if ngram_length >= 5 {
-            for language in filtered_languages {
+            for &language in filtered_languages {
                 self.load_language_models(self.fivegram_language_models, language, 5);
             }
             model_read_locks[4] = Some(self.fivegram_language_models.read().unwrap());
@@ -939,14 +939,14 @@ impl LanguageDetector {
         language_models: &LanguageModelArray,
     ) -> AHashMap<Language, f64> {
         let mut probabilities = AHashMap::with_capacity(filtered_languages.len());
-        for language in filtered_languages.iter() {
+        for &language in filtered_languages.iter() {
             let sum = self.compute_sum_of_ngram_probabilities(
                 language,
                 ngrams_iter.clone(),
                 language_models,
             );
             if sum < 0.0 {
-                probabilities.insert(*language, sum);
+                probabilities.insert(language, sum);
             }
         }
         probabilities
@@ -994,16 +994,16 @@ impl LanguageDetector {
 
     fn compute_sum_of_ngram_probabilities<'a>(
         &'a self,
-        language: &Language,
+        language: Language,
         ngrams_iter: impl Iterator<Item = &'a [char]>,
         language_models: &LanguageModelArray,
     ) -> f64 {
         let models = [
-            language_models[0].as_ref().and_then(|m| m.get(language)),
-            language_models[1].as_ref().and_then(|m| m.get(language)),
-            language_models[2].as_ref().and_then(|m| m.get(language)),
-            language_models[3].as_ref().and_then(|m| m.get(language)),
-            language_models[4].as_ref().and_then(|m| m.get(language)),
+            language_models[0].as_ref().and_then(|m| m.get(&language)),
+            language_models[1].as_ref().and_then(|m| m.get(&language)),
+            language_models[2].as_ref().and_then(|m| m.get(&language)),
+            language_models[3].as_ref().and_then(|m| m.get(&language)),
+            language_models[4].as_ref().and_then(|m| m.get(&language)),
         ];
         let mut sum = 0.0;
         for ngram in ngrams_iter {
@@ -1027,7 +1027,7 @@ impl LanguageDetector {
         &'a self,
         ngrams_iter: impl Iterator<Item = &'a [char]> + Clone,
         filtered_languages: &AHashSet<Language>,
-        language_models: &AHashMap<Language, AHashMap<CompactString, f64>>,
+        language_models: &ModelsData,
     ) -> AHashMap<Language, usize> {
         let mut unigram_counts = AHashMap::new();
         for language in filtered_languages.iter() {
@@ -1083,20 +1083,20 @@ impl LanguageDetector {
     fn load_language_models(
         &self,
         language_models: StaticLanguageModelMap,
-        language: &Language,
+        language: Language,
         ngram_length: usize,
     ) {
         let Ok(models) = language_models.read() else {
             return;
         };
-        if models.contains_key(language) {
+        if models.contains_key(&language) {
             return;
         }
         drop(models);
-        let mut models = language_models.write().unwrap();
-        let json = load_json(*language, ngram_length);
+        let mut models_guard = language_models.write().unwrap();
+        let json = load_json(language, ngram_length);
         if let Ok(Some(json_content)) = json {
-            models.insert(*language, JsonLanguageModel::from_json(&json_content));
+            models_guard.insert(language, JsonLanguageModel::from_json(&json_content));
         }
     }
 
@@ -1170,8 +1170,8 @@ mod tests {
     use crate::builder::LanguageDetectorBuilder;
     // use crate::ngram::NgramRef;
     use crate::Language::*;
+    use ::std::sync::OnceLock;
     use float_cmp::approx_eq;
-    use once_cell::sync::OnceCell;
     use rstest::*;
 
     // ##############################
@@ -1323,9 +1323,7 @@ mod tests {
         unigram_language_model_for_english: AHashMap<CompactString, f64>,
         unigram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
-        static UNIGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
-        > = OnceCell::new();
+        static UNIGRAM_MODELS_FIXTURE: OnceLock<ModelsDataLock> = OnceLock::new();
         UNIGRAM_MODELS_FIXTURE.get_or_init(|| {
             RwLock::new(ahashmap!(
                 English => unigram_language_model_for_english,
@@ -1339,9 +1337,7 @@ mod tests {
         bigram_language_model_for_english: AHashMap<CompactString, f64>,
         bigram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
-        static BIGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
-        > = OnceCell::new();
+        static BIGRAM_MODELS_FIXTURE: OnceLock<ModelsDataLock> = OnceLock::new();
         BIGRAM_MODELS_FIXTURE.get_or_init(|| {
             RwLock::new(ahashmap!(
                 English => bigram_language_model_for_english,
@@ -1355,9 +1351,7 @@ mod tests {
         trigram_language_model_for_english: AHashMap<CompactString, f64>,
         trigram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
-        static TRIGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
-        > = OnceCell::new();
+        static TRIGRAM_MODELS_FIXTURE: OnceLock<ModelsDataLock> = OnceLock::new();
         TRIGRAM_MODELS_FIXTURE.get_or_init(|| {
             RwLock::new(ahashmap!(
                 English => trigram_language_model_for_english,
@@ -1371,9 +1365,7 @@ mod tests {
         quadrigram_language_model_for_english: AHashMap<CompactString, f64>,
         quadrigram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
-        static QUADRIGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
-        > = OnceCell::new();
+        static QUADRIGRAM_MODELS_FIXTURE: OnceLock<ModelsDataLock> = OnceLock::new();
         QUADRIGRAM_MODELS_FIXTURE.get_or_init(|| {
             RwLock::new(ahashmap!(
                 English => quadrigram_language_model_for_english,
@@ -1387,9 +1379,7 @@ mod tests {
         fivegram_language_model_for_english: AHashMap<CompactString, f64>,
         fivegram_language_model_for_german: AHashMap<CompactString, f64>,
     ) -> StaticLanguageModelMap {
-        static FIVEGRAM_MODELS_FIXTURE: OnceCell<
-            RwLock<AHashMap<Language, AHashMap<CompactString, f64>>>,
-        > = OnceCell::new();
+        static FIVEGRAM_MODELS_FIXTURE: OnceLock<ModelsDataLock> = OnceLock::new();
         FIVEGRAM_MODELS_FIXTURE.get_or_init(|| {
             RwLock::new(ahashmap!(
                 English => fivegram_language_model_for_english,
@@ -1508,7 +1498,7 @@ mod tests {
             &ahashset!(English),
             |language_models| {
                 detector_for_english_and_german.compute_sum_of_ngram_probabilities(
-                    &English,
+                    English,
                     ngrams.iter().map(|v| v.as_ref()),
                     &language_models,
                 )
