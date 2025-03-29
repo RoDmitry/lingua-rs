@@ -1003,7 +1003,7 @@ impl LanguageDetector {
             for len in (1..=ngram.len()).rev() {
                 let ngram = &ngram[0..len];
                 let probability = models[ngram.len() - 1]
-                    .and_then(|m| m.get(ngram.iter().copied().collect::<String>().as_str())) // todo: remove collect
+                    .and_then(|m| m.get(ngram.iter().copied().collect::<String>().as_str()))
                     .copied()
                     .unwrap_or(0.0);
 
@@ -1034,7 +1034,7 @@ impl LanguageDetector {
 
             for unigram in ngrams_iter.clone() {
                 let probability = model
-                    .get(unigram.iter().copied().collect::<String>().as_str()) // todo: remove collect
+                    .get(unigram.iter().copied().collect::<String>().as_str())
                     .copied()
                     .unwrap_or(0.0);
 
@@ -1319,7 +1319,7 @@ mod tests {
     ) -> StaticModelsData {
         static UNIGRAM_MODELS_FIXTURE: OnceLock<ModelsData> = OnceLock::new();
         UNIGRAM_MODELS_FIXTURE.get_or_init(|| {
-            let mut init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
+            let init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
             *init.get_safe_unchecked(English as usize).write().unwrap() =
                 unigram_language_model_for_english;
             *init.get_safe_unchecked(German as usize).write().unwrap() =
@@ -1335,7 +1335,7 @@ mod tests {
     ) -> StaticModelsData {
         static BIGRAM_MODELS_FIXTURE: OnceLock<ModelsData> = OnceLock::new();
         BIGRAM_MODELS_FIXTURE.get_or_init(|| {
-            let mut init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
+            let init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
             *init.get_safe_unchecked(English as usize).write().unwrap() =
                 bigram_language_model_for_english;
             *init.get_safe_unchecked(German as usize).write().unwrap() =
@@ -1351,7 +1351,7 @@ mod tests {
     ) -> StaticModelsData {
         static TRIGRAM_MODELS_FIXTURE: OnceLock<ModelsData> = OnceLock::new();
         TRIGRAM_MODELS_FIXTURE.get_or_init(|| {
-            let mut init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
+            let init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
             *init.get_safe_unchecked(English as usize).write().unwrap() =
                 trigram_language_model_for_english;
             *init.get_safe_unchecked(German as usize).write().unwrap() =
@@ -1367,7 +1367,7 @@ mod tests {
     ) -> StaticModelsData {
         static QUADRIGRAM_MODELS_FIXTURE: OnceLock<ModelsData> = OnceLock::new();
         QUADRIGRAM_MODELS_FIXTURE.get_or_init(|| {
-            let mut init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
+            let init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
             *init.get_safe_unchecked(English as usize).write().unwrap() =
                 quadrigram_language_model_for_english;
             *init.get_safe_unchecked(German as usize).write().unwrap() =
@@ -1383,7 +1383,7 @@ mod tests {
     ) -> StaticModelsData {
         static FIVEGRAM_MODELS_FIXTURE: OnceLock<ModelsData> = OnceLock::new();
         FIVEGRAM_MODELS_FIXTURE.get_or_init(|| {
-            let mut init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
+            let init = ::core::array::from_fn(|_| RwLock::new(AHashMap::new()));
             *init.get_safe_unchecked(English as usize).write().unwrap() =
                 fivegram_language_model_for_english;
             *init.get_safe_unchecked(German as usize).write().unwrap() =

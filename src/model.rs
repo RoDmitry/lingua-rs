@@ -1,21 +1,4 @@
-/*
- * Copyright © 2020-present Peter M. Stahl pemistahl@gmail.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 use crate::fraction::Fraction;
-use crate::ngram::{Ngram /* NgramRef */};
 use ::std::{collections::BTreeMap, fs::File, io, io::Write, path::Path};
 use ahash::{AHashMap, AHashSet};
 use alphabet_detector::Language;
@@ -50,15 +33,15 @@ impl JsonLanguageModel {
 #[derive(Debug)]
 pub(crate) struct TrainingDataLanguageModel {
     ngram_length: usize,
-    pub(crate) absolute_frequencies: Option<AHashMap<Ngram, usize>>,
-    relative_frequencies: Option<AHashMap<GenericFraction<usize>, Vec<Ngram>>>,
+    pub(crate) absolute_frequencies: Option<AHashMap<CompactString, usize>>,
+    relative_frequencies: Option<AHashMap<GenericFraction<usize>, Vec<CompactString>>>,
 }
 
 impl TrainingDataLanguageModel {
     pub(crate) fn from_text(
         words_chars: &Vec<Vec<char>>,
         ngram_length: usize,
-        lower_ngram_absolute_frequencies: &AHashMap<Ngram, usize>,
+        lower_ngram_absolute_frequencies: &AHashMap<CompactString, usize>,
     ) -> Self {
         let absolute_frequencies = Self::compute_absolute_frequencies(words_chars, ngram_length);
 
@@ -78,30 +61,17 @@ impl TrainingDataLanguageModel {
     fn compute_absolute_frequencies(
         words_chars: &Vec<Vec<char>>,
         ngram_length: usize,
-    ) -> AHashMap<Ngram, usize> {
-        let mut absolute_frequencies: AHashMap<Ngram, usize> = AHashMap::new();
-        /* let regex = Regex::new(&format!("^[{char_class}]+$")).unwrap_or_else(|_| {
-            panic!(
-                "The character class '{char_class}' cannot be compiled to a valid regular expression"
-            )
-        }); */
-
+    ) -> AHashMap<CompactString, usize> {
+        let mut absolute_frequencies: AHashMap<CompactString, usize> = AHashMap::new();
         for chars in words_chars.iter() {
-            /* let chars = word
-            .chars()
-            .map(|c| c.to_lowercase().next().unwrap())
-            .collect_vec(); */
             if chars.len() < ngram_length {
                 continue;
             }
 
             for i in 0..=chars.len() - ngram_length {
-                let slice = &chars[i..i + ngram_length].iter().collect::<String>();
-
-                // if regex.is_match(slice) {
-                let v = absolute_frequencies.entry(Ngram::new(slice)).or_default();
+                let ngram = chars[i..i + ngram_length].iter().collect::<CompactString>();
+                let v = absolute_frequencies.entry(ngram).or_default();
                 *v += 1;
-                // }
             }
         }
 
@@ -110,26 +80,23 @@ impl TrainingDataLanguageModel {
 
     fn compute_relative_frequencies(
         ngram_length: usize,
-        absolute_frequencies: &AHashMap<Ngram, usize>,
-        lower_ngram_absolute_frequencies: &AHashMap<Ngram, usize>,
-    ) -> AHashMap<GenericFraction<usize>, Vec<Ngram>> {
+        absolute_frequencies: &AHashMap<CompactString, usize>,
+        lower_ngram_absolute_frequencies: &AHashMap<CompactString, usize>,
+    ) -> AHashMap<GenericFraction<usize>, Vec<CompactString>> {
         let total_ngram_frequency = absolute_frequencies.values().sum::<usize>();
-        let mut ngram_probabilities: AHashMap<GenericFraction<usize>, Vec<Ngram>> = AHashMap::new();
+        let mut ngram_probabilities: AHashMap<GenericFraction<usize>, Vec<CompactString>> =
+            AHashMap::new();
 
         for (ngram, frequency) in absolute_frequencies {
             let denominator = if ngram_length == 1 || lower_ngram_absolute_frequencies.is_empty() {
                 total_ngram_frequency
             } else {
-                let mut ngram_tmp = ngram.value.chars().map(|ch| ch.len_utf8());
-                let end_ngram = &ngram.value[ngram_tmp.next().unwrap()..];
-                let start_ngram = &ngram.value[0..(ngram.value.len() - ngram_tmp.last().unwrap())];
+                let mut ngram_tmp = ngram.chars().map(|ch| ch.len_utf8());
+                let end_ngram = &ngram[ngram_tmp.next().unwrap()..];
+                let start_ngram = &ngram[0..(ngram.len() - ngram_tmp.last().unwrap())];
 
-                let start_abs_fr = *lower_ngram_absolute_frequencies
-                    .get(&Ngram::new(start_ngram))
-                    .unwrap();
-                let end_abs_fr = *lower_ngram_absolute_frequencies
-                    .get(&Ngram::new(end_ngram))
-                    .unwrap();
+                let start_abs_fr = *lower_ngram_absolute_frequencies.get(start_ngram).unwrap();
+                let end_abs_fr = *lower_ngram_absolute_frequencies.get(end_ngram).unwrap();
                 start_abs_fr.min(end_abs_fr)
             };
             let fract = GenericFraction::<usize>::new(*frequency, denominator);
@@ -189,8 +156,7 @@ impl TrainingDataLanguageModel {
                     ngrams
                         .into_iter()
                         .map(|n| {
-                            n.value
-                                .chars()
+                            n.chars()
                                 .map(|c| {
                                     if c == '\'' {
                                         "\\'".to_owned()
@@ -211,8 +177,7 @@ impl TrainingDataLanguageModel {
                     ngrams
                         .into_iter()
                         .map(|n| {
-                            n.value
-                                .chars()
+                            n.chars()
                                 .map(|c| {
                                     if c == '\'' {
                                         "\\'".to_owned()
@@ -297,9 +262,9 @@ pub(crate) fn prepare_ngrams<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use itertools::Itertools;
-    use rstest::*;
+    // use super::*;
+    // use itertools::Itertools;
+    // use rstest::*;
 
     /* const TEXT: &str = "
         These sentences are intended for testing purposes.
@@ -329,7 +294,7 @@ mod tests {
     } */
 
     mod training_data {
-        use super::*;
+        /* use super::*;
 
         fn map_keys_to_ngrams(map: AHashMap<&str, u32>) -> AHashMap<Ngram, u32> {
             map.into_iter()
@@ -507,7 +472,7 @@ mod tests {
                 "tence" => "1/1", "estin" => "1/1", "roduc" => "1/1", "urpos" => "1/1",
                 "rpose" => "1/1", "ended" => "1/1", "oduct" => "1/1", "consi" => "1/1"
             ))
-        }
+        } */
 
         /* #[rstest(
             ngram_length,

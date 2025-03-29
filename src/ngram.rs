@@ -33,18 +33,6 @@ impl Ngram {
             value: value.to_string(),
         }
     }
-
-    /// TODO: refactor
-    pub(crate) fn find_ngram_name_by_length(ngram_length: usize) -> &'static str {
-        match ngram_length {
-            1 => "unigram",
-            2 => "bigram",
-            3 => "trigram",
-            4 => "quadrigram",
-            5 => "fivegram",
-            _ => panic!("ngram length {ngram_length} is not in range 1..6"),
-        }
-    }
 }
 
 impl Display for Ngram {
