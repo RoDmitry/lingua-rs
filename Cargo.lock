@@ -135,6 +135,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "atoi_simd"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4790f9e8961209112beb783d85449b508673cf4a6a419c8449b210743ac4dbe9"
+
+[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -838,6 +844,7 @@ version = "1.6.2"
 dependencies = [
  "ahash",
  "alphabet_detector",
+ "atoi_simd",
  "brotli",
  "cap",
  "clap",
@@ -931,6 +938,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
+ "serde_map",
  "stringcase",
  "strum",
  "strum_macros",
@@ -1971,6 +1979,15 @@ dependencies = [
  "itoa",
  "memchr 2.7.4",
  "ryu",
+ "serde",
+]
+
+[[package]]
+name = "serde_map"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "302faa2e82b79f86884141d68842d5c6e619bfae21a5860f4ec8cea7fc6e5ea2"
+dependencies = [
  "serde",
 ]
 

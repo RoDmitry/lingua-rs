@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-use crate::constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION};
-use crate::model::TrainingDataLanguageModel;
-use ::std::fs::{remove_file, File};
-use ::std::io::{self, BufRead, BufReader, LineWriter, Write};
-use ::std::path::Path;
+use crate::{
+    constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION},
+    model::TrainingDataLanguageModel,
+};
+use ::std::{
+    fs::{remove_file, File},
+    io::{self, BufRead, BufReader, LineWriter, Write},
+    path::Path,
+};
 use alphabet_detector::{langs_filter_max, Language};
 use itertools::Itertools;
 use regex::Regex;
@@ -94,40 +98,42 @@ impl LanguageModelFilesWriter {
         .map(|(w, _)| w.chars().collect::<Vec<_>>())
         .collect(); */
 
-        let unigram_model = TrainingDataLanguageModel::from_text(&word_chars, 1, &ahashmap!());
+        let unigram_model =
+            TrainingDataLanguageModel::from_text(&word_chars, 1, language, ahashmap!());
+        unigram_model.write_compressed(&out_mod_path.join("unigrams.json.br"))?;
+        let TrainingDataLanguageModel {
+            absolute_frequencies,
+            ..
+        } = unigram_model;
 
-        let bigram_model = TrainingDataLanguageModel::from_text(
-            &word_chars,
-            2,
-            unigram_model.absolute_frequencies.as_ref().unwrap(),
-        );
+        let bigram_model =
+            TrainingDataLanguageModel::from_text(&word_chars, 2, language, absolute_frequencies);
         // panic!("{:?}\n{:?}", unigram_model.absolute_frequencies, bigram_model);
-        unigram_model.to_match(&out_mod_path.join("unigrams.rs"))?;
+        bigram_model.write_compressed(&out_mod_path.join("bigrams.json.br"))?;
+        let TrainingDataLanguageModel {
+            absolute_frequencies,
+            ..
+        } = bigram_model;
 
-        let trigram_model = TrainingDataLanguageModel::from_text(
-            &word_chars,
-            3,
-            bigram_model.absolute_frequencies.as_ref().unwrap(),
-        );
-        bigram_model.to_match(&out_mod_path.join("bigrams.rs"))?;
-        
-        let quadrigram_model = TrainingDataLanguageModel::from_text(
-            &word_chars,
-            4,
-            trigram_model.absolute_frequencies.as_ref().unwrap(),
-        );
+        let trigram_model =
+            TrainingDataLanguageModel::from_text(&word_chars, 3, language, absolute_frequencies);
+        trigram_model.write_compressed(&out_mod_path.join("trigrams.json.br"))?;
+        let TrainingDataLanguageModel {
+            absolute_frequencies,
+            ..
+        } = trigram_model;
 
-        trigram_model.to_match(&out_mod_path.join("trigrams.rs"))?;
-        
-        let fivegram_model = TrainingDataLanguageModel::from_text(
-            &word_chars,
-            5,
-            quadrigram_model.absolute_frequencies.as_ref().unwrap(),
-        );
+        let quadrigram_model =
+            TrainingDataLanguageModel::from_text(&word_chars, 4, language, absolute_frequencies);
+        quadrigram_model.write_compressed(&out_mod_path.join("quadrigrams.json.br"))?;
+        let TrainingDataLanguageModel {
+            absolute_frequencies,
+            ..
+        } = quadrigram_model;
 
-        quadrigram_model.to_match(&out_mod_path.join("quadrigrams.rs"))?;
-
-        fivegram_model.to_match(&out_mod_path.join("fivegrams.rs"))
+        let fivegram_model =
+            TrainingDataLanguageModel::from_text(&word_chars, 5, language, absolute_frequencies);
+        fivegram_model.write_compressed(&out_mod_path.join("fivegrams.json.br"))
 
         /* let trigram_model = Self::create_language_model(
             input_file_path,
@@ -204,19 +210,6 @@ impl LanguageModelFilesWriter {
             char_class,
             lower_ngram_absolute_frequencies,
         )
-    } */
-
-    /* fn write_compressed_language_model(
-        model: &TrainingDataLanguageModel,
-        output_directory_path: &Path,
-        file_name: &str,
-    ) -> io::Result<()> {
-        let file_name = format!("{file_name}.br");
-        let file_path = output_directory_path.join(file_name);
-        let file = File::create(file_path)?;
-        let mut compressed_file = CompressorWriter::new(file, 4096, 11, 22);
-        compressed_file.write_all(model.to_json().as_bytes())?;
-        Ok(())
     } */
 }
 
@@ -427,9 +420,7 @@ fn check_output_directory_path(output_directory_path: &Path) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::std::fs::read_dir;
-    use ::std::io::Read;
-    use ::std::path::PathBuf;
+    use ::std::{fs::read_dir, io::Read, path::PathBuf};
     use tempfile::{tempdir, NamedTempFile};
 
     fn create_temp_input_file(content: &str) -> NamedTempFile {

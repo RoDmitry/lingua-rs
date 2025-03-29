@@ -17,13 +17,17 @@
 use ::std::fmt::{self, Debug, Display};
 use fraction::GenericFraction;
 use itertools::Itertools;
-use serde::de::{Error, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{
+    de::{Error, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
+};
+
+type Size = usize;
 
 #[derive(Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub(crate) struct Fraction {
-    numerator: u32,
-    denominator: u32,
+    numerator: Size,
+    denominator: Size,
 }
 
 /* impl Hash for Fraction {
@@ -52,18 +56,24 @@ impl PartialOrd for Fraction {
 } */
 
 impl Fraction {
-    pub(crate) fn new(numerator: u32, denominator: u32) -> Self {
-        let fraction = GenericFraction::<u32>::new(numerator, denominator);
-        let numerator = *fraction.numer().unwrap();
-        let denominator = *fraction.denom().unwrap();
-        Self {
-            numerator,
-            denominator,
-        }
+    pub(crate) fn new(numerator: Size, denominator: Size) -> Self {
+        let gf = GenericFraction::<Size>::new(numerator, denominator);
+        Self::from(gf)
     }
 
     pub(crate) fn to_f64(self) -> f64 {
         self.numerator as f64 / self.denominator as f64
+    }
+}
+
+impl From<GenericFraction<Size>> for Fraction {
+    fn from(gf: GenericFraction<Size>) -> Self {
+        let numerator = *gf.numer().unwrap();
+        let denominator = *gf.denom().unwrap();
+        Self {
+            numerator,
+            denominator,
+        }
     }
 }
 
@@ -96,8 +106,8 @@ impl<'de> Visitor<'de> for FractionVisitor {
 
     fn visit_str<E: Error>(self, v: &str) -> Result<Self::Value, E> {
         let (numerator, denominator): (&str, &str) = v.split('/').collect_tuple().unwrap();
-        let parsed_numerator = numerator.parse::<u32>().unwrap();
-        let parsed_denominator = denominator.parse::<u32>().unwrap();
+        let parsed_numerator = atoi_simd::parse(numerator.as_bytes()).unwrap();
+        let parsed_denominator = atoi_simd::parse(denominator.as_bytes()).unwrap();
         Ok(Fraction::new(parsed_numerator, parsed_denominator))
     }
 }

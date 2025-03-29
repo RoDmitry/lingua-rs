@@ -1,17 +1,23 @@
 use crate::fraction::Fraction;
-use ::std::{collections::BTreeMap, fs::File, io, io::Write, path::Path};
+use ::std::{
+    fs::{create_dir_all, File},
+    io,
+    io::Write,
+    path::Path,
+};
 use ahash::{AHashMap, AHashSet};
 use alphabet_detector::Language;
+use brotli::CompressorWriter;
 use compact_str::CompactString;
 use fraction::GenericFraction;
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::fs::create_dir_all;
+use serde_map::SerdeMap;
+// use itertools::Itertools;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct JsonLanguageModel {
     language: Language,
-    ngrams: BTreeMap<Fraction, String>,
+    ngrams: SerdeMap<Fraction, String>,
 }
 
 impl JsonLanguageModel {
@@ -33,28 +39,25 @@ impl JsonLanguageModel {
 #[derive(Debug)]
 pub(crate) struct TrainingDataLanguageModel {
     ngram_length: usize,
-    pub(crate) absolute_frequencies: Option<AHashMap<CompactString, usize>>,
-    relative_frequencies: Option<AHashMap<GenericFraction<usize>, Vec<CompactString>>>,
+    language: Language,
+    pub(crate) absolute_frequencies: AHashMap<CompactString, usize>,
+    lower_ngram_absolute_frequencies: AHashMap<CompactString, usize>,
 }
 
-impl TrainingDataLanguageModel {
+impl<'a> TrainingDataLanguageModel {
     pub(crate) fn from_text(
         words_chars: &Vec<Vec<char>>,
         ngram_length: usize,
-        lower_ngram_absolute_frequencies: &AHashMap<CompactString, usize>,
+        language: Language,
+        lower_ngram_absolute_frequencies: AHashMap<CompactString, usize>,
     ) -> Self {
         let absolute_frequencies = Self::compute_absolute_frequencies(words_chars, ngram_length);
 
-        let relative_frequencies = Self::compute_relative_frequencies(
+        Self {
             ngram_length,
-            &absolute_frequencies,
+            language,
+            absolute_frequencies,
             lower_ngram_absolute_frequencies,
-        );
-
-        TrainingDataLanguageModel {
-            ngram_length,
-            absolute_frequencies: Some(absolute_frequencies),
-            relative_frequencies: Some(relative_frequencies),
         }
     }
 
@@ -78,27 +81,30 @@ impl TrainingDataLanguageModel {
         absolute_frequencies
     }
 
-    fn compute_relative_frequencies(
-        ngram_length: usize,
-        absolute_frequencies: &AHashMap<CompactString, usize>,
-        lower_ngram_absolute_frequencies: &AHashMap<CompactString, usize>,
-    ) -> AHashMap<GenericFraction<usize>, Vec<CompactString>> {
-        let total_ngram_frequency = absolute_frequencies.values().sum::<usize>();
+    fn compute_relative_frequencies(&self) -> AHashMap<GenericFraction<usize>, Vec<CompactString>> {
+        let total_ngram_frequency = self.absolute_frequencies.values().sum::<usize>();
         let mut ngram_probabilities: AHashMap<GenericFraction<usize>, Vec<CompactString>> =
             AHashMap::new();
 
-        for (ngram, frequency) in absolute_frequencies {
-            let denominator = if ngram_length == 1 || lower_ngram_absolute_frequencies.is_empty() {
-                total_ngram_frequency
-            } else {
-                let mut ngram_tmp = ngram.chars().map(|ch| ch.len_utf8());
-                let end_ngram = &ngram[ngram_tmp.next().unwrap()..];
-                let start_ngram = &ngram[0..(ngram.len() - ngram_tmp.last().unwrap())];
+        for (ngram, frequency) in self.absolute_frequencies.iter() {
+            let denominator =
+                if self.ngram_length == 1 || self.lower_ngram_absolute_frequencies.is_empty() {
+                    total_ngram_frequency
+                } else {
+                    let mut ngram_tmp = ngram.chars().map(|ch| ch.len_utf8());
+                    let end_ngram = &ngram[ngram_tmp.next().unwrap()..];
+                    let start_ngram = &ngram[0..(ngram.len() - ngram_tmp.last().unwrap())];
 
-                let start_abs_fr = *lower_ngram_absolute_frequencies.get(start_ngram).unwrap();
-                let end_abs_fr = *lower_ngram_absolute_frequencies.get(end_ngram).unwrap();
-                start_abs_fr.min(end_abs_fr)
-            };
+                    let start_abs_fr = *self
+                        .lower_ngram_absolute_frequencies
+                        .get(start_ngram)
+                        .unwrap();
+                    let end_abs_fr = *self
+                        .lower_ngram_absolute_frequencies
+                        .get(end_ngram)
+                        .unwrap();
+                    start_abs_fr.min(end_abs_fr)
+                };
             let fract = GenericFraction::<usize>::new(*frequency, denominator);
             ngram_probabilities
                 .entry(fract)
@@ -109,30 +115,35 @@ impl TrainingDataLanguageModel {
         ngram_probabilities
     }
 
-    /* pub(crate) fn to_json(&self) -> String {
-        let mut fractions_to_ngrams = AHashMap::new();
-        for (ngram, fraction) in self.relative_frequencies.as_ref().unwrap() {
-            let ngrams = fractions_to_ngrams.entry(fraction).or_insert_with(Vec::new);
-            ngrams.push(ngram);
-        }
+    pub(crate) fn to_json(&self) -> String {
+        let relative_frequencies = self.compute_relative_frequencies();
+        let mut sorted: Vec<_> = relative_frequencies.into_iter().collect();
+        sorted.sort_unstable_by(|a, b| b.0.cmp(&a.0));
 
-        let mut fractions_to_joined_ngrams = btreemap!();
-        for (fraction, ngrams) in fractions_to_ngrams {
-            fractions_to_joined_ngrams.insert(
-                *fraction,
-                ngrams.iter().map(|&it| &it.value).sorted().join(" "),
-            );
+        let mut res_ngrams = SerdeMap::default();
+        for (gf, ngrams) in sorted {
+            res_ngrams.insert_unchecked(Fraction::from(gf), ngrams.join(" "));
         }
 
         let model = JsonLanguageModel {
             language: self.language,
-            ngrams: fractions_to_joined_ngrams,
+            ngrams: res_ngrams,
         };
 
         serde_json::to_string(&model).unwrap()
-    } */
+    }
 
-    pub(crate) fn to_match(self, file_path: &Path) -> io::Result<()> {
+    pub(crate) fn write_compressed(&self, file_path: &Path) -> io::Result<()> {
+        if let Some(parent) = file_path.parent() {
+            create_dir_all(parent)?;
+        }
+        let file = File::create(file_path)?;
+        let mut compressed_file = CompressorWriter::new(file, 4096, 11, 22);
+        compressed_file.write_all(self.to_json().as_bytes())?;
+        Ok(())
+    }
+
+    /*pub(crate) fn to_match(self, file_path: &Path) -> io::Result<()> {
         let mut sorted: Vec<_> = self.relative_frequencies.unwrap().into_iter().collect();
         sorted.sort_unstable_by(|a, b| b.0.cmp(&a.0));
 
@@ -205,7 +216,7 @@ impl TrainingDataLanguageModel {
             }
         }
         file.write_all(b"_=>0.0,\n}\n}")
-    }
+    }*/
 }
 
 pub(crate) fn prepare_ngrams<'a>(

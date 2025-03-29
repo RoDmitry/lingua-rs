@@ -216,7 +216,7 @@ fn main() {
                 );
                 println!("*{}* done model {:?}", file_name, result);
 
-                {
+                /* {
                     let file_path = out_mod_path.join("mod.rs");
                     let mut file = fs::File::create(file_path).unwrap();
                     file.write_all(b"mod unigrams;\nmod bigrams;\nmod trigrams;\nmod quadrigrams;\nmod fivegrams;\n\n")
@@ -270,7 +270,7 @@ fn main() {
                     file.write_all(b" => Some(Box::new(lang_models::").unwrap();
                     file.write_all(model_name.as_bytes()).unwrap();
                     file.write_all(b"Model)),\n").unwrap();
-                }
+                } */
             }
             println!(
                 "*{}* malloc_trim {:?} {:?}MB",
