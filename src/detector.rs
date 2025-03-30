@@ -578,7 +578,7 @@ impl LanguageDetector {
 
         let mut values = Vec::with_capacity(search_languages.len());
 
-        let (words, langs) = fulltext_langs_best(text_str.char_indices());
+        let (words, langs) = fulltext_langs_best::<Vec<char>>(text_str.char_indices());
         let filtered_languages: Vec<_> = langs
             .into_iter()
             .filter(|(l, _)| search_languages.contains(l))
@@ -629,7 +629,7 @@ impl LanguageDetector {
                 }
             }
         } */
-        let (words, langs) = fulltext_langs_best(text_str.char_indices());
+        let (words, langs) = fulltext_langs_best::<Vec<char>>(text_str.char_indices());
         let filtered_languages: AHashSet<_> = langs
             .into_iter()
             .filter(|(l, _)| search_languages.contains(l))
@@ -670,7 +670,7 @@ impl LanguageDetector {
             return values;
         }
 
-        let character_count: usize = words.iter().map(|wd| wd.chars.len()).sum();
+        let character_count: usize = words.iter().map(|wd| wd.buf.len()).sum();
 
         if self.is_low_accuracy_mode_enabled && character_count < 3 {
             values.sort_by(order_by_probability);
@@ -692,7 +692,7 @@ impl LanguageDetector {
             .filter(|i| *i <= character_count)
             .map(|ngram_length| {
                 self.look_up_language_models(
-                    words.iter().map(|wd| wd.chars.as_ref()),
+                    words.iter().map(|wd| wd.buf.as_ref()),
                     ngram_length,
                     &filtered_languages,
                 )

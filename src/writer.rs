@@ -83,7 +83,7 @@ impl LanguageModelFilesWriter {
             // filter
             .filter_map(|wd| {
                 if langs_filter_max(wd.langs_cnt).0.contains(&language) {
-                    Some(wd.chars)
+                    Some(wd.buf)
                 } else {
                     None
                 }
