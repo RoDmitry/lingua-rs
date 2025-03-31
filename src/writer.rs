@@ -78,10 +78,16 @@ impl LanguageModelFilesWriter {
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
             .collect();
         println!("wrong_words {}", wrong_words.len()); */
+        let is_han = Language::all_with_script(Script::Han).contains(&language);
         let mut word_chars: Vec<Vec<char>> = words
             // .inspect(|wld| println!("{:?}", wld))
             // filter
             .filter_map(|wld| {
+                // no filter for `Script::Han`
+                if is_han {
+                    return Some(wld.buf);
+                }
+
                 if langs_filter_max(wld.langs_cnt).0.contains(&language) {
                     Some(wld.buf)
                 } else {
@@ -98,7 +104,6 @@ impl LanguageModelFilesWriter {
         .map(|(w, _)| w.chars().collect::<Vec<_>>())
         .collect(); */
 
-        let is_han = Language::all_with_script(Script::Han).contains(&language);
         if is_han {
             word_chars.retain_mut(|chars| {
                 chars.retain(|&ch| Script::find(ch) == Script::Han);
