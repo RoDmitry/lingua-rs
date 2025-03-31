@@ -578,7 +578,7 @@ impl LanguageDetector {
 
         let mut values = Vec::with_capacity(search_languages.len());
 
-        let (words, langs) = fulltext_langs_best::<Vec<char>, 99>(text_str.char_indices());
+        let (words, langs) = fulltext_langs_best::<Vec<char>, 95>(text_str.char_indices());
         let filtered_languages: Vec<_> = langs
             .filter(|(l, _)| search_languages.contains(l))
             .map(|(l, _)| l) // todo: maybe use count?
@@ -628,7 +628,7 @@ impl LanguageDetector {
                 }
             }
         } */
-        let (words, langs) = fulltext_langs_best::<Vec<char>, 99>(text_str.char_indices());
+        let (words, langs) = fulltext_langs_best::<Vec<char>, 95>(text_str.char_indices());
         let filtered_languages: AHashSet<_> = langs
             .filter(|(l, _)| search_languages.contains(l))
             .map(|(l, _)| l) // todo: maybe use count?
