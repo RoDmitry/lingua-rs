@@ -169,7 +169,7 @@ use lingua_yoruba_language_model::YORUBA_MODELS_DIRECTORY;
 #[cfg(feature = "zulu")]
 use lingua_zulu_language_model::ZULU_MODELS_DIRECTORY;
 
-pub(crate) fn find_ngram_name_by_length(ngram_length: usize) -> &'static str {
+pub(crate) fn ngram_name_by_length(ngram_length: usize) -> &'static str {
     match ngram_length {
         1 => "unigram",
         2 => "bigram",
@@ -184,7 +184,7 @@ pub(crate) fn load_json(
     language: Language,
     ngram_length: usize,
 ) -> std::io::Result<Option<String>> {
-    let ngram_name = find_ngram_name_by_length(ngram_length);
+    let ngram_name = ngram_name_by_length(ngram_length);
     let file_path = format!("{ngram_name}s.json.br");
     let Some(directory) = get_language_models_directory(language) else {
         return Ok(None);
