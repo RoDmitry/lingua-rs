@@ -1081,14 +1081,14 @@ impl LanguageDetector {
         ngram_length: usize,
     ) {
         let lang_model = language_models.get_safe_unchecked(language as usize);
-        let Ok(lang_model_guard) = lang_model.read() else {
-            return;
-        };
+        let lang_model_guard = lang_model.read().unwrap();
         if lang_model_guard.capacity() > 0 {
             return;
         }
-        drop(lang_model_guard);
         let mut lang_model_guard = lang_model.write().unwrap();
+        if lang_model_guard.capacity() > 0 {
+            return;
+        }
         let lang_model = load_model(language, ngram_length);
         *lang_model_guard = match lang_model {
             Ok(lang_model) => to_relative_frequencies(lang_model),

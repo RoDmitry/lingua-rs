@@ -79,16 +79,16 @@ impl LanguageModelFilesWriter {
             .collect();
         println!("wrong_words {}", wrong_words.len()); */
         let word_chars: Vec<Vec<char>> = words
-            // .inspect(|wd| println!("{:?}", wd))
+            // .inspect(|wld| println!("{:?}", wld))
             // filter
-            .filter_map(|wd| {
-                if langs_filter_max(wd.langs_cnt).0.contains(&language) {
-                    Some(wd.buf)
+            .filter_map(|wld| {
+                if langs_filter_max(wld.langs_cnt).0.contains(&language) {
+                    Some(wld.buf)
                 } else {
                     None
                 }
             })
-            // .map(|wd| wd.chars)
+            // .map(|wld| wld.buf)
             .collect();
         /* let words: Vec<Vec<char>> = lines
         .into_iter()
