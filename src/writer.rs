@@ -23,7 +23,7 @@ use ::std::{
     io::{self, BufRead, BufReader, LineWriter, Write},
     path::Path,
 };
-use alphabet_detector::{langs_filter_max, Language};
+use alphabet_detector::{langs_filter_max, Language, Script};
 use itertools::Itertools;
 use regex::Regex;
 
@@ -78,7 +78,7 @@ impl LanguageModelFilesWriter {
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
             .collect();
         println!("wrong_words {}", wrong_words.len()); */
-        let word_chars: Vec<Vec<char>> = words
+        let mut word_chars: Vec<Vec<char>> = words
             // .inspect(|wld| println!("{:?}", wld))
             // filter
             .filter_map(|wld| {
@@ -98,8 +98,19 @@ impl LanguageModelFilesWriter {
         .map(|(w, _)| w.chars().collect::<Vec<_>>())
         .collect(); */
 
+        let is_han = Language::all_with_script(Script::Han).contains(&language);
+        if is_han {
+            word_chars.retain_mut(|chars| {
+                chars.retain(|&ch| Script::find(ch) == Script::Han);
+                !chars.is_empty()
+            });
+        }
+
         let unigram_model = TrainingDataLanguageModel::from_text(&word_chars, 1, ahashmap!());
         unigram_model.write_compressed(&out_mod_path.join("unigrams.encom.br"))?;
+        if is_han {
+            return Ok(());
+        }
         let TrainingDataLanguageModel {
             absolute_frequencies,
             ..

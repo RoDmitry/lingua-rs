@@ -147,7 +147,7 @@ fn main() {
                 let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
                     unreachable!()
                 };
-                let lang = match Language::from_str(&file_name)  {
+                let lang = match Language::from_str(&file_name) {
                     Ok(l) => l,
                     _ => {
                         let Ok(l) = Language::from_str(lang) else {
@@ -175,24 +175,25 @@ fn main() {
 
                 let langs = str_to_langs(alph);
                 if !langs.contains(&lang) {
-                    panic!(
-                        "*{}* Not found lang: {lang} in {:?}",
-                        file_name, langs
-                    );
+                    panic!("*{}* Not found lang: {lang} in {:?}", file_name, langs);
                 };
+                if langs.len() == 1 {
+                    println!("*{}* SKIP single lang {:?} in script", file_name, lang);
+                    return;
+                }
                 // TODO: rm this filter
                 /* if !matches!(lang, Language::English) {
                     return;
                 } */
                 // TODO: rm this filter
-                if alph != "Latn" {
+                /* if alph != "Latn" {
                     return;
-                }
+                } */
 
                 let out_path = Path::new(&out_path);
                 let out_mod_path = out_path.join(&lang.to_string());
-                if out_mod_path.join("quadrigrams.rs").exists() {
-                    println!("EXISTS {} {:?}", file_name, lang);
+                if out_mod_path.join("unigrams.encom.br").exists() {
+                    println!("*{}* EXISTS {:?}", file_name, lang);
                     return;
                 }
                 println!("*{}* started {:?}", file_name, lang);

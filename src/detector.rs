@@ -1085,6 +1085,7 @@ impl LanguageDetector {
         if lang_model_guard.capacity() > 0 {
             return;
         }
+        drop(lang_model_guard);
         let mut lang_model_guard = lang_model.write().unwrap();
         if lang_model_guard.capacity() > 0 {
             return;
