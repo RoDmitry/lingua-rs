@@ -482,9 +482,3 @@ pub(crate) fn convert_byte_indices_to_char_indices(
 
     converted_results
 }
-
-#[cfg(test)]
-pub(crate) fn minify(json: &str) -> String {
-    let re = Regex::new("\n\\s*").unwrap();
-    re.replace_all(json, "").to_string()
-}

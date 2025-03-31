@@ -189,8 +189,8 @@ fn main() {
                     return;
                 }
 
-                let model_name = lang.to_string();
-                let mod_dir = stringcase::snake_case(&model_name);
+                let mod_dir = lang.to_string();
+                // let mod_dir = stringcase::snake_case(&model_name);
 
                 let out_path = Path::new(&out_path);
                 let out_mod_path = out_path.join(&mod_dir);

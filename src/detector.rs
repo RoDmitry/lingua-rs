@@ -1,7 +1,7 @@
 use crate::{
     constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE},
     json::load_json,
-    model::{prepare_ngrams, JsonLanguageModel},
+    model::prepare_ngrams,
     result::DetectionResult,
 };
 use ::std::{
@@ -1091,7 +1091,7 @@ impl LanguageDetector {
         let mut lang_model_guard = lang_model.write().unwrap();
         let json = load_json(language, ngram_length);
         if let Ok(Some(json_content)) = json {
-            *lang_model_guard = JsonLanguageModel::from_json(&json_content);
+            *lang_model_guard = json_content.to_relative_frequencies();
         }
     }
 

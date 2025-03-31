@@ -1,4 +1,4 @@
-use crate::fraction::Fraction;
+use crate::{fraction::Fraction, json::JsonLanguageModel};
 use ::std::{
     fs::{create_dir_all, File},
     io,
@@ -10,31 +10,8 @@ use alphabet_detector::Language;
 use brotli::CompressorWriter;
 use compact_str::CompactString;
 use fraction::GenericFraction;
-use serde::{Deserialize, Serialize};
 use serde_map::SerdeMap;
 // use itertools::Itertools;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct JsonLanguageModel {
-    language: Language,
-    ngrams: SerdeMap<Fraction, String>,
-}
-
-impl JsonLanguageModel {
-    pub(crate) fn from_json(json: &str) -> AHashMap<CompactString, f64> {
-        let json_language_model = serde_json::from_str::<Self>(json).unwrap();
-        let mut json_relative_frequencies = AHashMap::new();
-
-        for (fraction, ngrams) in json_language_model.ngrams {
-            let floating_point_value = fraction.to_f64();
-            for ngram in ngrams.split(' ') {
-                json_relative_frequencies.insert(CompactString::new(ngram), floating_point_value);
-            }
-        }
-
-        json_relative_frequencies
-    }
-}
 
 #[derive(Debug)]
 pub(crate) struct TrainingDataLanguageModel {
