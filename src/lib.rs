@@ -425,8 +425,6 @@ macro_rules! ahashset {
 }
 
 pub use alphabet_detector::*;
-#[cfg(test)]
-use regex::Regex;
 
 mod builder;
 mod constant;

@@ -938,9 +938,9 @@ dependencies = [
  "rstest",
  "serde",
  "serde-wasm-bindgen",
+ "serde_encom",
  "serde_json",
  "serde_map",
- "stringcase",
  "strum",
  "strum_macros",
  "tempfile",
@@ -1972,6 +1972,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_encom"
+version = "0.3.2"
+source = "git+https://github.com/RoDmitry/serde_encom.git#dff79c83e989997be0cd32903de84b46ec2d5030"
+dependencies = [
+ "atoi_simd",
+ "debug_unsafe",
+ "itoa",
+ "ryu",
+ "serde",
+]
+
+[[package]]
 name = "serde_json"
 version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2024,12 +2036,6 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
-name = "stringcase"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72abeda133c49d7bddece6c154728f83eec8172380c80ab7096da9487e20d27c"
 
 [[package]]
 name = "strsim"

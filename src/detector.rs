@@ -1,6 +1,6 @@
 use crate::{
     constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE},
-    json::load_json,
+    json::{load_model, to_relative_frequencies},
     model::prepare_ngrams,
     result::DetectionResult,
 };
@@ -1084,14 +1084,15 @@ impl LanguageDetector {
         let Ok(lang_model_guard) = lang_model.read() else {
             return;
         };
-        if !lang_model_guard.is_empty() {
+        if lang_model_guard.capacity() > 0 {
             return;
         }
         drop(lang_model_guard);
         let mut lang_model_guard = lang_model.write().unwrap();
-        let json = load_json(language, ngram_length);
-        if let Ok(Some(json_content)) = json {
-            *lang_model_guard = json_content.to_relative_frequencies();
+        let lang_model = load_model(language, ngram_length);
+        *lang_model_guard = match lang_model {
+            Ok(lang_model) => to_relative_frequencies(lang_model),
+            _ => AHashMap::with_capacity(1),
         }
     }
 

@@ -1,4 +1,4 @@
-use crate::{fraction::Fraction, json::JsonLanguageModel};
+use crate::{fraction::Fraction, json::LanguageModel};
 use ::std::{
     fs::{create_dir_all, File},
     io,
@@ -6,7 +6,6 @@ use ::std::{
     path::Path,
 };
 use ahash::{AHashMap, AHashSet};
-use alphabet_detector::Language;
 use brotli::CompressorWriter;
 use compact_str::CompactString;
 use fraction::GenericFraction;
@@ -16,7 +15,7 @@ use serde_map::SerdeMap;
 #[derive(Debug)]
 pub(crate) struct TrainingDataLanguageModel {
     ngram_length: usize,
-    language: Language,
+    // language: Language,
     pub(crate) absolute_frequencies: AHashMap<CompactString, usize>,
     lower_ngram_absolute_frequencies: AHashMap<CompactString, usize>,
 }
@@ -25,14 +24,14 @@ impl<'a> TrainingDataLanguageModel {
     pub(crate) fn from_text(
         words_chars: &Vec<Vec<char>>,
         ngram_length: usize,
-        language: Language,
+        // language: Language,
         lower_ngram_absolute_frequencies: AHashMap<CompactString, usize>,
     ) -> Self {
         let absolute_frequencies = Self::compute_absolute_frequencies(words_chars, ngram_length);
 
         Self {
             ngram_length,
-            language,
+            // language,
             absolute_frequencies,
             lower_ngram_absolute_frequencies,
         }
@@ -92,22 +91,17 @@ impl<'a> TrainingDataLanguageModel {
         ngram_probabilities
     }
 
-    pub(crate) fn to_json(&self) -> String {
+    pub(crate) fn serialize(&self) -> String {
         let relative_frequencies = self.compute_relative_frequencies();
         let mut sorted: Vec<_> = relative_frequencies.into_iter().collect();
         sorted.sort_unstable_by(|a, b| b.0.cmp(&a.0));
 
-        let mut res_ngrams = SerdeMap::default();
+        let mut res_ngrams: LanguageModel = SerdeMap::default();
         for (gf, ngrams) in sorted {
             res_ngrams.insert_unchecked(Fraction::from(gf), ngrams.join(" "));
         }
 
-        let model = JsonLanguageModel {
-            language: self.language,
-            ngrams: res_ngrams,
-        };
-
-        serde_json::to_string(&model).unwrap()
+        serde_encom::to_string(&res_ngrams).unwrap()
     }
 
     pub(crate) fn write_compressed(&self, file_path: &Path) -> io::Result<()> {
@@ -116,7 +110,7 @@ impl<'a> TrainingDataLanguageModel {
         }
         let file = File::create(file_path)?;
         let mut compressed_file = CompressorWriter::new(file, 4096, 11, 22);
-        compressed_file.write_all(self.to_json().as_bytes())?;
+        compressed_file.write_all(self.serialize().as_bytes())?;
         Ok(())
     }
 
