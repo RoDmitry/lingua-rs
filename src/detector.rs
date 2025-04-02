@@ -94,11 +94,11 @@ impl LanguageDetector {
         let languages_iter = languages.iter();
 
         languages_iter.for_each(|&language| {
+            self.load_language_model(self.unigram_language_models, language, 1);
+            self.load_language_model(self.bigram_language_models, language, 2);
             self.load_language_model(self.trigram_language_models, language, 3);
 
             if !self.is_low_accuracy_mode_enabled {
-                self.load_language_model(self.unigram_language_models, language, 1);
-                self.load_language_model(self.bigram_language_models, language, 2);
                 self.load_language_model(self.quadrigram_language_models, language, 4);
                 self.load_language_model(self.fivegram_language_models, language, 5);
             }
@@ -670,13 +670,17 @@ impl LanguageDetector {
 
         let character_count: usize = words.iter().map(|wd| wd.buf.len()).sum();
 
-        if self.is_low_accuracy_mode_enabled && character_count < 3 {
+        /* if self.is_low_accuracy_mode_enabled && character_count < 3 {
             values.sort_by(order_by_probability);
             return values;
-        }
+        } */
 
         let ngram_length_range = if self.is_low_accuracy_mode_enabled {
-            3..4usize
+            if character_count >= 120 {
+                3..4usize
+            } else {
+                1..4usize
+            }
         } else if character_count >= 120 {
             3..6usize
         } else {
@@ -945,6 +949,7 @@ impl LanguageDetector {
             update_confidence_values(values, most_likely_language, 1.0);
         } else {
             for (language, probability) in probabilities {
+                // todo: iter_mut()
                 for value in &mut *values {
                     if value.0 == language {
                         // Apply softmax function
@@ -1056,10 +1061,7 @@ impl LanguageDetector {
         for language in filtered_languages.iter() {
             let mut sum: f64 = probability_maps
                 .clone()
-                .map(|it| match it.get(language) {
-                    Some(probability) => *probability,
-                    None => 0.0,
-                })
+                .filter_map(|it| it.get(language).copied())
                 .sum();
 
             if let Some(counts) = unigram_counts {
@@ -1068,6 +1070,7 @@ impl LanguageDetector {
                 }
             }
 
+            // todo: !is_zero
             if sum != 0.0 {
                 summed_up_probabilities.insert(*language, sum.exp());
             }
