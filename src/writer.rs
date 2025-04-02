@@ -116,9 +116,6 @@ impl LanguageModelFilesWriter {
         unigram_model
             .to_lang_model()
             .write_compressed(&out_mod_path.join("unigrams.encom.br"))?;
-        if is_han {
-            return Ok(());
-        }
         let TrainingDataLanguageModel {
             absolute_frequencies,
             ..
@@ -130,6 +127,9 @@ impl LanguageModelFilesWriter {
         bigram_model
             .to_lang_model()
             .write_compressed(&out_mod_path.join("bigrams.encom.br"))?;
+        if is_han {
+            return Ok(());
+        }
         let TrainingDataLanguageModel {
             absolute_frequencies,
             ..
