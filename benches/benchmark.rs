@@ -57,7 +57,7 @@ const SENTENCES: &[&str] = &[
     // "Cuốn sách là cẩm nang hữu ích để tham khảo và học hỏi, giúp các bà mẹ Việt tự tin hơn trong cách dạy con.",
 ];
 
-/* fn benchmark_preloading_all_language_models(c: &mut Criterion) {
+fn benchmark_preloading_all_language_models(c: &mut Criterion) {
     let mut group = c.benchmark_group("language models");
     group.sample_size(10);
     group.bench_function("preload all language models", |bencher| {
@@ -68,7 +68,7 @@ const SENTENCES: &[&str] = &[
             detector.unload_language_models();
         })
     });
-} */
+}
 
 fn benchmark_detector(c: &mut Criterion) {
     let low_accuracy_detector_for_all_languages = LanguageDetectorBuilder::from_all_languages()
@@ -131,9 +131,7 @@ fn benchmark_detector(c: &mut Criterion) {
     group3.bench_function("high accuracy mode", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(
-                    high_accuracy_detector_for_common_languages.detect_language_of(sentence),
-                );
+                black_box(high_accuracy_detector_for_common_languages.detect_language_of(sentence));
             });
         });
     });
@@ -168,8 +166,8 @@ fn benchmark_detector(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    // benchmark_preloading_all_language_models,
     benchmark_detector,
+    benchmark_preloading_all_language_models,
 );
 
 criterion_main!(benches);

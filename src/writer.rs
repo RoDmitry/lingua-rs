@@ -16,6 +16,7 @@
 
 use crate::{
     constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION},
+    json::LanguageModelWriter,
     model::TrainingDataLanguageModel,
 };
 use ::std::{
@@ -112,7 +113,9 @@ impl LanguageModelFilesWriter {
         }
 
         let unigram_model = TrainingDataLanguageModel::from_text(&word_chars, 1, ahashmap!());
-        unigram_model.write_compressed(&out_mod_path.join("unigrams.encom.br"))?;
+        unigram_model
+            .to_lang_model()
+            .write_compressed(&out_mod_path.join("unigrams.encom.br"))?;
         if is_han {
             return Ok(());
         }
@@ -124,7 +127,9 @@ impl LanguageModelFilesWriter {
         let bigram_model =
             TrainingDataLanguageModel::from_text(&word_chars, 2, absolute_frequencies);
         // panic!("{:?}\n{:?}", unigram_model.absolute_frequencies, bigram_model);
-        bigram_model.write_compressed(&out_mod_path.join("bigrams.encom.br"))?;
+        bigram_model
+            .to_lang_model()
+            .write_compressed(&out_mod_path.join("bigrams.encom.br"))?;
         let TrainingDataLanguageModel {
             absolute_frequencies,
             ..
@@ -132,7 +137,9 @@ impl LanguageModelFilesWriter {
 
         let trigram_model =
             TrainingDataLanguageModel::from_text(&word_chars, 3, absolute_frequencies);
-        trigram_model.write_compressed(&out_mod_path.join("trigrams.encom.br"))?;
+        trigram_model
+            .to_lang_model()
+            .write_compressed(&out_mod_path.join("trigrams.encom.br"))?;
         let TrainingDataLanguageModel {
             absolute_frequencies,
             ..
@@ -140,7 +147,9 @@ impl LanguageModelFilesWriter {
 
         let quadrigram_model =
             TrainingDataLanguageModel::from_text(&word_chars, 4, absolute_frequencies);
-        quadrigram_model.write_compressed(&out_mod_path.join("quadrigrams.encom.br"))?;
+        quadrigram_model
+            .to_lang_model()
+            .write_compressed(&out_mod_path.join("quadrigrams.encom.br"))?;
         let TrainingDataLanguageModel {
             absolute_frequencies,
             ..
@@ -148,7 +157,9 @@ impl LanguageModelFilesWriter {
 
         let fivegram_model =
             TrainingDataLanguageModel::from_text(&word_chars, 5, absolute_frequencies);
-        fivegram_model.write_compressed(&out_mod_path.join("fivegrams.encom.br"))
+        fivegram_model
+            .to_lang_model()
+            .write_compressed(&out_mod_path.join("fivegrams.encom.br"))
 
         /* let trigram_model = Self::create_language_model(
             input_file_path,

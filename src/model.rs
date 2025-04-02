@@ -1,12 +1,5 @@
 use crate::{fraction::Fraction, json::LanguageModel};
-use ::std::{
-    fs::{create_dir_all, File},
-    io,
-    io::Write,
-    path::Path,
-};
 use ahash::{AHashMap, AHashSet};
-use brotli::CompressorWriter;
 use compact_str::CompactString;
 use fraction::GenericFraction;
 use serde_map::SerdeMap;
@@ -91,27 +84,17 @@ impl<'a> TrainingDataLanguageModel {
         ngram_probabilities
     }
 
-    pub(crate) fn serialize(&self) -> String {
+    pub(crate) fn to_lang_model(&self) -> LanguageModel {
         let relative_frequencies = self.compute_relative_frequencies();
         let mut sorted: Vec<_> = relative_frequencies.into_iter().collect();
         sorted.sort_unstable_by(|a, b| b.0.cmp(&a.0));
 
-        let mut res_ngrams: LanguageModel = SerdeMap::default();
+        let mut lang_model: LanguageModel = SerdeMap::default();
         for (gf, ngrams) in sorted {
-            res_ngrams.insert_unchecked(Fraction::from(gf), ngrams.join(" "));
+            lang_model.insert_unchecked(Fraction::from(gf), ngrams.join(""));
         }
 
-        serde_encom::to_string(&res_ngrams).unwrap()
-    }
-
-    pub(crate) fn write_compressed(&self, file_path: &Path) -> io::Result<()> {
-        if let Some(parent) = file_path.parent() {
-            create_dir_all(parent)?;
-        }
-        let file = File::create(file_path)?;
-        let mut compressed_file = CompressorWriter::new(file, 4096, 11, 22);
-        compressed_file.write_all(self.serialize().as_bytes())?;
-        Ok(())
+        lang_model
     }
 
     /*pub(crate) fn to_match(self, file_path: &Path) -> io::Result<()> {

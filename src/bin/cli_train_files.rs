@@ -1,7 +1,7 @@
 use ::std::{
     fs,
     fs::File,
-    io::{BufReader, Write},
+    io::BufReader,
     path::Path,
     str::FromStr,
     sync::{Arc, Mutex},
@@ -14,8 +14,8 @@ use clap::Parser;
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
 use lingua::{
-    lang_arr_default, read_iter::ReadCharsChunks, script_char_to_langs, str_to_langs, Language,
-    LanguageModelFilesWriter, Script,
+    lang_arr_default, read_iter::ReadCharsChunks, str_to_langs, Language, LanguageModelFilesWriter,
+    Script,
 };
 // use rayon::prelude::*;
 
@@ -150,6 +150,7 @@ fn main() {
                 let lang = match Language::from_str(&file_name) {
                     Ok(l) => l,
                     _ => {
+                        // todo: alph + _ + lang
                         let Ok(l) = Language::from_str(lang) else {
                             panic!("*{}* Not found lang: {}", file_name, lang);
                         };
@@ -173,11 +174,12 @@ fn main() {
                     return;
                 } */
 
+                // todo: rm
                 let langs = str_to_langs(alph);
                 if !langs.contains(&lang) {
                     panic!("*{}* Not found lang: {lang} in {:?}", file_name, langs);
                 };
-                if langs.len() == 1 {
+                if langs.len() == 1 && !Language::all_with_script(Script::Han).contains(&lang) {
                     println!("*{}* SKIP single lang {:?} in script", file_name, lang);
                     return;
                 }

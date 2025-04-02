@@ -16,12 +16,14 @@
 
 use crate::fraction::Fraction;
 use ::std::{
-    io::{Cursor, ErrorKind, Read},
-    path::PathBuf,
+    fs::{create_dir_all, File},
+    io,
+    io::{Cursor, ErrorKind, Read, Write},
+    path::{Path, PathBuf},
 };
 use ahash::AHashMap;
 use alphabet_detector::Language;
-use brotli::Decompressor;
+use brotli::{CompressorWriter, Decompressor};
 use compact_str::CompactString;
 use include_dir::{include_dir, Dir};
 use serde_map::SerdeMap;
@@ -37,7 +39,37 @@ pub(crate) fn file_name_by_length(ngram_length: usize) -> &'static str {
     }
 }
 
-pub type LanguageModel = SerdeMap<Fraction, String>;
+pub(crate) type LanguageModel = SerdeMap<Fraction, String>;
+
+pub trait LanguageModelWriter {
+    fn write_compressed(&self, file_path: &Path) -> io::Result<()>;
+}
+
+/* #[derive(Debug, Default, Serialize, Deserialize)]
+pub struct LanguageModelNgrams {
+    #[serde(rename = "1", skip_serializing_if = "LanguageModel::is_empty")]
+    pub(crate) unigrams: LanguageModel,
+    #[serde(rename = "2", skip_serializing_if = "LanguageModel::is_empty")]
+    pub(crate) bigrams: LanguageModel,
+    #[serde(rename = "3", skip_serializing_if = "LanguageModel::is_empty")]
+    pub(crate) trigrams: LanguageModel,
+    #[serde(rename = "4", skip_serializing_if = "LanguageModel::is_empty")]
+    pub(crate) quadrigrams: LanguageModel,
+    #[serde(rename = "5", skip_serializing_if = "LanguageModel::is_empty")]
+    pub(crate) fivegrams: LanguageModel,
+} */
+
+impl LanguageModelWriter for LanguageModel {
+    fn write_compressed(&self, file_path: &Path) -> io::Result<()> {
+        if let Some(parent) = file_path.parent() {
+            create_dir_all(parent)?;
+        }
+        let file = File::create(file_path)?;
+        let mut compressed_file = CompressorWriter::new(file, 4096, 11, 22);
+        let ser = serde_encom::to_string(&self).unwrap();
+        compressed_file.write_all(ser.as_bytes())
+    }
+}
 
 pub(crate) fn to_relative_frequencies(
     fraction_ngrams: SerdeMap<Fraction, String>,
@@ -52,7 +84,7 @@ pub(crate) fn to_relative_frequencies(
     res
 }
 
-pub const MODELS_DIRECTORY: Dir = include_dir!("$CARGO_MANIFEST_DIR/lang_models");
+pub(crate) const MODELS_DIRECTORY: Dir = include_dir!("$CARGO_MANIFEST_DIR/lang_models");
 
 pub(crate) fn load_model(
     language: Language,
