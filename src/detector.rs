@@ -675,8 +675,10 @@ impl LanguageDetector {
             return values;
         }
 
-        let ngram_length_range = if character_count >= 120 || self.is_low_accuracy_mode_enabled {
+        let ngram_length_range = if self.is_low_accuracy_mode_enabled {
             3..4usize
+        } else if character_count >= 120 {
+            3..6usize
         } else {
             1..6usize
         };
