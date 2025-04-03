@@ -1,7 +1,9 @@
 use clap::Parser;
-use lingua::{DetectionResult, IsoCode639_1, Language, LanguageDetectorBuilder};
-use std::io::{self, Read};
-use std::str::FromStr;
+use lingua::{DetectionResult, IsoCode639_1, LanguageDetectorBuilder, ScriptLanguage};
+use std::{
+    io::{self, Read},
+    str::FromStr,
+};
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -71,7 +73,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
     if args.list {
-        let mut languages: Vec<Language> = Language::all().collect();
+        let mut languages: Vec<ScriptLanguage> = ScriptLanguage::all().collect();
         languages.sort();
         for language in languages {
             println!("{} - {}", language.iso_code_639_1(), language);

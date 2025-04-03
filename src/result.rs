@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use alphabet_detector::Language;
+use alphabet_detector::ScriptLanguage;
 
 /// This struct describes a contiguous single-language
 /// text section within a possibly mixed-language text.
@@ -24,7 +24,7 @@ pub struct DetectionResult {
     pub(crate) start_index: usize,
     pub(crate) end_index: usize,
     pub(crate) word_count: usize,
-    pub(crate) language: Language,
+    pub(crate) language: ScriptLanguage,
 }
 
 impl DetectionResult {
@@ -42,7 +42,7 @@ impl DetectionResult {
         self.word_count
     }
     /// Returns the detected language of the identified single-language substring.
-    pub fn language(&self) -> Language {
+    pub fn language(&self) -> ScriptLanguage {
         self.language
     }
 }

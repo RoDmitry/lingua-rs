@@ -16,7 +16,7 @@
 
 use crate::detector::LanguageDetector;
 use ahash::AHashSet;
-use alphabet_detector::{IsoCode639_1, IsoCode639_3, Language, Script};
+use alphabet_detector::{IsoCode639_1, IsoCode639_3, Script, ScriptLanguage};
 
 pub(crate) const MISSING_LANGUAGE_MESSAGE: &str =
     "LanguageDetector needs at least 2 languages to choose from";
@@ -28,7 +28,7 @@ pub(crate) const MINIMUM_RELATIVE_DISTANCE_MESSAGE: &str =
 #[derive(Clone)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
 pub struct LanguageDetectorBuilder {
-    languages: AHashSet<Language>,
+    languages: AHashSet<ScriptLanguage>,
     minimum_relative_distance: f64,
     is_every_language_model_preloaded: bool,
     is_low_accuracy_mode_enabled: bool,
@@ -37,20 +37,20 @@ pub struct LanguageDetectorBuilder {
 impl LanguageDetectorBuilder {
     /// Creates and returns an instance of `LanguageDetectorBuilder` with all built-in languages.
     pub fn from_all_languages() -> Self {
-        Self::from(Language::all().collect())
+        Self::from(ScriptLanguage::all().collect())
     }
 
     /// Creates and returns an instance of `LanguageDetectorBuilder`
     /// with all built-in spoken languages.
     pub fn from_all_spoken_languages() -> Self {
-        Self::from(Language::all_spoken_ones())
+        Self::from(ScriptLanguage::all_spoken_ones())
     }
 
     /// Creates and returns an instance of `LanguageDetectorBuilder`
     /// with languages supporting selected `Script`
     pub fn from_languages_with_script(script: Script) -> Self {
         Self::from(
-            Language::all_with_script(script)
+            ScriptLanguage::all_with_script(script)
                 .iter()
                 .copied()
                 .collect(),
@@ -62,8 +62,8 @@ impl LanguageDetectorBuilder {
     ///
     /// ⚠ Panics if less than two `languages` are used to build the
     /// `LanguageDetector`.
-    pub fn from_all_languages_without(languages: &[Language]) -> Self {
-        let languages: AHashSet<_> = Language::all()
+    pub fn from_all_languages_without(languages: &[ScriptLanguage]) -> Self {
+        let languages: AHashSet<_> = ScriptLanguage::all()
             .filter(|it| !languages.contains(it))
             .collect();
         if languages.len() < 2 {
@@ -76,7 +76,7 @@ impl LanguageDetectorBuilder {
     /// with the specified `languages`.
     ///
     /// ⚠ Panics if less than two `languages` are specified.
-    pub fn from_languages(languages: &[Language]) -> Self {
+    pub fn from_languages(languages: &[ScriptLanguage]) -> Self {
         if languages.len() < 2 {
             panic!("{}", MISSING_LANGUAGE_MESSAGE);
         }
@@ -93,7 +93,7 @@ impl LanguageDetectorBuilder {
         }
         let languages = iso_codes
             .iter()
-            .map(Language::from_iso_code_639_1)
+            .map(ScriptLanguage::from_iso_code_639_1)
             .collect::<AHashSet<_>>();
         Self::from(languages)
     }
@@ -108,7 +108,7 @@ impl LanguageDetectorBuilder {
         }
         let languages = iso_codes
             .iter()
-            .map(Language::from_iso_code_639_3)
+            .map(ScriptLanguage::from_iso_code_639_3)
             .collect::<AHashSet<_>>();
         Self::from(languages)
     }
@@ -180,7 +180,7 @@ impl LanguageDetectorBuilder {
         )
     }
 
-    fn from(languages: AHashSet<Language>) -> Self {
+    fn from(languages: AHashSet<ScriptLanguage>) -> Self {
         Self {
             languages,
             minimum_relative_distance: 0.0,
@@ -198,7 +198,10 @@ mod tests {
     #[test]
     fn assert_detector_can_be_built_from_all_languages() {
         let mut builder = LanguageDetectorBuilder::from_all_languages();
-        assert_eq!(builder.languages, Language::all().collect::<AHashSet<_>>());
+        assert_eq!(
+            builder.languages,
+            ScriptLanguage::all().collect::<AHashSet<_>>()
+        );
         assert_eq!(builder.minimum_relative_distance, 0.0);
 
         builder.with_minimum_relative_distance(0.2);
@@ -208,7 +211,7 @@ mod tests {
     #[test]
     fn assert_detector_can_be_built_from_spoken_languages() {
         let mut builder = LanguageDetectorBuilder::from_all_spoken_languages();
-        assert_eq!(builder.languages, Language::all_spoken_ones());
+        assert_eq!(builder.languages, ScriptLanguage::all_spoken_ones());
         assert_eq!(builder.minimum_relative_distance, 0.0);
 
         builder.with_minimum_relative_distance(0.2);
@@ -221,7 +224,7 @@ mod tests {
             let builder = LanguageDetectorBuilder::from_languages_with_script(script);
             assert_eq!(
                 builder.languages,
-                Language::all_with_script(script)
+                ScriptLanguage::all_with_script(script)
                     .into_iter()
                     .copied()
                     .collect::<AHashSet<_>>()
@@ -232,14 +235,17 @@ mod tests {
     #[test]
     fn assert_detector_can_be_built_from_blacklist() {
         let builder = LanguageDetectorBuilder::from_all_languages_without(&[
-            Language::Turkish,
-            Language::Romanian,
+            ScriptLanguage::Turkish,
+            ScriptLanguage::Romanian,
         ]);
-        let expected_languages = Language::all()
+        let expected_languages = ScriptLanguage::all()
             .collect::<AHashSet<_>>()
-            .difference(&ahashset!(Language::Turkish, Language::Romanian))
+            .difference(&ahashset!(
+                ScriptLanguage::Turkish,
+                ScriptLanguage::Romanian
+            ))
             .copied()
-            .collect::<AHashSet<Language>>();
+            .collect::<AHashSet<ScriptLanguage>>();
 
         assert_eq!(builder.languages, expected_languages);
     }
@@ -247,9 +253,9 @@ mod tests {
     #[test]
     #[should_panic(expected = "LanguageDetector needs at least 2 languages to choose from")]
     fn assert_detector_cannot_be_built_from_too_long_blacklist() {
-        let languages = Language::all()
+        let languages = ScriptLanguage::all()
             .collect::<AHashSet<_>>()
-            .difference(&ahashset!(Language::German))
+            .difference(&ahashset!(ScriptLanguage::German))
             .copied()
             .collect::<Vec<_>>();
 
@@ -258,19 +264,21 @@ mod tests {
 
     #[test]
     fn assert_detector_can_be_built_from_whitelist() {
-        let builder =
-            LanguageDetectorBuilder::from_languages(&[Language::German, Language::English]);
+        let builder = LanguageDetectorBuilder::from_languages(&[
+            ScriptLanguage::German,
+            ScriptLanguage::English,
+        ]);
 
         assert_eq!(
             builder.languages,
-            ahashset!(Language::German, Language::English)
+            ahashset!(ScriptLanguage::German, ScriptLanguage::English)
         );
     }
 
     #[test]
     #[should_panic(expected = "LanguageDetector needs at least 2 languages to choose from")]
     fn assert_detector_cannot_be_built_from_too_short_whitelist() {
-        LanguageDetectorBuilder::from_languages(&[Language::German]);
+        LanguageDetectorBuilder::from_languages(&[ScriptLanguage::German]);
     }
 
     #[test]
@@ -280,7 +288,7 @@ mod tests {
 
         assert_eq!(
             builder.languages,
-            ahashset!(Language::German, Language::Zulu)
+            ahashset!(ScriptLanguage::German, ScriptLanguage::Zulu)
         );
     }
 
@@ -297,7 +305,7 @@ mod tests {
 
         assert_eq!(
             builder.languages,
-            ahashset!(Language::German, Language::Zulu)
+            ahashset!(ScriptLanguage::German, ScriptLanguage::Zulu)
         );
     }
 

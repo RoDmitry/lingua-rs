@@ -24,7 +24,7 @@ use ::std::{
     io::{self, BufRead, BufReader, LineWriter, Write},
     path::Path,
 };
-use alphabet_detector::{langs_filter_max, Language, Script};
+use alphabet_detector::{langs_filter_max, Script, ScriptLanguage};
 use itertools::Itertools;
 use regex::Regex;
 
@@ -61,7 +61,7 @@ impl LanguageModelFilesWriter {
         out_mod_path: &Path,
         // lines: Vec<&str>,
         ch_iter: impl Iterator<Item = (usize, char)>,
-        language: Language,
+        language: ScriptLanguage,
     ) -> io::Result<()> {
         // check_input_file_path(input_file_path);
         // check_output_directory_path(output_directory_path);
@@ -79,7 +79,7 @@ impl LanguageModelFilesWriter {
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
             .collect();
         println!("wrong_words {}", wrong_words.len()); */
-        let is_han = Language::all_with_script(Script::Han).contains(&language);
+        let is_han = ScriptLanguage::all_with_script(Script::Han).contains(&language);
         let mut word_chars: Vec<Vec<char>> = words
             // .inspect(|wld| println!("{:?}", wld))
             // filter

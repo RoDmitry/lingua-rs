@@ -22,7 +22,7 @@ use ::std::{
     path::{Path, PathBuf},
 };
 use ahash::AHashMap;
-use alphabet_detector::Language;
+use alphabet_detector::ScriptLanguage;
 use brotli::{CompressorWriter, Decompressor};
 use compact_str::CompactString;
 use include_dir::{include_dir, Dir};
@@ -87,7 +87,7 @@ pub(crate) fn to_relative_frequencies(
 pub(crate) const MODELS_DIRECTORY: Dir = include_dir!("$CARGO_MANIFEST_DIR/lang_models");
 
 pub(crate) fn load_model(
-    language: Language,
+    language: ScriptLanguage,
     ngram_length: usize,
 ) -> std::io::Result<FileLanguageModel> {
     let file_name = file_name_by_length(ngram_length);
@@ -335,6 +335,6 @@ mod tests {
 
     #[test]
     fn test_load_model() {
-        load_model(Language::English, 1).unwrap();
+        load_model(ScriptLanguage::English, 1).unwrap();
     }
 }

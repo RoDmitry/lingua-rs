@@ -1,7 +1,9 @@
 use clap::Parser;
-use lingua::{Language, LanguageModelFilesWriter};
-use std::io::{self, Read};
-use std::path::Path;
+use lingua::{LanguageModelFilesWriter, ScriptLanguage};
+use std::{
+    io::{self, Read},
+    path::Path,
+};
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -74,7 +76,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
     /* if args.list {
-        let mut languages: Vec<Language> = Language::all().into_iter().collect();
+        let mut languages: Vec<ScriptLanguage> = ScriptLanguage::all().into_iter().collect();
         languages.sort();
         for language in languages {
             println!("{} - {}", language.iso_code_639_1(), language);
@@ -103,7 +105,7 @@ fn main() {
     let result = LanguageModelFilesWriter::create_and_write_language_model(
         output_directory_path,
         text.char_indices(),
-        Language::Japanese,
+        ScriptLanguage::Japanese,
     );
     println!("{:?}", result)
 }

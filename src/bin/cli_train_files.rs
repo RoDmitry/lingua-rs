@@ -14,8 +14,8 @@ use clap::Parser;
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
 use lingua::{
-    lang_arr_default, read_iter::ReadCharsChunks, str_to_langs, Language, LanguageModelFilesWriter,
-    Script,
+    lang_arr_default, read_iter::ReadCharsChunks, str_to_langs, LanguageModelFilesWriter, Script,
+    ScriptLanguage,
 };
 // use rayon::prelude::*;
 
@@ -147,11 +147,11 @@ fn main() {
                 let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
                     unreachable!()
                 };
-                let lang = match Language::from_str(&file_name) {
+                let lang = match ScriptLanguage::from_str(&file_name) {
                     Ok(l) => l,
                     _ => {
                         // todo: alph + _ + lang
-                        let Ok(l) = Language::from_str(lang) else {
+                        let Ok(l) = ScriptLanguage::from_str(lang) else {
                             panic!("*{}* Not found lang: {}", file_name, lang);
                         };
                         l
@@ -168,7 +168,7 @@ fn main() {
                 }
                 // skip in order
                 /* if point.load(Ordering::SeqCst) {
-                } else if lang == Language::UzbekNorthern {
+                } else if lang == ScriptLanguage::UzbekNorthern {
                     point.store(true, Ordering::SeqCst);
                 } else {
                     return;
@@ -179,12 +179,13 @@ fn main() {
                 if !langs.contains(&lang) {
                     panic!("*{}* Not found lang: {lang} in {:?}", file_name, langs);
                 };
-                if langs.len() == 1 && !Language::all_with_script(Script::Han).contains(&lang) {
+                if langs.len() == 1 && !ScriptLanguage::all_with_script(Script::Han).contains(&lang)
+                {
                     println!("*{}* SKIP single lang {:?} in script", file_name, lang);
                     return;
                 }
                 // TODO: rm this filter
-                /* if !matches!(lang, Language::English) {
+                /* if !matches!(lang, ScriptLanguage::English) {
                     return;
                 } */
                 // TODO: rm this filter
@@ -263,9 +264,8 @@ fn main() {
                 {
                     let file_path = out_path.join("macros.rs");
                     let mut file = fs::File::options().append(true).open(file_path).unwrap();
-                    // file.write_all(b"(Alphabet::").unwrap();
-                    // file.write_all(alphabet.to_full_dbg().as_bytes()).unwrap();
-                    file.write_all(b"Language::").unwrap();
+                    file.write_all(b"ScriptLanguage::").unwrap();
+                    // file.write_all(lang.to_full_dbg().as_bytes()).unwrap();
                     file.write_all(lang.to_string().as_bytes()).unwrap();
                     file.write_all(b" => Some(Box::new(lang_models::").unwrap();
                     file.write_all(model_name.as_bytes()).unwrap();
