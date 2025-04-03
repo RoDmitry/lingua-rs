@@ -39,9 +39,9 @@ pub(crate) fn file_name_by_length(ngram_length: usize) -> &'static str {
     }
 }
 
-pub(crate) type LanguageModel = SerdeMap<Fraction, String>;
+pub(crate) type FileLanguageModel = SerdeMap<Fraction, String>;
 
-pub trait LanguageModelWriter {
+pub trait FileLanguageModelWriter {
     fn write_compressed(&self, file_path: &Path) -> io::Result<()>;
 }
 
@@ -59,7 +59,7 @@ pub struct LanguageModelNgrams {
     pub(crate) fivegrams: LanguageModel,
 } */
 
-impl LanguageModelWriter for LanguageModel {
+impl FileLanguageModelWriter for FileLanguageModel {
     fn write_compressed(&self, file_path: &Path) -> io::Result<()> {
         if let Some(parent) = file_path.parent() {
             create_dir_all(parent)?;
@@ -89,7 +89,7 @@ pub(crate) const MODELS_DIRECTORY: Dir = include_dir!("$CARGO_MANIFEST_DIR/lang_
 pub(crate) fn load_model(
     language: Language,
     ngram_length: usize,
-) -> std::io::Result<LanguageModel> {
+) -> std::io::Result<FileLanguageModel> {
     let file_name = file_name_by_length(ngram_length);
     let file_path = PathBuf::from(&language.to_string()).join(file_name);
     let compressed_file = MODELS_DIRECTORY

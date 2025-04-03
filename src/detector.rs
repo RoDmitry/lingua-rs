@@ -20,8 +20,9 @@ use itertools::Itertools;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
 
+const NGRAM_MAX_SIZE: usize = 5;
 type LanguageModel = AHashMap<CompactString, f64>;
-type LanguageModels = [LanguageModel; 5];
+type LanguageModels = [LanguageModel; NGRAM_MAX_SIZE];
 type LanguagesModels = LanguageArr<RwLock<LanguageModels>>;
 type LanguagesModelsRef = &'static LanguagesModels;
 
@@ -641,9 +642,9 @@ impl LanguageDetector {
                 1..4usize
             }
         } else if character_count >= 120 {
-            3..6usize
+            3..NGRAM_MAX_SIZE + 1
         } else {
-            1..6usize
+            1..NGRAM_MAX_SIZE + 1
         };
 
         self.load_language_models_by_ngram_len(ngram_length_range.end - 1, &filtered_languages);
@@ -665,7 +666,7 @@ impl LanguageDetector {
             .map(|(probabilities, _)| probabilities);
 
         let unigram_counts = probabilities_and_unigram_counts
-            .get(0)
+            .first()
             .and_then(|(_, uc)| uc.as_ref());
 
         let probabilities_sums =
@@ -678,7 +679,7 @@ impl LanguageDetector {
 
         self.compute_confidence_values(
             &mut values,
-            probabilities_and_unigram_counts.get(0).map(|(p, _)| p),
+            probabilities_and_unigram_counts.first().map(|(p, _)| p),
             probabilities_sums,
         );
         // println!("res {:?}", &values[..values.len().min(5)]);
@@ -925,16 +926,24 @@ impl LanguageDetector {
             .read()
             .unwrap();
 
-        let language_models: [_; 5] = ::core::array::from_fn(|i| {
+        let language_models: [_; NGRAM_MAX_SIZE] = ::core::array::from_fn(|i| {
             Some(language_models_lock.get_safe_unchecked(i)).filter(|v| !v.is_empty())
         });
 
         let mut sum = 0.0;
         for ngram in ngrams_iter {
+            debug_assert!(
+                (1..=NGRAM_MAX_SIZE).contains(&ngram.len()),
+                "ngram length {} is not in range 1..={NGRAM_MAX_SIZE}",
+                ngram.len()
+            );
+
             for len in (1..=ngram.len()).rev() {
                 // todo: maybe use .windows(len)? and use their average? what if absent? use max probability?
-                let ngram = &ngram[0..len];
-                let probability = language_models[ngram.len() - 1]
+                let ngram = ngram.get_safe_unchecked(0..len);
+                let probability = language_models
+                    .get(ngram.len() - 1)
+                    .and_then(|m| m.as_deref())
                     .and_then(|m| m.get(ngram.iter().collect::<String>().as_str()).copied())
                     .unwrap_or(0.0);
 
@@ -1007,8 +1016,8 @@ impl LanguageDetector {
 
     fn load_language_model(&self, language: Language, ngram_length: usize) {
         debug_assert!(
-            (1..6).contains(&ngram_length),
-            "ngram length {ngram_length} is not in range 1..6"
+            (1..=NGRAM_MAX_SIZE).contains(&ngram_length),
+            "ngram length {ngram_length} is not in range 1..={NGRAM_MAX_SIZE}"
         );
 
         let ngram_models = self.languages_models.get_safe_unchecked(language as usize);
@@ -1099,7 +1108,7 @@ mod tests {
     use rstest::*;
 
     fn create_mock_language_models(
-        ngrams_model: [AHashMap<&'static str, f64>; 5],
+        ngrams_model: [AHashMap<&'static str, f64>; NGRAM_MAX_SIZE],
     ) -> LanguageModels {
         ngrams_model.map(|model| {
             model

@@ -51,7 +51,7 @@ impl LanguageDetectorBuilder {
     pub fn from_languages_with_script(script: Script) -> Self {
         Self::from(
             Language::all_with_script(script)
-                .into_iter()
+                .iter()
                 .copied()
                 .collect(),
         )

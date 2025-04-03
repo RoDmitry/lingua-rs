@@ -71,7 +71,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
     if args.list {
-        let mut languages: Vec<Language> = Language::all().into_iter().collect();
+        let mut languages: Vec<Language> = Language::all().collect();
         languages.sort();
         for language in languages {
             println!("{} - {}", language.iso_code_639_1(), language);
@@ -113,8 +113,8 @@ fn main() {
 
 fn print_with_offset(results: &Vec<DetectionResult>, text: &str, delimiter: &str) {
     for result in results {
-        print!(
-            "{}{}{}{}{}{}{}\n",
+        println!(
+            "{}{}{}{}{}{}{}",
             result.start_index(),
             delimiter,
             result.end_index(),

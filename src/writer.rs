@@ -16,7 +16,7 @@
 
 use crate::{
     constant::{MULTIPLE_WHITESPACE, NUMBERS, PUNCTUATION},
-    json::LanguageModelWriter,
+    json::FileLanguageModelWriter,
     model::TrainingDataLanguageModel,
 };
 use ::std::{
