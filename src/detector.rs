@@ -687,6 +687,8 @@ impl LanguageDetector {
             1..6usize
         };
 
+        self.load_language_models_by_ngram_len(ngram_length_range.end - 1, &filtered_languages);
+
         let probabilities_and_unigram_counts: Vec<_> = ngram_length_range
             .into_iter()
             .filter(|i| *i <= character_count)
@@ -823,7 +825,7 @@ impl LanguageDetector {
             .collect()
     }
 
-    fn load_languages_models_by_ngram_len(
+    fn load_language_models_by_ngram_len(
         &self,
         ngram_length: usize,
         filtered_languages: &AHashSet<Language>,
@@ -875,8 +877,6 @@ impl LanguageDetector {
         filtered_languages: &AHashSet<Language>,
     ) -> (AHashMap<Language, f64>, Option<AHashMap<Language, usize>>) {
         let ngrams = prepare_ngrams(words_iter, ngram_length);
-
-        self.load_languages_models_by_ngram_len(ngram_length, filtered_languages);
 
         let probabilities =
             self.compute_language_probabilities(ngrams.iter().copied(), filtered_languages);
@@ -1437,7 +1437,7 @@ mod tests {
     ) {
         let ngram_length = ngram.chars().count();
         detector_for_english_and_german
-            .load_languages_models_by_ngram_len(ngram_length, &ahashset!(language));
+            .load_language_models_by_ngram_len(ngram_length, &ahashset!(language));
 
         let unigram_language_model_lock = detector_for_english_and_german
             .unigram_language_models
