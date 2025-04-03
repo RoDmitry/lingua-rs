@@ -701,21 +701,27 @@ impl LanguageDetector {
             })
             .collect();
 
-        let mut probability_maps = probabilities_and_unigram_counts
+        let probability_maps = probabilities_and_unigram_counts
             .iter()
             .map(|(probabilities, _)| probabilities);
 
-        let unigram_counts = &probabilities_and_unigram_counts[0].1;
+        let unigram_counts = probabilities_and_unigram_counts
+            .get(0)
+            .and_then(|(_, uc)| uc.as_ref());
 
         let probabilities_sums =
-            self.sum_up_probabilities(probability_maps.clone(), unigram_counts, filtered_languages);
+            self.sum_up_probabilities(probability_maps, unigram_counts, filtered_languages);
 
         if probabilities_sums.is_empty() {
             values.sort_by(order_by_probability);
             return values;
         }
 
-        self.compute_confidence_values(&mut values, probability_maps.next(), probabilities_sums);
+        self.compute_confidence_values(
+            &mut values,
+            probabilities_and_unigram_counts.get(0).map(|(p, _)| p),
+            probabilities_sums,
+        );
         // println!("res {:?}", &values[..values.len().min(5)]);
 
         values
@@ -935,8 +941,7 @@ impl LanguageDetector {
             update_confidence_values(values, most_likely_language, 1.0);
         } else {
             for (language, probability) in probabilities {
-                // todo: iter_mut()
-                for value in &mut *values {
+                for value in values.iter_mut() {
                     if value.0 == language {
                         // Apply softmax function
                         let normalized_probability = probability / denominator;
@@ -994,8 +999,7 @@ impl LanguageDetector {
             for len in (1..=ngram.len()).rev() {
                 let ngram = &ngram[0..len];
                 let probability = models[ngram.len() - 1]
-                    .and_then(|m| m.get(ngram.iter().copied().collect::<String>().as_str()))
-                    .copied()
+                    .and_then(|m| m.get(ngram.iter().collect::<String>().as_str()).copied())
                     .unwrap_or(0.0);
 
                 if probability > 0.0 {
@@ -1025,7 +1029,7 @@ impl LanguageDetector {
 
             for unigram in ngrams_iter.clone() {
                 let probability = model
-                    .get(unigram.iter().copied().collect::<String>().as_str())
+                    .get(unigram.iter().collect::<String>().as_str())
                     .copied()
                     .unwrap_or(0.0);
 
@@ -1040,7 +1044,7 @@ impl LanguageDetector {
     fn sum_up_probabilities<'a>(
         &'a self,
         probability_maps: impl Iterator<Item = &'a AHashMap<Language, f64>> + Clone,
-        unigram_counts: &Option<AHashMap<Language, usize>>,
+        unigram_counts: Option<&AHashMap<Language, usize>>,
         filtered_languages: AHashSet<Language>,
     ) -> AHashMap<Language, f64> {
         let mut summed_up_probabilities = AHashMap::with_capacity(filtered_languages.len());
@@ -1056,8 +1060,7 @@ impl LanguageDetector {
                 }
             }
 
-            // todo: !is_zero
-            if sum != 0.0 {
+            if !sum.is_zero() {
                 summed_up_probabilities.insert(*language, sum.exp());
             }
         }
