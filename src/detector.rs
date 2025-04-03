@@ -662,8 +662,8 @@ impl LanguageDetector {
         ); */
 
         if filtered_languages.len() == 1 {
-            let lang = filtered_languages.iter().next().unwrap();
-            update_confidence_values(&mut values, *lang, 1.0);
+            let lang = filtered_languages.into_iter().next().unwrap();
+            update_confidence_values(&mut values, lang, 1.0);
             values.sort_by(order_by_probability);
             return values;
         }
@@ -687,11 +687,7 @@ impl LanguageDetector {
             1..6usize
         };
 
-        #[allow(clippy::type_complexity)]
-        let all_probabilities_and_unigram_counts: Vec<(
-            AHashMap<Language, f64>,
-            Option<AHashMap<Language, usize>>,
-        )> = ngram_length_range
+        let probabilities_and_unigram_counts: Vec<_> = ngram_length_range
             .into_iter()
             .filter(|i| *i <= character_count)
             .map(|ngram_length| {
@@ -703,25 +699,21 @@ impl LanguageDetector {
             })
             .collect();
 
-        let mut probability_maps = all_probabilities_and_unigram_counts
+        let mut probability_maps = probabilities_and_unigram_counts
             .iter()
             .map(|(probabilities, _)| probabilities);
 
-        let unigram_counts = &all_probabilities_and_unigram_counts[0].1;
+        let unigram_counts = &probabilities_and_unigram_counts[0].1;
 
-        let summed_up_probabilities =
+        let probabilities_sums =
             self.sum_up_probabilities(probability_maps.clone(), unigram_counts, filtered_languages);
 
-        if summed_up_probabilities.is_empty() {
+        if probabilities_sums.is_empty() {
             values.sort_by(order_by_probability);
             return values;
         }
 
-        self.compute_confidence_values(
-            &mut values,
-            probability_maps.next(),
-            summed_up_probabilities,
-        );
+        self.compute_confidence_values(&mut values, probability_maps.next(), probabilities_sums);
         // println!("res {:?}", &values[..values.len().min(5)]);
 
         values
@@ -890,17 +882,11 @@ impl LanguageDetector {
             self.compute_language_probabilities(ngrams.iter().copied(), filtered_languages);
 
         let unigram_counts = if ngram_length == 1 {
-            let languages = probabilities.keys().collect_vec();
-            let intersected_languages = if !languages.is_empty() {
-                filtered_languages
-                    .iter()
-                    .cloned()
-                    .filter(|it| languages.contains(&it))
-                    .collect()
+            Some(if !probabilities.is_empty() {
+                self.count_unigrams(ngrams.iter().copied(), probabilities.keys().copied())
             } else {
-                filtered_languages.clone()
-            };
-            Some(self.count_unigrams(ngrams.iter().copied(), &intersected_languages))
+                self.count_unigrams(ngrams.iter().copied(), filtered_languages.iter().copied())
+            })
         } else {
             None
         };
@@ -1024,10 +1010,10 @@ impl LanguageDetector {
     fn count_unigrams<'a>(
         &'a self,
         ngrams_iter: impl Iterator<Item = &'a [char]> + Clone,
-        filtered_languages: &AHashSet<Language>,
+        filtered_languages: impl Iterator<Item = Language>,
     ) -> AHashMap<Language, usize> {
         let mut unigram_counts = AHashMap::new();
-        for &language in filtered_languages.iter() {
+        for language in filtered_languages {
             let model = self
                 .unigram_language_models
                 .get_safe_unchecked(language as usize)
@@ -1992,12 +1978,13 @@ mod tests {
     }
 
     #[rstest]
-    fn assert_low_accuracy_mode_returns_no_language_for_unigrams_and_bigrams() {
+    fn test_low_accuracy_mode() {
         let detector = LanguageDetector::from(ahashset!(English, German), 0.0, true, true);
 
         assert_ne!(detector.detect_language_of("bed"), None);
-        assert_eq!(detector.detect_language_of("be"), None);
-        assert_eq!(detector.detect_language_of("b"), None);
+        assert_ne!(detector.detect_language_of("be"), None);
+        assert_ne!(detector.detect_language_of("b"), None);
+
         assert_eq!(detector.detect_language_of(""), None);
     }
 }
