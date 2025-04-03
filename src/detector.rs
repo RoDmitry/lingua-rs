@@ -115,22 +115,22 @@ impl LanguageDetector {
 
         languages_iter.for_each(|&language| {
             *self
+                .unigram_language_models
+                .get_safe_unchecked(language as usize)
+                .write()
+                .unwrap() = Default::default();
+            *self
+                .bigram_language_models
+                .get_safe_unchecked(language as usize)
+                .write()
+                .unwrap() = Default::default();
+            *self
                 .trigram_language_models
                 .get_safe_unchecked(language as usize)
                 .write()
                 .unwrap() = Default::default();
 
             if !self.is_low_accuracy_mode_enabled {
-                *self
-                    .unigram_language_models
-                    .get_safe_unchecked(language as usize)
-                    .write()
-                    .unwrap() = Default::default();
-                *self
-                    .bigram_language_models
-                    .get_safe_unchecked(language as usize)
-                    .write()
-                    .unwrap() = Default::default();
                 *self
                     .quadrigram_language_models
                     .get_safe_unchecked(language as usize)
