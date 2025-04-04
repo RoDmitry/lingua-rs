@@ -140,13 +140,12 @@ fn main() {
                 ALLOCATOR.allocated() / (1024 * 1024)
             );
             {
-                /* let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
-                    unreachable!()
-                }; */
                 let lang = match ScriptLanguage::from_str(&file_name) {
                     Some(l) => l,
                     _ => {
-                        let Some(l) = ScriptLanguage::from_str(file_name.split('_').next().unwrap()) else {
+                        let Some(l) =
+                            ScriptLanguage::from_str(file_name.split('_').next().unwrap())
+                        else {
                             panic!("*{}* Not found lang", file_name);
                         };
                         l
@@ -173,13 +172,7 @@ fn main() {
                 let langs = script
                     .map(ScriptLanguage::all_with_script)
                     .unwrap_or_default();
-                /* todo: rm
-                if !langs.contains(&lang) {
-                    panic!("*{}* Not found lang: {lang:?} in {:?}", file_name, langs);
-                }; */
-                if langs.len() == 1
-                /* && !ScriptLanguage::all_with_script(Script::Han).contains(&lang) */
-                {
+                if langs.len() == 1 {
                     println!("*{}* SKIP single lang {:?} in script", file_name, lang);
                     return;
                 }
