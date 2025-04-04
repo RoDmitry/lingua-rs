@@ -1,6 +1,6 @@
 use crate::{
     constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE},
-    json::{load_model, to_relative_frequencies},
+    json::{load_model, parse_model},
     model::prepare_ngrams,
     result::DetectionResult,
 };
@@ -1036,7 +1036,7 @@ impl LanguageDetector {
         }
         let lang_model = load_model(language, ngram_length);
         *ngram_models_guard.get_safe_unchecked_mut(index) = match lang_model {
-            Ok(lang_model) => to_relative_frequencies(lang_model),
+            Ok(lang_model) => parse_model(lang_model, ngram_length),
             _ => AHashMap::with_capacity(1),
         }
     }

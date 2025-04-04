@@ -76,7 +76,7 @@ fn main() {
         let mut languages: Vec<ScriptLanguage> = ScriptLanguage::all().collect();
         languages.sort();
         for language in languages {
-            println!("{} - {}", language.iso_code_639_1(), language);
+            println!("{} - {}", language.iso_code_639_1(), language.into_str());
         }
         std::process::exit(0);
     }

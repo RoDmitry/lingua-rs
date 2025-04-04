@@ -3,20 +3,16 @@ use ::std::{
     fs::File,
     io::BufReader,
     path::Path,
-    str::FromStr,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
 };
+use alphabet_detector::{slang_arr_default, Script, ScriptLanguage};
 use cap::Cap;
 use clap::Parser;
-
+use lingua::{read_iter::ReadCharsChunks, LanguageModelFilesWriter};
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
-use lingua::{
-    lang_arr_default, read_iter::ReadCharsChunks, str_to_langs, LanguageModelFilesWriter, Script,
-    ScriptLanguage,
-};
 // use rayon::prelude::*;
 
 // #[cfg(not(target_env = "msvc"))]
@@ -117,7 +113,7 @@ fn main() {
     .map(|path| (path.file_name().into_string().unwrap(), path.path()))
     .collect(); */
     let pool = threadpool::ThreadPool::new(THREADS);
-    let langs_seen = Arc::new(Mutex::new(lang_arr_default::<bool>()));
+    let langs_seen = Arc::new(Mutex::new(slang_arr_default::<bool>()));
 
     // let point = Arc::new(AtomicBool::new(false));
     for path in paths {
@@ -144,15 +140,14 @@ fn main() {
                 ALLOCATOR.allocated() / (1024 * 1024)
             );
             {
-                let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
+                /* let [lang, alph] = file_name.split('_').collect::<Vec<_>>()[..] else {
                     unreachable!()
-                };
+                }; */
                 let lang = match ScriptLanguage::from_str(&file_name) {
-                    Ok(l) => l,
+                    Some(l) => l,
                     _ => {
-                        // todo: alph + _ + lang
-                        let Ok(l) = ScriptLanguage::from_str(lang) else {
-                            panic!("*{}* Not found lang: {}", file_name, lang);
+                        let Some(l) = ScriptLanguage::from_str(file_name.split('_').next().unwrap()) else {
+                            panic!("*{}* Not found lang", file_name);
                         };
                         l
                     }
@@ -162,7 +157,7 @@ fn main() {
                     let lang_seen = guard.get_mut(lang as usize).unwrap();
                     if *lang_seen {
                         drop(guard);
-                        panic!("*{}* Have already seen lang: {}", file_name, lang);
+                        panic!("*{}* Have already seen lang: {:?}", file_name, lang);
                     }
                     *lang_seen = true;
                 }
@@ -174,12 +169,16 @@ fn main() {
                     return;
                 } */
 
-                // todo: rm
-                let langs = str_to_langs(alph);
+                let script = <Option<Script>>::from(lang);
+                let langs = script
+                    .map(ScriptLanguage::all_with_script)
+                    .unwrap_or_default();
+                /* todo: rm
                 if !langs.contains(&lang) {
-                    panic!("*{}* Not found lang: {lang} in {:?}", file_name, langs);
-                };
-                if langs.len() == 1 && !ScriptLanguage::all_with_script(Script::Han).contains(&lang)
+                    panic!("*{}* Not found lang: {lang:?} in {:?}", file_name, langs);
+                }; */
+                if langs.len() == 1
+                /* && !ScriptLanguage::all_with_script(Script::Han).contains(&lang) */
                 {
                     println!("*{}* SKIP single lang {:?} in script", file_name, lang);
                     return;
@@ -194,7 +193,7 @@ fn main() {
                 } */
 
                 let out_path = Path::new(&out_path);
-                let out_mod_path = out_path.join(&lang.to_string());
+                let out_mod_path = out_path.join(lang.into_str());
                 if out_mod_path.join("unigrams.encom.br").exists() {
                     println!("*{}* EXISTS {:?}", file_name, lang);
                     return;

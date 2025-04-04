@@ -26,6 +26,7 @@ use alphabet_detector::ScriptLanguage;
 use brotli::{CompressorWriter, Decompressor};
 use compact_str::CompactString;
 use include_dir::{include_dir, Dir};
+use itertools::Itertools;
 use serde_map::SerdeMap;
 
 pub(crate) fn file_name_by_length(ngram_length: usize) -> &'static str {
@@ -71,14 +72,15 @@ impl FileLanguageModelWriter for FileLanguageModel {
     }
 }
 
-pub(crate) fn to_relative_frequencies(
-    fraction_ngrams: SerdeMap<Fraction, String>,
+pub(crate) fn parse_model(
+    model_fraction_ngrams: SerdeMap<Fraction, String>,
+    ngram_length: usize,
 ) -> AHashMap<CompactString, f64> {
     let mut res = AHashMap::new();
-    for (fraction, ngrams) in fraction_ngrams {
+    for (fraction, ngrams) in model_fraction_ngrams {
         let floating_point_value = fraction.to_f64();
-        for ngram in ngrams.split(' ') {
-            res.insert(CompactString::new(ngram), floating_point_value);
+        for ngram in &ngrams.chars().chunks(ngram_length) {
+            res.insert(ngram.collect::<CompactString>(), floating_point_value);
         }
     }
     res
@@ -91,7 +93,7 @@ pub(crate) fn load_model(
     ngram_length: usize,
 ) -> std::io::Result<FileLanguageModel> {
     let file_name = file_name_by_length(ngram_length);
-    let file_path = PathBuf::from(&language.to_string()).join(file_name);
+    let file_path = PathBuf::from(language.into_str()).join(file_name);
     let compressed_file = MODELS_DIRECTORY
         .get_file(file_path)
         .ok_or(ErrorKind::NotFound)?;

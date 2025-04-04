@@ -62,6 +62,7 @@ dependencies = [
  "ahash",
  "alphabet_match_macro",
  "compact_str",
+ "concat_const",
  "debug_unsafe",
  "icu_normalizer",
  "serde",
@@ -325,6 +326,10 @@ dependencies = [
  "ryu",
  "static_assertions",
 ]
+
+[[package]]
+name = "concat_const"
+version = "0.1.3"
 
 [[package]]
 name = "const-random"
