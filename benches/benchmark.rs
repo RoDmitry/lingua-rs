@@ -15,27 +15,27 @@
  */
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use lingua::{Language, LanguageDetectorBuilder};
+use lingua::{ScriptLanguage, LanguageDetectorBuilder};
 
 // This is the common subset of languages that is supported by all
 // language detection libraries in this benchmark.
-const COMMON_LANGUAGES: &[Language] = &[
-    Language::Arabic,
-    // Language::ChineseSimplified,
-    Language::Dutch,
-    Language::English,
-    Language::French,
-    Language::German,
-    Language::Hindi,
-    Language::Italian,
-    // Language::Japanese,
-    // Language::Korean,
-    Language::Portuguese,
-    Language::Russian,
-    Language::Spanish,
-    Language::Swedish,
-    Language::Turkish,
-    // Language::Vietnamese,
+const COMMON_LANGUAGES: &[ScriptLanguage] = &[
+    ScriptLanguage::Arabic,
+    // ScriptLanguage::ChineseSimplified,
+    ScriptLanguage::Dutch,
+    ScriptLanguage::English,
+    ScriptLanguage::French,
+    ScriptLanguage::German,
+    ScriptLanguage::Hindi,
+    ScriptLanguage::Italian,
+    // ScriptLanguage::Japanese,
+    // ScriptLanguage::Korean,
+    ScriptLanguage::Portuguese,
+    ScriptLanguage::Russian,
+    ScriptLanguage::Spanish,
+    ScriptLanguage::Swedish,
+    ScriptLanguage::Turkish,
+    // ScriptLanguage::Vietnamese,
 ];
 
 const SENTENCES: &[&str] = &[

@@ -845,6 +845,7 @@ impl LanguageDetector {
         AHashMap<ScriptLanguage, f64>,
         Option<AHashMap<ScriptLanguage, usize>>,
     ) {
+        // todo: move prepare_ngrams out of here
         let ngrams = prepare_ngrams(words_iter, ngram_length);
 
         let probabilities =
@@ -941,20 +942,26 @@ impl LanguageDetector {
                 ngram.len()
             );
 
-            for len in (1..=ngram.len()).rev() {
-                // todo: maybe use .windows(len)? and use their average? what if absent? use max probability?
-                let ngram = ngram.get_safe_unchecked(0..len);
-                let probability = language_models
-                    .get(ngram.len() - 1)
-                    .and_then(|m| m.as_deref())
-                    .and_then(|m| m.get(ngram.iter().collect::<String>().as_str()).copied())
-                    .unwrap_or(0.0);
+            // for len in (1..=ngram.len()).rev() {
+            // let ngram = ngram.get_safe_unchecked(0..len);
+            let Some(probability) = language_models
+                .get(ngram.len() - 1)
+                .and_then(|m| m.as_deref())
+                .and_then(|m| m.get(ngram.iter().collect::<String>().as_str()).copied())
+                .or_else(|| {
+                    language_models
+                        .get_safe_unchecked(0)
+                        .map(|m| 1.0 / m.len() as f64)
+                })
+            else {
+                return -f64::INFINITY;
+            };
 
-                if probability > 0.0 {
-                    sum += probability.ln();
-                    break;
-                }
-            }
+            // if probability > 0.0 {
+            sum += probability.ln();
+            // break;
+            // }
+            // }
         }
         sum
     }
@@ -1296,14 +1303,14 @@ mod tests {
             0.01_f64.ln() + 0.02_f64.ln() + 0.03_f64.ln() + 0.04_f64.ln() + 0.05_f64.ln()
         ),
         case(
-            // back off unknown Trigram("tez") to known Bigram("te")
+            // unknown trigram
             vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'z']],
-            0.19_f64.ln() + 0.2_f64.ln() + 0.13_f64.ln()
+            0.0_f64.ln()
         ),
         case(
-            // back off unknown Fivegram("aquas") to known Unigram("a")
+            // unknown fivegram
             vec![vec!['a', 'q', 'u', 'a', 's']],
-            0.01_f64.ln()
+            0.0_f64.ln()
         )
     )]
     fn assert_summation_of_ngram_probabilities_works_correctly(
@@ -1341,14 +1348,14 @@ mod tests {
             )
         ),
         case::trigram_model(
-            vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'r'], vec!['w', 'x', 'y']],
+            vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'r']],
             ahashmap!(
                 English => 0.19_f64.ln() + 0.2_f64.ln() + 0.21_f64.ln(),
                 German => 0.22_f64.ln() + 0.23_f64.ln() + 0.24_f64.ln()
             )
         ),
         case::quadrigram_model(
-            vec![vec!['a', 'l', 't', 'e'], vec!['l', 't', 'e', 'r'], vec!['w', 'x', 'y', 'z']],
+            vec![vec!['a', 'l', 't', 'e'], vec!['l', 't', 'e', 'r']],
             ahashmap!(
                 English => 0.25_f64.ln() + 0.26_f64.ln(),
                 German => 0.27_f64.ln() + 0.28_f64.ln()
