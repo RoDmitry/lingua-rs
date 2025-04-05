@@ -934,6 +934,11 @@ impl LanguageDetector {
             Some(language_models_lock.get_safe_unchecked(i)).filter(|v| !v.is_empty())
         });
 
+        // for languages without models
+        if language_models.get_safe_unchecked(0).is_none() {
+            return -f64::INFINITY;
+        }
+
         let mut sum = 0.0;
         for ngram in ngrams_iter {
             debug_assert!(
@@ -944,18 +949,14 @@ impl LanguageDetector {
 
             // for len in (1..=ngram.len()).rev() {
             // let ngram = ngram.get_safe_unchecked(0..len);
-            let Some(probability) = language_models
+            let probability = language_models
                 .get(ngram.len() - 1)
                 .and_then(|m| m.as_deref())
                 .and_then(|m| m.get(ngram.iter().collect::<String>().as_str()).copied())
-                .or_else(|| {
-                    language_models
-                        .get_safe_unchecked(0)
-                        .map(|m| (1.0 / m.len() as f64).ln())
-                })
-            else {
-                return -f64::INFINITY;
-            };
+                .unwrap_or_else(|| {
+                    let ungram_model = language_models_lock.get_safe_unchecked(0);
+                    (1.0 / ungram_model.len() as f64).ln()
+                });
 
             // if probability > 0.0 {
             sum += probability;
@@ -1011,6 +1012,7 @@ impl LanguageDetector {
                 }
             }
 
+            // unneded check, no difference
             if !sum.is_zero() {
                 summed_up_probabilities.insert(*language, sum.exp());
             }
