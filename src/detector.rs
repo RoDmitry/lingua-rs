@@ -1135,38 +1135,24 @@ mod tests {
                 "t" => 0.03,
                 "e" => 0.04,
                 "r" => 0.05,
-                // unknown unigrams
-                "w" => 0.0
             ),
             ahashmap!(
                 "al" => 0.11,
                 "lt" => 0.12,
                 "te" => 0.13,
                 "er" => 0.14,
-                // unknown bigrams
-                "aq" => 0.0,
-                "wx" => 0.0
             ),
             ahashmap!(
                 "alt" => 0.19,
                 "lte" => 0.2,
                 "ter" => 0.21,
-                // unknown trigrams
-                "aqu" => 0.0,
-                "tez" => 0.0,
-                "wxy" => 0.0
             ),
             ahashmap!(
                 "alte" => 0.25,
                 "lter" => 0.26,
-                // unknown quadrigrams
-                "aqua" => 0.0,
-                "wxyz" => 0.0
             ),
             ahashmap!(
                 "alter" => 0.29,
-                // unknown fivegrams
-                "aquas" => 0.0
             ),
         ])
     }
@@ -1179,29 +1165,21 @@ mod tests {
                 "t" => 0.08,
                 "e" => 0.09,
                 "r" => 0.1,
-                // unknown unigrams
-                "w" => 0.0
             ),
             ahashmap!(
                 "al" => 0.15,
                 "lt" => 0.16,
                 "te" => 0.17,
                 "er" => 0.18,
-                // unknown bigrams
-                "wx" => 0.0
             ),
             ahashmap!(
                 "alt" => 0.22,
                 "lte" => 0.23,
                 "ter" => 0.24,
-                // unknown trigrams
-                "wxy" => 0.0
             ),
             ahashmap!(
                 "alte" => 0.27,
                 "lter" => 0.28,
-                // unknown quadrigrams
-                "wxyz" => 0.0
             ),
             ahashmap!("alter" => 0.3),
         ])
@@ -1225,7 +1203,7 @@ mod tests {
     // ##############################
 
     #[fixture]
-    fn detector_for_english_and_german(
+    fn mock_detector_for_english_and_german(
         mock_languages_models: LanguagesModelsRef,
     ) -> LanguageDetector {
         let languages = ahashset!(English, German);
@@ -1263,16 +1241,16 @@ mod tests {
         case(German, "alter", 0.3)
     )]
     fn assert_ngram_probability_lookup_works_correctly(
-        detector_for_english_and_german: LanguageDetector,
+        mock_detector_for_english_and_german: LanguageDetector,
         language: ScriptLanguage,
         ngram: &str,
         expected_probability: f64,
     ) {
         let ngram_length = ngram.chars().count();
-        detector_for_english_and_german
+        mock_detector_for_english_and_german
             .load_language_models_by_ngram_len(ngram_length, &ahashset!(language));
 
-        let language_models_lock = detector_for_english_and_german
+        let language_models_lock = mock_detector_for_english_and_german
             .languages_models
             .get_safe_unchecked(language as usize)
             .read()
@@ -1284,9 +1262,13 @@ mod tests {
             .unwrap_or(0.0);
 
         assert_eq!(
-            probability, expected_probability.ln(),
+            probability,
+            expected_probability.ln(),
             "expected probability {} for language '{:?}' and ngram '{}', got {}",
-            expected_probability, language, ngram, probability
+            expected_probability,
+            language,
+            ngram,
+            probability
         );
     }
 
@@ -1298,23 +1280,23 @@ mod tests {
             0.01_f64.ln() + 0.02_f64.ln() + 0.03_f64.ln() + 0.04_f64.ln() + 0.05_f64.ln()
         ),
         case(
-            // unknown trigram
+            // last one is unknown trigram
             vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'z']],
-            0.0_f64.ln()
+            0.19_f64.ln() + 0.2_f64.ln() + (1_f64 / 5.0).ln()
         ),
         case(
-            // unknown fivegram
+            // unknown fivegram so we use 1 / num_unigrams
             vec![vec!['a', 'q', 'u', 'a', 's']],
-            0.0_f64.ln()
+            (1_f64 / 5.0).ln()
         )
     )]
     fn assert_summation_of_ngram_probabilities_works_correctly(
-        detector_for_english_and_german: LanguageDetector,
+        mock_detector_for_english_and_german: LanguageDetector,
         ngrams: Vec<Vec<char>>,
         expected_sum_of_probabilities: f64,
     ) {
-        detector_for_english_and_german.load_languages_models(&ahashset!(English));
-        let sum_of_probabilities = detector_for_english_and_german
+        mock_detector_for_english_and_german.load_languages_models(&ahashset!(English));
+        let sum_of_probabilities = mock_detector_for_english_and_german
             .compute_sum_of_ngram_probabilities(English, ngrams.iter().map(|v| v.as_ref()));
 
         assert!(
@@ -1343,27 +1325,27 @@ mod tests {
             )
         ),
         case::trigram_model(
-            vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'r']],
+            vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'r'], vec!['w', 'x', 'y']],
             ahashmap!(
-                English => 0.19_f64.ln() + 0.2_f64.ln() + 0.21_f64.ln(),
-                German => 0.22_f64.ln() + 0.23_f64.ln() + 0.24_f64.ln()
+                English => 0.19_f64.ln() + 0.2_f64.ln() + 0.21_f64.ln() + (1_f64 / 5.0).ln(),
+                German => 0.22_f64.ln() + 0.23_f64.ln() + 0.24_f64.ln() + (1_f64 / 5.0).ln()
             )
         ),
         case::quadrigram_model(
-            vec![vec!['a', 'l', 't', 'e'], vec!['l', 't', 'e', 'r']],
+            vec![vec!['a', 'l', 't', 'e'], vec!['l', 't', 'e', 'r'], vec!['w', 'x', 'y', 'z']],
             ahashmap!(
-                English => 0.25_f64.ln() + 0.26_f64.ln(),
-                German => 0.27_f64.ln() + 0.28_f64.ln()
+                English => 0.25_f64.ln() + 0.26_f64.ln() + (1_f64 / 5.0).ln(),
+                German => 0.27_f64.ln() + 0.28_f64.ln() + (1_f64 / 5.0).ln()
             )
         )
     )]
     fn assert_computation_of_language_probabilities_works_correctly(
-        detector_for_english_and_german: LanguageDetector,
+        mock_detector_for_english_and_german: LanguageDetector,
         ngrams: Vec<Vec<char>>,
         expected_probabilities: AHashMap<ScriptLanguage, f64>,
     ) {
         let languages = ahashset!(English, German);
-        let probabilities = detector_for_english_and_german
+        let probabilities = mock_detector_for_english_and_german
             .compute_language_probabilities(ngrams.iter().map(|v| v.as_ref()), &languages);
 
         for (language, probability) in probabilities {
@@ -1387,11 +1369,11 @@ mod tests {
         case::unknown_ngrams("проарплап", vec![(English, 0.0), (German, 0.0)]),
     )]
     fn test_compute_language_confidence_values(
-        detector_for_english_and_german: LanguageDetector,
+        mock_detector_for_english_and_german: LanguageDetector,
         text: &str,
         expected_confidence_values: Vec<(ScriptLanguage, f64)>,
     ) {
-        let confidence_values = detector_for_english_and_german
+        let confidence_values = mock_detector_for_english_and_german
             .compute_language_confidence_values(text)
             .iter()
             .map(|(language, value)| (*language, round_to_two_decimal_places(*value)))
@@ -1413,13 +1395,13 @@ mod tests {
         case::unknown_language("groß", French, 0.0)
     )]
     fn test_compute_language_confidence(
-        detector_for_english_and_german: LanguageDetector,
+        mock_detector_for_english_and_german: LanguageDetector,
         text: &str,
         language: ScriptLanguage,
         expected_confidence: f64,
     ) {
         let confidence =
-            detector_for_english_and_german.compute_language_confidence(text, language);
+            mock_detector_for_english_and_german.compute_language_confidence(text, language);
 
         assert_eq!(round_to_two_decimal_places(confidence), expected_confidence);
     }
@@ -1431,11 +1413,11 @@ mod tests {
         case("проарплап", None)
     )]
     fn test_detect_language(
-        detector_for_english_and_german: LanguageDetector,
+        mock_detector_for_english_and_german: LanguageDetector,
         word: &str,
         expected_language: Option<ScriptLanguage>,
     ) {
-        let detected_language = detector_for_english_and_german.detect_language_of(word);
+        let detected_language = mock_detector_for_english_and_german.detect_language_of(word);
         assert_eq!(detected_language, expected_language);
     }
 
