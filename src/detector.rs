@@ -951,14 +951,14 @@ impl LanguageDetector {
                 .or_else(|| {
                     language_models
                         .get_safe_unchecked(0)
-                        .map(|m| 1.0 / m.len() as f64)
+                        .map(|m| (1.0 / m.len() as f64).ln())
                 })
             else {
                 return -f64::INFINITY;
             };
 
             // if probability > 0.0 {
-            sum += probability.ln();
+            sum += probability;
             // break;
             // }
             // }
@@ -984,12 +984,7 @@ impl LanguageDetector {
             }
 
             for unigram in ngrams_iter.clone() {
-                let probability = language_model
-                    .get(unigram.iter().collect::<String>().as_str())
-                    .copied()
-                    .unwrap_or(0.0);
-
-                if probability > 0.0 {
+                if language_model.contains_key(unigram.iter().collect::<String>().as_str()) {
                     Self::increment_counter(&mut unigram_counts, language, 1);
                 }
             }
@@ -1123,7 +1118,7 @@ mod tests {
         ngrams_model.map(|model| {
             model
                 .into_iter()
-                .map(|(k, v)| (CompactString::new(k), v))
+                .map(|(k, v)| (CompactString::new(k), v.ln()))
                 .collect()
         })
     }
@@ -1289,7 +1284,7 @@ mod tests {
             .unwrap_or(0.0);
 
         assert_eq!(
-            probability, expected_probability,
+            probability, expected_probability.ln(),
             "expected probability {} for language '{:?}' and ngram '{}', got {}",
             expected_probability, language, ngram, probability
         );

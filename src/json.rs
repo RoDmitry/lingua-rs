@@ -78,7 +78,7 @@ pub(crate) fn parse_model(
 ) -> AHashMap<CompactString, f64> {
     let mut res = AHashMap::new();
     for (fraction, ngrams) in model_fraction_ngrams {
-        let floating_point_value = fraction.to_f64();
+        let floating_point_value = fraction.to_f64().ln();
         for ngram in &ngrams.chars().chunks(ngram_length) {
             res.insert(ngram.collect::<CompactString>(), floating_point_value);
         }
