@@ -160,7 +160,7 @@ impl<'t> TrainingDataLanguageModel<'t> {
 pub(crate) fn prepare_ngrams<'a>(
     words: impl Iterator<Item = &'a [char]>,
     ngram_length: usize,
-) -> AHashSet<&'a [char]> {
+) -> AHashSet<String> {
     debug_assert!(
         (1..6).contains(&ngram_length),
         "ngram length {ngram_length} is not in range 1..6"
@@ -175,7 +175,7 @@ pub(crate) fn prepare_ngrams<'a>(
             for i in 0..=chars_count - ngram_length {
                 // let slice = get_utf8_slice(word, i, i + ngram_length);
                 // ngrams.insert(NgramRef::new(slice));
-                ngrams.insert(&word[i..ngram_length + i]);
+                ngrams.insert(word[i..ngram_length + i].iter().collect());
             }
         }
     }
