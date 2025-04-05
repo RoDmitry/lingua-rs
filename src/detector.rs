@@ -21,9 +21,55 @@ use itertools::Itertools;
 use rayon::prelude::*;
 
 const NGRAM_MAX_SIZE: usize = 5;
-type LanguageModel = AHashMap<CompactString, f64>;
-type LanguageModels = [LanguageModel; NGRAM_MAX_SIZE];
-type LanguagesModels = ScriptLanguageArr<RwLock<LanguageModels>>;
+type LanguageModelNgram = AHashMap<CompactString, f64>;
+type LanguageModelNgrams = [LanguageModelNgram; NGRAM_MAX_SIZE];
+
+struct LanguageModel {
+    ngrams: LanguageModelNgrams,
+    min_probability: f64,
+}
+
+impl Default for LanguageModel {
+    #[inline]
+    fn default() -> Self {
+        Self {
+            ngrams: Default::default(),
+            min_probability: f64::NEG_INFINITY,
+        }
+    }
+}
+
+impl LanguageModel {
+    #[inline]
+    fn update_ngram(&mut self, ngram_model: LanguageModelNgram, index: usize) {
+        if index == 0 {
+            self.min_probability = if !ngram_model.is_empty() {
+                (1.0 / ngram_model.len() as f64).ln()
+            } else {
+                f64::NEG_INFINITY
+            }
+        }
+        self.ngrams.get_mut(index).map(|v| *v = ngram_model);
+    }
+}
+
+impl From<LanguageModelNgrams> for LanguageModel {
+    #[inline]
+    fn from(ngrams: LanguageModelNgrams) -> Self {
+        let min_probability = if !ngrams.get_safe_unchecked(0).is_empty() {
+            (1.0 / ngrams.get_safe_unchecked(0).len() as f64).ln()
+        } else {
+            f64::NEG_INFINITY
+        };
+
+        Self {
+            ngrams,
+            min_probability,
+        }
+    }
+}
+
+type LanguagesModels = ScriptLanguageArr<RwLock<LanguageModel>>;
 type LanguagesModelsRef = &'static LanguagesModels;
 
 static LANGUAGES_MODELS: LazyLock<LanguagesModels> =
@@ -915,14 +961,14 @@ impl LanguageDetector {
         language: ScriptLanguage,
         ngrams_iter: impl Iterator<Item = &'a [char]>,
     ) -> f64 {
-        let language_models_lock = self
+        let language_model_lock = self
             .languages_models
             .get_safe_unchecked(language as usize)
             .read()
             .unwrap();
 
         let language_models: [_; NGRAM_MAX_SIZE] = ::core::array::from_fn(|i| {
-            Some(language_models_lock.get_safe_unchecked(i)).filter(|v| !v.is_empty())
+            Some(language_model_lock.ngrams.get_safe_unchecked(i)).filter(|v| !v.is_empty())
         });
 
         // for languages without models
@@ -942,10 +988,7 @@ impl LanguageDetector {
                 .get(ngram.len() - 1)
                 .and_then(|m| m.as_deref())
                 .and_then(|m| m.get(ngram.iter().collect::<String>().as_str()).copied())
-                .unwrap_or_else(|| {
-                    let ungram_model = language_models_lock.get_safe_unchecked(0);
-                    (1.0 / ungram_model.len() as f64).ln()
-                });
+                .unwrap_or(language_model_lock.min_probability);
 
             sum += probability;
         }
@@ -959,12 +1002,12 @@ impl LanguageDetector {
     ) -> AHashMap<ScriptLanguage, usize> {
         let mut unigram_counts = AHashMap::new();
         for language in filtered_languages {
-            let language_model_guard = self
+            let language_model_lock = self
                 .languages_models
                 .get_safe_unchecked(language as usize)
                 .read()
                 .unwrap();
-            let language_model = language_model_guard.get_safe_unchecked(0);
+            let language_model = language_model_lock.ngrams.get_safe_unchecked(0);
             if language_model.is_empty() {
                 continue;
             }
@@ -1012,19 +1055,30 @@ impl LanguageDetector {
         let ngram_models = self.languages_models.get_safe_unchecked(language as usize);
         let index = ngram_length - 1;
         let ngram_models_guard = ngram_models.read().unwrap();
-        if ngram_models_guard.get_safe_unchecked(index).capacity() > 0 {
+        if ngram_models_guard
+            .ngrams
+            .get_safe_unchecked(index)
+            .capacity()
+            > 0
+        {
             return;
         }
         drop(ngram_models_guard);
         let mut ngram_models_guard = ngram_models.write().unwrap();
-        if ngram_models_guard.get_safe_unchecked(index).capacity() > 0 {
+        if ngram_models_guard
+            .ngrams
+            .get_safe_unchecked(index)
+            .capacity()
+            > 0
+        {
             return;
         }
-        let lang_model = load_model(language, ngram_length);
-        *ngram_models_guard.get_safe_unchecked_mut(index) = match lang_model {
-            Ok(lang_model) => parse_model(lang_model, ngram_length),
+        let ngram_model_raw = load_model(language, ngram_length);
+        let ngram_model = match ngram_model_raw {
+            Ok(m) => parse_model(m, ngram_length),
             _ => AHashMap::with_capacity(1),
-        }
+        };
+        ngram_models_guard.update_ngram(ngram_model, index);
     }
 
     fn increment_counter<T: Eq + Hash, S: BuildHasher>(
@@ -1098,13 +1152,14 @@ mod tests {
 
     fn create_mock_language_models(
         ngrams_model: [AHashMap<&'static str, f64>; NGRAM_MAX_SIZE],
-    ) -> LanguageModels {
-        ngrams_model.map(|model| {
+    ) -> LanguageModel {
+        let ngrams = ngrams_model.map(|model| {
             model
                 .into_iter()
                 .map(|(k, v)| (CompactString::new(k), v.ln()))
                 .collect()
-        })
+        });
+        LanguageModel::from(ngrams)
     }
 
     fn round_to_two_decimal_places(value: f64) -> f64 {
@@ -1112,7 +1167,7 @@ mod tests {
     }
 
     const ENGLISH_UNIGRAMS_COUNT: f64 = 7.0;
-    fn language_model_for_english() -> LanguageModels {
+    fn language_model_for_english() -> LanguageModel {
         create_mock_language_models([
             ahashmap!(
                 "a" => 0.01,
@@ -1146,7 +1201,7 @@ mod tests {
     }
 
     const GERMAN_UNIGRAMS_COUNT: f64 = 6.0;
-    fn language_model_for_german() -> LanguageModels {
+    fn language_model_for_german() -> LanguageModel {
         create_mock_language_models([
             ahashmap!(
                 "a" => 0.06,
@@ -1240,13 +1295,13 @@ mod tests {
         mock_detector_for_english_and_german
             .load_language_models_by_ngram_len(ngram_length, &ahashset!(language));
 
-        let language_models_lock = mock_detector_for_english_and_german
+        let language_model_lock = mock_detector_for_english_and_german
             .languages_models
             .get_safe_unchecked(language as usize)
             .read()
             .unwrap();
 
-        let probability = language_models_lock[ngram_length - 1]
+        let probability = language_model_lock.ngrams[ngram_length - 1]
             .get(ngram)
             .copied()
             .unwrap_or(f64::NEG_INFINITY);
