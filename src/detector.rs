@@ -654,7 +654,10 @@ impl LanguageDetector {
             probabilities_and_unigram_counts.first().map(|(p, _)| p),
             probabilities_sums,
         ); */
-        // println!("res {:?}", &values[..values.len().min(5)]);
+        /* println!(
+            "res {:?}",
+            &probabilities_sums[..probabilities_sums.len().min(5)]
+        ); */
 
         probabilities_sums
     }
@@ -856,6 +859,19 @@ impl LanguageDetector {
         if probabilities.is_empty() {
             return;
         }
+
+        if probabilities.first().unwrap().1.is_zero() {
+            let zeroes = probabilities
+                .iter()
+                .position(|(_, p)| !p.is_zero())
+                .unwrap_or(probabilities.len());
+            probabilities.truncate(zeroes);
+            let len = zeroes as f64;
+            probabilities.iter_mut().for_each(|(_, p)| *p = 1.0 / len);
+
+            return;
+        }
+
         probabilities.iter_mut().for_each(|(_, p)| *p = p.exp());
         let denominator: f64 = probabilities.iter().map(|(_, p)| *p).sum();
 
@@ -981,10 +997,7 @@ impl LanguageDetector {
                 }
             }
 
-            // unneded check, maybe faster with it
-            if !sum.is_zero() {
-                summed_up_probabilities.push((*language, sum));
-            }
+            summed_up_probabilities.push((*language, sum));
         }
 
         summed_up_probabilities
@@ -1098,6 +1111,7 @@ mod tests {
         (value * 100.0).round() / 100.0
     }
 
+    const ENGLISH_UNIGRAMS_COUNT: f64 = 7.0;
     fn language_model_for_english() -> LanguageModels {
         create_mock_language_models([
             ahashmap!(
@@ -1106,6 +1120,8 @@ mod tests {
                 "t" => 0.03,
                 "e" => 0.04,
                 "r" => 0.05,
+                "o" => 1.0,
+                "k" => 1.0,
             ),
             ahashmap!(
                 "al" => 0.11,
@@ -1129,6 +1145,7 @@ mod tests {
         ])
     }
 
+    const GERMAN_UNIGRAMS_COUNT: f64 = 6.0;
     fn language_model_for_german() -> LanguageModels {
         create_mock_language_models([
             ahashmap!(
@@ -1137,6 +1154,7 @@ mod tests {
                 "t" => 0.08,
                 "e" => 0.09,
                 "r" => 0.1,
+                "o" => 1.0,
             ),
             ahashmap!(
                 "al" => 0.15,
@@ -1252,16 +1270,16 @@ mod tests {
         case(
             // last one is unknown trigram
             vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'z']],
-            0.19_f64.ln() + 0.2_f64.ln() + (1_f64 / 5.0).ln()
+            0.19_f64.ln() + 0.2_f64.ln() + (1_f64 / ENGLISH_UNIGRAMS_COUNT).ln()
         ),
         case(
-            // unknown fivegram so we use 1 / num_unigrams
+            // unknown fivegram
             vec![vec!['a', 'q', 'u', 'a', 's']],
-            (1_f64 / 5.0).ln()
+            (1_f64 / ENGLISH_UNIGRAMS_COUNT).ln()
         ),
         case(
-            // only English fivegram
-            vec![vec!['e', 'n', 'g', 'l', 'i']],
+            // English only unigram
+            vec![vec!['k']],
             1.0_f64.ln()
         )
     )]
@@ -1297,15 +1315,15 @@ mod tests {
         case::trigram_model(
             vec![vec!['a', 'l', 't'], vec!['l', 't', 'e'], vec!['t', 'e', 'r'], vec!['w', 'x', 'y']],
             ahashmap!(
-                English => 0.19_f64.ln() + 0.2_f64.ln() + 0.21_f64.ln() + (1_f64 / 5.0).ln(),
-                German => 0.22_f64.ln() + 0.23_f64.ln() + 0.24_f64.ln() + (1_f64 / 5.0).ln()
+                English => 0.19_f64.ln() + 0.2_f64.ln() + 0.21_f64.ln() + (1_f64 / ENGLISH_UNIGRAMS_COUNT).ln(),
+                German => 0.22_f64.ln() + 0.23_f64.ln() + 0.24_f64.ln() + (1_f64 / GERMAN_UNIGRAMS_COUNT).ln()
             )
         ),
         case::quadrigram_model(
             vec![vec!['a', 'l', 't', 'e'], vec!['l', 't', 'e', 'r'], vec!['w', 'x', 'y', 'z']],
             ahashmap!(
-                English => 0.25_f64.ln() + 0.26_f64.ln() + (1_f64 / 5.0).ln(),
-                German => 0.27_f64.ln() + 0.28_f64.ln() + (1_f64 / 5.0).ln()
+                English => 0.25_f64.ln() + 0.26_f64.ln() + (1_f64 / ENGLISH_UNIGRAMS_COUNT).ln(),
+                German => 0.27_f64.ln() + 0.28_f64.ln() + (1_f64 / GERMAN_UNIGRAMS_COUNT).ln()
             )
         )
     )]
@@ -1336,6 +1354,8 @@ mod tests {
         expected_confidence,
         case::language_detected_by_rules("groß", vec![(German, 1.0)]),
         case::known_ngrams("Alter", vec![(German, 0.81), (English, 0.19)]),
+        case::english_only_ngrams("k", vec![(English, 1.0)]),
+        case::unique_ngrams("o", vec![(English, 0.5), (German, 0.5)]),
         case::unknown_ngrams("проарплап", vec![]),
     )]
     fn test_compute_confidence(
@@ -1360,6 +1380,7 @@ mod tests {
         case::english_detected_by_rules("groß", English, 0.0),
         case::german_known_ngrams("Alter", German, 0.81),
         case::english_known_ngrams("Alter", English, 0.19),
+        case::english_only_ngrams("k", English, 1.0),
         case::german_unknown_ngrams("проарплап", German, 0.0),
         case::english_unknown_ngrams("проарплап", English, 0.0),
         case::unknown_language("groß", French, 0.0)
