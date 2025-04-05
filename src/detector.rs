@@ -160,7 +160,7 @@ impl LanguageDetector {
     ///
     /// This method operates in a single thread. If you want to classify
     /// a very large set of texts, you will probably want to use method
-    /// [`detect_languages_in_parallel`](#method.detect_languages_in_parallel)
+    /// [`detect_in_parallel`](#method.detect_in_parallel)
     /// instead.
     ///
     /// ```
@@ -175,12 +175,12 @@ impl LanguageDetector {
     /// ])
     /// .build();
     ///
-    /// let detected_language = detector.detect_language("languages are awesome");
+    /// let detected_language = detector.detect("languages are awesome");
     ///
     /// assert_eq!(detected_language, Some(English));
     /// ```
-    pub fn detect_language(&self, text: &str) -> Option<ScriptLanguage> {
-        self.detect_language_from_languages(text, &self.languages)
+    pub fn detect(&self, text: &str) -> Option<ScriptLanguage> {
+        self.detect_with_languages(text, &self.languages)
     }
 
     /// Detects the languages of all given input texts.
@@ -192,7 +192,7 @@ impl LanguageDetector {
     /// cores are available and how many texts are passed to this method.
     ///
     /// If you do not want or need parallel execution, use method
-    /// [`detect_language`](#method.detect_language) instead.
+    /// [`detect`](#method.detect) instead.
     ///
     /// ```
     /// use lingua::Language::{English, French, German, Spanish};
@@ -206,7 +206,7 @@ impl LanguageDetector {
     /// ])
     /// .build();
     ///
-    /// let detected_languages = detector.detect_languages_in_parallel(&[
+    /// let detected_languages = detector.detect_in_parallel(&[
     ///     "languages are awesome",
     ///     "Sprachen sind großartig",
     ///     "des langues sont géniales",
@@ -224,14 +224,14 @@ impl LanguageDetector {
     /// );
     /// ```
     #[cfg(not(target_family = "wasm"))]
-    pub fn detect_languages_in_parallel(&self, texts: &[&str]) -> Vec<Option<ScriptLanguage>> {
+    pub fn detect_in_parallel(&self, texts: &[&str]) -> Vec<Option<ScriptLanguage>> {
         texts
             .into_par_iter()
-            .map(|text| self.detect_language(text))
+            .map(|text| self.detect(text))
             .collect()
     }
 
-    pub fn detect_language_from_languages<S: BuildHasher + Default>(
+    pub fn detect_with_languages<S: BuildHasher + Default>(
         &self,
         text: &str,
         languages: &HashSet<ScriptLanguage, S>,
@@ -269,7 +269,7 @@ impl LanguageDetector {
     ///
     /// This method operates in a single thread. If you want to classify
     /// a very large set of texts, you will probably want to use method
-    /// [`detect_multiple_languages_in_parallel`](#method.detect_multiple_languages_in_parallel)
+    /// [`detect_multiple_in_parallel`](#method.detect_multiple_in_parallel)
     /// instead.
     /// ```
     /// use lingua::Language::{English, French, German};
@@ -286,7 +286,7 @@ impl LanguageDetector {
     ///     Ich spreche Französisch nur ein bisschen. \
     ///     A little bit is better than nothing.";
     ///
-    /// let results = detector.detect_multiple_languages(sentence);
+    /// let results = detector.detect_multiple(sentence);
     ///
     /// if let [first, second, third] = &results[..] {
     ///     assert_eq!(first.language(), French);
@@ -308,7 +308,7 @@ impl LanguageDetector {
     ///     );
     /// }
     /// ```
-    pub fn detect_multiple_languages(&self, text_str: &str) -> Vec<DetectionResult> {
+    pub fn detect_multiple(&self, text_str: &str) -> Vec<DetectionResult> {
         if text_str.is_empty() {
             return vec![];
         }
@@ -325,7 +325,7 @@ impl LanguageDetector {
         let mut results = vec![];
         let mut language_counts = AHashMap::new();
 
-        let language = self.detect_language(text_str);
+        let language = self.detect(text_str);
         if let Some(lang) = language {
             Self::increment_counter(&mut language_counts, lang, 1);
         }
@@ -334,7 +334,7 @@ impl LanguageDetector {
             if word.chars().count() < 5 {
                 continue;
             }
-            let language = self.detect_language(word);
+            let language = self.detect(word);
             if let Some(lang) = language {
                 Self::increment_counter(&mut language_counts, lang, 1);
             }
@@ -364,7 +364,7 @@ impl LanguageDetector {
 
             for (i, token_match) in token_matches.enumerate() {
                 let word = token_match.as_str();
-                let language = self.detect_language_from_languages(word, &languages);
+                let language = self.detect_with_languages(word, &languages);
 
                 if i == 0 || (current_language.is_none() && language.is_some()) {
                     current_language = language;
@@ -446,16 +446,13 @@ impl LanguageDetector {
     /// cores are available and how many texts are passed to this method.
     ///
     /// If you do not want or need parallel execution, use method
-    /// [`detect_multiple_languages`](#method.detect_multiple_languages)
+    /// [`detect_multiple`](#method.detect_multiple)
     /// instead.
     #[cfg(not(target_family = "wasm"))]
-    pub fn detect_multiple_languages_in_parallel(
-        &self,
-        texts: &[&str],
-    ) -> Vec<Vec<DetectionResult>> {
+    pub fn detect_multiple_in_parallel(&self, texts: &[&str]) -> Vec<Vec<DetectionResult>> {
         texts
             .into_par_iter()
-            .map(|text| self.detect_multiple_languages(text))
+            .map(|text| self.detect_multiple(text))
             .collect()
     }
 
@@ -1493,22 +1490,18 @@ mod tests {
         case("Alter", Some(German)),
         case("проарплап", None)
     )]
-    fn test_detect_language(
+    fn test_detect(
         mock_detector_for_english_and_german: LanguageDetector,
         word: &str,
         expected_language: Option<ScriptLanguage>,
     ) {
-        let detected_language = mock_detector_for_english_and_german.detect_language(word);
+        let detected_language = mock_detector_for_english_and_german.detect(word);
         assert_eq!(detected_language, expected_language);
     }
 
     #[rstest]
-    fn test_detect_multiple_languages_for_empty_string(
-        detector_for_all_languages: LanguageDetector,
-    ) {
-        assert!(detector_for_all_languages
-            .detect_multiple_languages("")
-            .is_empty());
+    fn test_detect_multiple_for_empty_string(detector_for_all_languages: LanguageDetector) {
+        assert!(detector_for_all_languages.detect_multiple("").is_empty());
     }
 
     #[rstest(
@@ -1523,13 +1516,13 @@ mod tests {
         case::english_2("I'm frightened! 🙈", 3, English),
         case::kazakh("V төзімділік спорт", 3, Kazakh)
     )]
-    fn test_detect_multiple_languages_with_one_language(
+    fn test_detect_multiple_with_one_language(
         detector_for_all_languages: LanguageDetector,
         sentence: &str,
         expected_word_count: usize,
         expected_language: ScriptLanguage,
     ) {
-        let results = detector_for_all_languages.detect_multiple_languages(sentence);
+        let results = detector_for_all_languages.detect_multiple(sentence);
         assert_eq!(results.len(), 1);
 
         let result = &results[0];
@@ -1575,7 +1568,7 @@ mod tests {
             Russian
         )
     )]
-    fn test_detect_multiple_languages_with_two_languages(
+    fn test_detect_multiple_with_two_languages(
         detector_for_all_languages: LanguageDetector,
         sentence: &str,
         expected_first_substring: &str,
@@ -1585,7 +1578,7 @@ mod tests {
         expected_second_word_count: usize,
         expected_second_language: ScriptLanguage,
     ) {
-        let results = detector_for_all_languages.detect_multiple_languages(sentence);
+        let results = detector_for_all_languages.detect_multiple(sentence);
         assert_eq!(results.len(), 2);
 
         let first_result = &results[0];
@@ -1637,7 +1630,7 @@ mod tests {
             English
         ), */
     )]
-    fn test_detect_multiple_languages_with_three_languages(
+    fn test_detect_multiple_with_three_languages(
         detector_for_all_languages: LanguageDetector,
         sentence: &str,
         expected_first_substring: &str,
@@ -1650,7 +1643,7 @@ mod tests {
         expected_third_word_count: usize,
         expected_third_language: ScriptLanguage,
     ) {
-        let results = detector_for_all_languages.detect_multiple_languages(sentence);
+        let results = detector_for_all_languages.detect_multiple(sentence);
         assert_eq!(results.len(), 3, "{} {:?}", sentence, results);
 
         let first_result = &results[0];
@@ -1702,7 +1695,7 @@ mod tests {
             English
         )
     )]
-    fn test_detect_multiple_languages_with_four_languages(
+    fn test_detect_multiple_with_four_languages(
         detector_for_all_languages: LanguageDetector,
         sentence: &str,
         expected_first_substring: &str,
@@ -1718,7 +1711,7 @@ mod tests {
         expected_fourth_word_count: usize,
         expected_fourth_language: Language,
     ) {
-        let results = detector_for_all_languages.detect_multiple_languages(sentence);
+        let results = detector_for_all_languages.detect_multiple(sentence);
         assert_eq!(results.len(), 4, "{:?}", results);
 
         let first_result = &results[0];
@@ -1768,7 +1761,7 @@ mod tests {
             .with_preloaded_language_models()
             .build();
 
-        let language = detector.detect_language(text);
+        let language = detector.detect(text);
         assert_eq!(language, expected_language);
     }
 
@@ -1800,10 +1793,7 @@ mod tests {
         detector_for_all_languages: LanguageDetector,
         invalid_str: &str,
     ) {
-        assert_eq!(
-            detector_for_all_languages.detect_language(invalid_str),
-            None
-        );
+        assert_eq!(detector_for_all_languages.detect(invalid_str), None);
     }
 
     #[rstest(text, expected_language, case("I know you әлем", Some(English)))]
@@ -1812,10 +1802,7 @@ mod tests {
         text: &str,
         expected_language: Option<ScriptLanguage>,
     ) {
-        assert_eq!(
-            detector_for_all_languages.detect_language(text),
-            expected_language
-        );
+        assert_eq!(detector_for_all_languages.detect(text), expected_language);
     }
 
     #[rstest(text, languages,
@@ -1833,7 +1820,7 @@ mod tests {
             LanguageDetector::from(languages.iter().cloned().collect(), 0.0, true, false);
         let mut detected_languages = AHashSet::new();
         for _ in 0..100 {
-            let language = detector.detect_language(text);
+            let language = detector.detect(text);
             detected_languages.insert(language.unwrap());
         }
         assert_eq!(
@@ -1848,10 +1835,10 @@ mod tests {
     fn test_low_accuracy_mode() {
         let detector = LanguageDetector::from(ahashset!(English, German), 0.0, true, true);
 
-        assert_ne!(detector.detect_language("bed"), None);
-        assert_ne!(detector.detect_language("be"), None);
-        assert_ne!(detector.detect_language("b"), None);
+        assert_ne!(detector.detect("bed"), None);
+        assert_ne!(detector.detect("be"), None);
+        assert_ne!(detector.detect("b"), None);
 
-        assert_eq!(detector.detect_language(""), None);
+        assert_eq!(detector.detect(""), None);
     }
 }

@@ -109,7 +109,7 @@ fn main() {
         .expect("expected input via stdin");
     let text = String::from_utf8(buf).expect("Input should be valid utf-8");
 
-    let results = detector.detect_multiple_languages(&text);
+    let results = detector.detect_multiple(&text);
     print_with_offset(&results, &text, &args.delimiter)
 }
 
