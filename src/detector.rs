@@ -49,7 +49,9 @@ impl LanguageModel {
                 f64::NEG_INFINITY
             }
         }
-        self.ngrams.get_mut(index).map(|v| *v = ngram_model);
+        if let Some(n) = self.ngrams.get_mut(index) {
+            *n = ngram_model
+        }
     }
 }
 
@@ -865,8 +867,11 @@ impl LanguageDetector {
         // todo: move prepare_ngrams out of here
         let ngrams = prepare_ngrams(words_iter, ngram_length);
 
-        let probabilities =
-            self.compute_languages_ngrams_confidence(ngrams.iter().copied(), filtered_languages);
+        let probabilities = self.compute_languages_ngrams_confidence(
+            ngrams.iter().copied(),
+            filtered_languages,
+            // ngram_length,
+        );
 
         let unigram_counts = if ngram_length == 1 {
             Some(if !probabilities.is_empty() {
@@ -885,10 +890,12 @@ impl LanguageDetector {
         &'a self,
         ngrams_iter: impl Iterator<Item = &'a [char]> + Clone,
         filtered_languages: &AHashSet<ScriptLanguage>,
+        // ngram_length: usize,
     ) -> AHashMap<ScriptLanguage, f64> {
         let mut probabilities = AHashMap::with_capacity(filtered_languages.len());
         for &language in filtered_languages.iter() {
-            let sum = self.compute_ngrams_confidence(language, ngrams_iter.clone());
+            let sum = self
+                .compute_ngrams_confidence(language, ngrams_iter.clone() /* , ngram_length */);
             if sum < 0.0 {
                 probabilities.insert(language, sum);
             }
@@ -926,7 +933,9 @@ impl LanguageDetector {
         // So we simply set the probability of the most likely language to 1.0 and
         // leave the other languages at 0.0.
         if denominator.is_zero() {
-            probabilities.first_mut().map(|(_, p)| *p = 1.0);
+            if let Some((_, p)) = probabilities.first_mut() {
+                *p = 1.0
+            }
             probabilities.truncate(1);
             // For very long inputs, only trigrams are used, so we safely access first.
             /* let probability_map = probability_map.unwrap();
@@ -960,6 +969,7 @@ impl LanguageDetector {
         &'a self,
         language: ScriptLanguage,
         ngrams_iter: impl Iterator<Item = &'a [char]>,
+        // ngram_length: usize,
     ) -> f64 {
         let language_model_lock = self
             .languages_models
@@ -967,14 +977,17 @@ impl LanguageDetector {
             .read()
             .unwrap();
 
-        let language_models: [_; NGRAM_MAX_SIZE] = ::core::array::from_fn(|i| {
-            Some(language_model_lock.ngrams.get_safe_unchecked(i)).filter(|v| !v.is_empty())
-        });
-
-        // for languages without models
-        if language_models.get_safe_unchecked(0).is_none() {
+        // for languages without models, unneded, maybe check by ngram.len()
+        if language_model_lock.ngrams.get_safe_unchecked(0).is_empty() {
             return f64::NEG_INFINITY;
-        }
+        };
+        /* let Some(language_model) = language_model_lock
+            .ngrams
+            .get(ngram_length - 1)
+            .filter(|m| !m.is_empty())
+        else {
+            return f64::NEG_INFINITY;
+        }; */
 
         let mut sum = 0.0;
         for ngram in ngrams_iter {
@@ -984,11 +997,17 @@ impl LanguageDetector {
                 ngram.len()
             );
 
-            let probability = language_models
+            let probability = language_model_lock
+                .ngrams
                 .get(ngram.len() - 1)
-                .and_then(|m| m.as_deref())
+                .filter(|m| !m.is_empty())
                 .and_then(|m| m.get(ngram.iter().collect::<String>().as_str()).copied())
                 .unwrap_or(language_model_lock.min_probability);
+
+            /*let probability = language_model
+            .get(ngram.iter().collect::<String>().as_str())
+            .copied()
+            .unwrap_or(language_model_lock.min_probability);*/
 
             sum += probability;
         }
@@ -1344,8 +1363,11 @@ mod tests {
         expected_ngrams_confidence: f64,
     ) {
         mock_detector_for_english_and_german.load_languages_models(&ahashset!(English));
-        let ngrams_confidence = mock_detector_for_english_and_german
-            .compute_ngrams_confidence(English, ngrams.iter().map(|v| v.as_ref()));
+        let ngrams_confidence = mock_detector_for_english_and_german.compute_ngrams_confidence(
+            English,
+            ngrams.iter().map(|v| v.as_ref()),
+            // ngrams[0].len(),
+        );
 
         assert!(
             approx_eq!(f64, ngrams_confidence, expected_ngrams_confidence, ulps = 1),
@@ -1389,7 +1411,11 @@ mod tests {
     ) {
         let languages = ahashset!(English, German);
         let probabilities = mock_detector_for_english_and_german
-            .compute_languages_ngrams_confidence(ngrams.iter().map(|v| v.as_ref()), &languages);
+            .compute_languages_ngrams_confidence(
+                ngrams.iter().map(|v| v.as_ref()),
+                &languages,
+                // ngrams[0].len(),
+            );
 
         for (language, probability) in probabilities {
             let expected_probability = expected_probabilities[&language];
