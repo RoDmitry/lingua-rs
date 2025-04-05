@@ -12,7 +12,9 @@ use ::std::{
     sync::{LazyLock, RwLock},
 };
 use ahash::{AHashMap, AHashSet};
-use alphabet_detector::{fulltext_langs_best, Script, ScriptLanguage, ScriptLanguageArr};
+use alphabet_detector::{
+    fulltext_langs_best, slang_arr_default_nc, Script, ScriptLanguage, ScriptLanguageArr,
+};
 use compact_str::CompactString;
 use debug_unsafe::slice::SliceGetter;
 use fraction::Zero;
@@ -861,7 +863,7 @@ impl LanguageDetector {
         ngram_length: usize,
         filtered_languages: &AHashSet<ScriptLanguage>,
     ) -> (
-        AHashMap<ScriptLanguage, f64>,
+        ScriptLanguageArr<f64>,
         Option<AHashMap<ScriptLanguage, usize>>,
     ) {
         // todo: move prepare_ngrams out of here
@@ -877,7 +879,11 @@ impl LanguageDetector {
             Some(if !probabilities.is_empty() {
                 self.count_unigrams(
                     ngrams.iter().map(String::as_str),
-                    probabilities.keys().copied(),
+                    probabilities
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, p)| !p.is_zero())
+                        .map(|(l, _)| ScriptLanguage::from(l)),
                 )
             } else {
                 self.count_unigrams(
@@ -897,13 +903,11 @@ impl LanguageDetector {
         ngrams_iter: impl Iterator<Item = &'a str> + Clone,
         filtered_languages: &AHashSet<ScriptLanguage>,
         ngram_length: usize,
-    ) -> AHashMap<ScriptLanguage, f64> {
-        let mut probabilities = AHashMap::with_capacity(filtered_languages.len());
+    ) -> ScriptLanguageArr<f64> {
+        let mut probabilities = slang_arr_default_nc();
         for &language in filtered_languages.iter() {
             let sum = self.compute_ngrams_confidence(language, ngrams_iter.clone(), ngram_length);
-            if sum < 0.0 {
-                probabilities.insert(language, sum);
-            }
+            *probabilities.get_safe_unchecked_mut(language as usize) = sum;
         }
         probabilities
     }
@@ -1036,24 +1040,24 @@ impl LanguageDetector {
 
     fn sum_up_probabilities<'a>(
         &'a self,
-        probability_maps: impl Iterator<Item = &'a AHashMap<ScriptLanguage, f64>> + Clone,
+        probability_maps: impl Iterator<Item = &'a ScriptLanguageArr<f64>> + Clone,
         unigram_counts: Option<&AHashMap<ScriptLanguage, usize>>,
         filtered_languages: AHashSet<ScriptLanguage>,
     ) -> Vec<(ScriptLanguage, f64)> {
         let mut summed_up_probabilities = Vec::with_capacity(filtered_languages.len());
-        for language in filtered_languages.iter() {
+        for language in filtered_languages.into_iter() {
             let mut sum: f64 = probability_maps
                 .clone()
-                .filter_map(|it| it.get(language).copied())
+                .map(|it| *it.get_safe_unchecked(language as usize))
                 .sum();
 
             if let Some(counts) = unigram_counts {
-                if let Some(&count) = counts.get(language) {
+                if let Some(&count) = counts.get(&language) {
                     sum /= count as f64;
                 }
             }
 
-            summed_up_probabilities.push((*language, sum));
+            summed_up_probabilities.push((language, sum));
         }
 
         summed_up_probabilities
@@ -1411,7 +1415,11 @@ mod tests {
                 ngrams[0].chars().count(),
             );
 
-        for (language, probability) in probabilities {
+        for (language, probability) in probabilities.into_iter().enumerate() {
+            if probability.is_zero() {
+                continue;
+            }
+            let language = ScriptLanguage::from(language);
             let expected_probability = expected_probabilities[&language];
 
             assert!(
