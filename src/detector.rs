@@ -698,7 +698,7 @@ impl LanguageDetector {
             return Default::default();
         }
 
-        probabilities_sums.sort_by(order_by_probability);
+        probabilities_sums.sort_by(order_by_probability_and_lang);
         /* self.compute_confidence_values(
             &mut values,
             probabilities_and_unigram_counts.first().map(|(p, _)| p),
@@ -1108,8 +1108,15 @@ impl LanguageDetector {
     }
 }
 
-fn order_by_probability(first: &(ScriptLanguage, f64), second: &(ScriptLanguage, f64)) -> Ordering {
-    second.1.partial_cmp(&first.1).unwrap()
+fn order_by_probability_and_lang(
+    first: &(ScriptLanguage, f64),
+    second: &(ScriptLanguage, f64),
+) -> Ordering {
+    second
+        .1
+        .partial_cmp(&first.1)
+        .unwrap()
+        .then_with(|| first.0.cmp(&second.0))
 }
 
 /* fn update_confidence_values(
