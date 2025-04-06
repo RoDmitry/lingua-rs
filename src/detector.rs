@@ -4,11 +4,13 @@ use crate::{
     model::prepare_ngrams,
     result::DetectionResult,
 };
-use ::std::{
+use ::core::{
     cmp::Ordering,
-    collections::{HashMap, HashSet},
     hash::{BuildHasher, Hash},
     ops::Range,
+};
+use ::std::{
+    collections::{HashMap, HashSet},
     sync::{LazyLock, RwLock},
 };
 use ahash::{AHashMap, AHashSet};
