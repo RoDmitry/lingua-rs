@@ -67,7 +67,7 @@ fn benchmark_detector(c: &mut Criterion) {
     group_all_preloaded.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_all_languages_preloaded.detect_language(sentence));
+                black_box(high_accuracy_detector_all_languages_preloaded.detect(sentence));
             });
         });
     });
@@ -80,7 +80,7 @@ fn benchmark_detector(c: &mut Criterion) {
     group_all_preloaded.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_all_languages_preloaded.detect_language(sentence));
+                black_box(low_accuracy_detector_all_languages_preloaded.detect(sentence));
             });
         });
     });
@@ -93,7 +93,7 @@ fn benchmark_detector(c: &mut Criterion) {
             let high_accuracy_detector_all_languages =
                 LanguageDetectorBuilder::from_all_languages().build();
             SENTENCES.iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_all_languages.detect_language(sentence));
+                black_box(high_accuracy_detector_all_languages.detect(sentence));
             });
         });
     });
@@ -104,7 +104,7 @@ fn benchmark_detector(c: &mut Criterion) {
                 .with_low_accuracy_mode()
                 .build();
             SENTENCES.iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_all_languages.detect_language(sentence));
+                black_box(low_accuracy_detector_all_languages.detect(sentence));
             });
         });
     });
@@ -114,14 +114,14 @@ fn benchmark_detector(c: &mut Criterion) {
     group2.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             sentences.par_iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_all_languages_preloaded.detect_language(*sentence));
+                black_box(low_accuracy_detector_all_languages_preloaded.detect(*sentence));
             });
         });
     });
     group2.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             sentences.par_iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_all_languages_preloaded.detect_language(*sentence));
+                black_box(high_accuracy_detector_all_languages_preloaded.detect(*sentence));
             });
         });
     });
@@ -136,7 +136,7 @@ fn benchmark_detector(c: &mut Criterion) {
     group_common_preloaded.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_common_languages.detect_language(sentence));
+                black_box(high_accuracy_detector_common_languages.detect(sentence));
             });
         });
     });
@@ -149,7 +149,7 @@ fn benchmark_detector(c: &mut Criterion) {
     group_common_preloaded.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_common_languages.detect_language(sentence));
+                black_box(low_accuracy_detector_common_languages.detect(sentence));
             });
         });
     });
@@ -159,7 +159,7 @@ fn benchmark_detector(c: &mut Criterion) {
     group4.bench_function("low accuracy mode", |bencher| {
         bencher.iter(|| {
             sentences.par_iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_common_languages.detect_language(*sentence));
+                black_box(low_accuracy_detector_common_languages.detect(*sentence));
             });
         });
     });
@@ -167,7 +167,7 @@ fn benchmark_detector(c: &mut Criterion) {
         bencher.iter(|| {
             sentences.par_iter().for_each(|sentence| {
                 black_box(
-                    high_accuracy_detector_common_languages.detect_language(*sentence),
+                    high_accuracy_detector_common_languages.detect(*sentence),
                 );
             });
         });
