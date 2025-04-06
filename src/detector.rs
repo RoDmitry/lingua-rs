@@ -686,7 +686,7 @@ impl LanguageDetector {
             return Default::default();
         }
 
-        probabilities_sums.sort_by(order_by_probability_and_lang);
+        probabilities_sums.sort_unstable_by(order_by_probability_and_lang);
         /* println!(
             "res {:?}",
             &probabilities_sums[..probabilities_sums.len().min(5)]
