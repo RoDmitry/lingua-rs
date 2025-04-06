@@ -994,6 +994,8 @@ impl LanguageDetector {
             .get(ngram_length - 1)
             .filter(|m| !m.is_empty())
         else {
+            // todo: it must somehow request the lower ngram model to be used,
+            // if it has not been used already (example: long sentences of Han)
             return language_model_lock.min_probability;
         };
 
