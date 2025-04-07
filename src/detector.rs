@@ -883,13 +883,23 @@ impl LanguageDetector {
             return;
         }
 
-        if probabilities.first().unwrap().1.is_zero() {
+        debug_assert!(!probabilities.iter().any(|(_, p)| p.is_nan()));
+
+        let first_probability = probabilities.first().unwrap().1;
+        if first_probability.is_zero() {
             let zeroes = probabilities
                 .iter()
                 .position(|(_, p)| !p.is_zero())
                 .unwrap_or(probabilities.len());
             probabilities.truncate(zeroes);
             let len = zeroes as f64;
+            probabilities.iter_mut().for_each(|(_, p)| *p = 1.0 / len);
+
+            return;
+        }
+
+        if first_probability == f64::NEG_INFINITY {
+            let len = probabilities.len() as f64;
             probabilities.iter_mut().for_each(|(_, p)| *p = 1.0 / len);
 
             return;
@@ -917,7 +927,8 @@ impl LanguageDetector {
                 .unwrap()
                 .0;
 
-            update_confidence_values(values, most_likely_language, 1.0); */
+            probabilities[0] = (most_likely_language, 1.0);
+            probabilities.truncate(1); */
         } else {
             probabilities
                 .iter_mut()
@@ -1382,6 +1393,30 @@ mod tests {
         expected_confidence: Vec<(ScriptLanguage, f64)>,
     ) {
         let mut confidence = mock_detector_for_english_and_german.compute_confidence(text);
+
+        LanguageDetector::transform_to_relative_probabilities(&mut confidence);
+        confidence
+            .iter_mut()
+            .for_each(|(_, p)| *p = round_to_two_decimal_places(*p));
+
+        assert_eq!(confidence, expected_confidence);
+    }
+
+    #[rstest(
+        text,
+        expected_confidence,
+        case::script_no_models("ꨕ", vec![(ChamEastern, 0.5), (ChamWestern, 0.5)]),
+    )]
+    fn test_compute_confidence_no_filter(
+        mock_detector_for_english_and_german: LanguageDetector,
+        text: &str,
+        expected_confidence: Vec<(ScriptLanguage, f64)>,
+    ) {
+        let mut confidence = mock_detector_for_english_and_german.compute_confidence_for_languages(
+            text,
+            &ScriptLanguage::all().collect::<AHashSet<_>>(),
+        );
+
         LanguageDetector::transform_to_relative_probabilities(&mut confidence);
         confidence
             .iter_mut()
