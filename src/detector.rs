@@ -1354,7 +1354,7 @@ mod tests {
             if probability.is_zero() {
                 continue;
             }
-            let language = ScriptLanguage::from(language);
+            let language = ScriptLanguage::from_usize_unchecked(language);
             let expected_probability = expected_probabilities[&language];
 
             assert!(
