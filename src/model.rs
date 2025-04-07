@@ -1,5 +1,6 @@
 use crate::{fraction::Fraction, json::FileLanguageModel};
 use ahash::{AHashMap, AHashSet};
+use arraystring::{typenum::U20, ArrayString};
 use fraction::GenericFraction;
 // use itertools::Itertools;
 
@@ -157,10 +158,12 @@ impl<'t> TrainingDataLanguageModel<'t> {
     }*/
 }
 
+pub(crate) type NgramString = ArrayString<U20>;
+
 pub(crate) fn prepare_ngrams<'a>(
     words: impl Iterator<Item = &'a [char]>,
     ngram_length: usize,
-) -> Vec<String> {
+) -> Vec<NgramString> {
     debug_assert!(
         (1..6).contains(&ngram_length),
         "ngram length {ngram_length} is not in range 1..6"
@@ -172,7 +175,7 @@ pub(crate) fn prepare_ngrams<'a>(
     for word in words {
         for ngram in word.windows(ngram_length) {
             if ngrams_tmp.insert(ngram) {
-                ngrams.push(ngram.iter().collect());
+                ngrams.push(NgramString::try_from_chars(ngram.iter().copied()).unwrap());
             }
         }
     }
@@ -217,6 +220,15 @@ mod tests {
         ⚠ Do not use them in production
         By the way, they consist of 23 words in total.
     "; */
+
+    use super::NgramString;
+    use crate::detector::NGRAM_MAX_SIZE;
+
+    #[test]
+    fn test_ngram_string_size() {
+        let max_ngram = [char::MAX; NGRAM_MAX_SIZE];
+        NgramString::try_from_chars(max_ngram).unwrap();
+    }
 
     /* mod json_data {
         use super::*;

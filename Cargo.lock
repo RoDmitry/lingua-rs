@@ -137,6 +137,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "arraystring"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d517c467117e1d8ca795bc8cc90857ff7f79790cca0e26f6e9462694ece0185"
+dependencies = [
+ "typenum",
+]
+
+[[package]]
 name = "atoi_simd"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -850,12 +859,12 @@ version = "1.6.2"
 dependencies = [
  "ahash",
  "alphabet_detector",
+ "arraystring",
  "atoi_simd",
  "brotli",
  "cap",
  "clap",
  "cld2",
- "compact_str",
  "criterion",
  "debug_unsafe",
  "float-cmp",
@@ -2199,6 +2208,12 @@ dependencies = [
  "toml_datetime",
  "winnow",
 ]
+
+[[package]]
+name = "typenum"
+version = "1.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 
 [[package]]
 name = "unicode-ident"

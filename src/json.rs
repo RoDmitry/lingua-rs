@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use crate::fraction::Fraction;
+use crate::{fraction::Fraction, model::NgramString};
 use ::std::{
     fs::{create_dir_all, File},
     io,
@@ -24,7 +24,6 @@ use ::std::{
 use ahash::AHashMap;
 use alphabet_detector::ScriptLanguage;
 use brotli::{CompressorWriter, Decompressor};
-use compact_str::CompactString;
 use include_dir::{include_dir, Dir};
 use itertools::Itertools;
 use serde_map::SerdeMap;
@@ -75,12 +74,15 @@ impl FileLanguageModelWriter for FileLanguageModel {
 pub(crate) fn parse_model(
     model_fraction_ngrams: SerdeMap<Fraction, String>,
     ngram_length: usize,
-) -> AHashMap<CompactString, f64> {
+) -> AHashMap<NgramString, f64> {
     let mut res = AHashMap::new();
     for (fraction, ngrams) in model_fraction_ngrams {
         let floating_point_value = fraction.to_f64().ln();
         for ngram in &ngrams.chars().chunks(ngram_length) {
-            res.insert(ngram.collect::<CompactString>(), floating_point_value);
+            res.insert(
+                NgramString::try_from_chars(ngram).unwrap(),
+                floating_point_value,
+            );
         }
     }
     res

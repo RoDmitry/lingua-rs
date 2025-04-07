@@ -64,6 +64,7 @@ harness = false
 
 [dependencies]
 alphabet_detector = { path = "../alphabet_detector" }
+arraystring = "0.3"
 atoi_simd = "0.16"
 # fixed-map = { path = "../fixed-map" }
 # fixed-map = "0.9"
@@ -72,7 +73,7 @@ atoi_simd = "0.16"
 brotli = "7"
 cap = "0.1"
 clap = { version = "4", features = ["derive"] }
-compact_str = "0.9"
+# compact_str = "0.9"
 debug_unsafe = "0.1"
 fraction = "0.15"
 include_dir = "0.7"

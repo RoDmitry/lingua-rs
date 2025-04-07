@@ -1,7 +1,7 @@
 use crate::{
     constant::{TOKENS_WITHOUT_WHITESPACE, TOKENS_WITH_OPTIONAL_WHITESPACE},
     json::{load_model, parse_model},
-    model::prepare_ngrams,
+    model::{prepare_ngrams, NgramString},
     result::DetectionResult,
 };
 use ::core::{
@@ -17,15 +17,14 @@ use ahash::{AHashMap, AHashSet};
 use alphabet_detector::{
     fulltext_langs_best, slang_arr_default_nc, Script, ScriptLanguage, ScriptLanguageArr,
 };
-use compact_str::CompactString;
 use debug_unsafe::slice::SliceGetter;
 use fraction::Zero;
 use itertools::Itertools;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
 
-const NGRAM_MAX_SIZE: usize = 5;
-type LanguageModelNgram = AHashMap<CompactString, f64>;
+pub(crate) const NGRAM_MAX_SIZE: usize = 5;
+type LanguageModelNgram = AHashMap<NgramString, f64>;
 type LanguageModelNgrams = [LanguageModelNgram; NGRAM_MAX_SIZE];
 
 struct LanguageModel {
@@ -852,7 +851,7 @@ impl LanguageDetector {
         let ngrams = prepare_ngrams(words_iter, ngram_length);
 
         let probabilities = self.compute_languages_ngrams_confidence(
-            ngrams.iter().map(String::as_str),
+            ngrams.iter().map(NgramString::as_str),
             filtered_languages,
             ngram_length,
         );
@@ -1113,7 +1112,7 @@ mod tests {
         let ngrams = ngrams_model.map(|model| {
             model
                 .into_iter()
-                .map(|(k, v)| (CompactString::new(k), v.ln()))
+                .map(|(k, v)| (NgramString::try_from_str(k).unwrap(), v.ln()))
                 .collect()
         });
         LanguageModel::from(ngrams)
