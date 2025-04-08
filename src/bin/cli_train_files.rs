@@ -140,16 +140,8 @@ fn main() {
                 ALLOCATOR.allocated() / (1024 * 1024)
             );
             {
-                let lang = match ScriptLanguage::from_str(&file_name) {
-                    Some(l) => l,
-                    _ => {
-                        let Some(l) =
-                            ScriptLanguage::from_str(file_name.split('_').next().unwrap())
-                        else {
-                            panic!("*{}* Not found lang", file_name);
-                        };
-                        l
-                    }
+                let Some(lang) = ScriptLanguage::from_str(&file_name) else {
+                    panic!("*{}* Not found lang", file_name);
                 };
                 {
                     let mut guard = langs_seen.lock().unwrap();
