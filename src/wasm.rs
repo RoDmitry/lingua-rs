@@ -158,11 +158,11 @@ impl LanguageDetectorBuilder {
         })
     }
 
-    /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with the languages specified by the respective ISO 639-1 codes.
-    ///
-    /// ⚠ Throws an error if less than two `iso_codes` are specified.
-    #[wasm_bindgen(variadic)]
+    // Creates and returns an instance of `LanguageDetectorBuilder`
+    // with the languages specified by the respective ISO 639-1 codes.
+    //
+    // ⚠ Throws an error if less than two `iso_codes` are specified.
+    /* #[wasm_bindgen(variadic)]
     pub fn fromISOCodes6391(isoCodes: Box<[JsValue]>) -> Result<LanguageDetectorBuilder, JsValue> {
         let selected_iso_codes = isoCodes
             .iter()
@@ -177,13 +177,13 @@ impl LanguageDetectorBuilder {
         Ok(LanguageDetectorBuilder {
             builder: Builder::from_iso_codes_639_1(&selected_iso_codes),
         })
-    }
+    } */
 
-    /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with the languages specified by the respective ISO 639-3 codes.
-    ///
-    /// ⚠ Throws an error if less than two `iso_codes` are specified.
-    #[wasm_bindgen(variadic)]
+    // Creates and returns an instance of `LanguageDetectorBuilder`
+    // with the languages specified by the respective ISO 639-3 codes.
+    //
+    // ⚠ Throws an error if less than two `iso_codes` are specified.
+    /* #[wasm_bindgen(variadic)]
     pub fn fromISOCodes6393(isoCodes: Box<[JsValue]>) -> Result<LanguageDetectorBuilder, JsValue> {
         let selected_iso_codes = isoCodes
             .iter()
@@ -198,7 +198,7 @@ impl LanguageDetectorBuilder {
         Ok(LanguageDetectorBuilder {
             builder: Builder::from_iso_codes_639_3(&selected_iso_codes),
         })
-    }
+    } */
 
     /// Sets the desired value for the minimum relative distance measure.
     ///

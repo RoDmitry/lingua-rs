@@ -16,7 +16,7 @@
 
 use crate::detector::LanguageDetector;
 use ahash::AHashSet;
-use alphabet_detector::{IsoCode639_1, IsoCode639_3, Script, ScriptLanguage};
+use alphabet_detector::{Script, ScriptLanguage};
 
 pub(crate) const MISSING_LANGUAGE_MESSAGE: &str =
     "LanguageDetector needs at least 2 languages to choose from";
@@ -40,11 +40,11 @@ impl LanguageDetectorBuilder {
         Self::from(ScriptLanguage::all().collect())
     }
 
-    /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with all built-in spoken languages.
-    pub fn from_all_spoken_languages() -> Self {
+    // Creates and returns an instance of `LanguageDetectorBuilder`
+    // with all built-in spoken languages.
+    /* pub fn from_all_spoken_languages() -> Self {
         Self::from(ScriptLanguage::all_spoken_ones())
-    }
+    } */
 
     /// Creates and returns an instance of `LanguageDetectorBuilder`
     /// with languages supporting selected `Script`
@@ -83,11 +83,11 @@ impl LanguageDetectorBuilder {
         Self::from(languages.iter().cloned().collect())
     }
 
-    /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with the languages specified by the respective ISO 639-1 codes.
-    ///
-    /// ⚠ Panics if less than two `iso_codes` are specified.
-    pub fn from_iso_codes_639_1(iso_codes: &[IsoCode639_1]) -> Self {
+    // Creates and returns an instance of `LanguageDetectorBuilder`
+    // with the languages specified by the respective ISO 639-1 codes.
+    //
+    // ⚠ Panics if less than two `iso_codes` are specified.
+    /* pub fn from_iso_codes_639_1(iso_codes: &[IsoCode639_1]) -> Self {
         if iso_codes.len() < 2 {
             panic!("{}", MISSING_LANGUAGE_MESSAGE);
         }
@@ -96,13 +96,13 @@ impl LanguageDetectorBuilder {
             .map(ScriptLanguage::from_iso_code_639_1)
             .collect::<AHashSet<_>>();
         Self::from(languages)
-    }
+    } */
 
-    /// Creates and returns an instance of `LanguageDetectorBuilder`
-    /// with the languages specified by the respective ISO 639-3 codes.
-    ///
-    /// ⚠ Panics if less than two `iso_codes` are specified.
-    pub fn from_iso_codes_639_3(iso_codes: &[IsoCode639_3]) -> Self {
+    // Creates and returns an instance of `LanguageDetectorBuilder`
+    // with the languages specified by the respective ISO 639-3 codes.
+    //
+    // ⚠ Panics if less than two `iso_codes` are specified.
+    /* pub fn from_iso_codes_639_3(iso_codes: &[IsoCode639_3]) -> Self {
         if iso_codes.len() < 2 {
             panic!("{}", MISSING_LANGUAGE_MESSAGE);
         }
@@ -111,7 +111,7 @@ impl LanguageDetectorBuilder {
             .map(ScriptLanguage::from_iso_code_639_3)
             .collect::<AHashSet<_>>();
         Self::from(languages)
-    }
+    } */
 
     /// Sets the desired value for the minimum relative distance measure.
     ///
@@ -208,7 +208,7 @@ mod tests {
         assert_eq!(builder.minimum_relative_distance, 0.2);
     }
 
-    #[test]
+    /* #[test]
     fn assert_detector_can_be_built_from_spoken_languages() {
         let mut builder = LanguageDetectorBuilder::from_all_spoken_languages();
         assert_eq!(builder.languages, ScriptLanguage::all_spoken_ones());
@@ -216,7 +216,7 @@ mod tests {
 
         builder.with_minimum_relative_distance(0.2);
         assert_eq!(builder.minimum_relative_distance, 0.2);
-    }
+    } */
 
     #[test]
     fn assert_detector_can_be_built_from_languages_with_script() {
@@ -281,7 +281,7 @@ mod tests {
         LanguageDetectorBuilder::from_languages(&[ScriptLanguage::German]);
     }
 
-    #[test]
+    /* #[test]
     fn assert_detector_can_be_built_from_iso_639_1_codes() {
         let builder =
             LanguageDetectorBuilder::from_iso_codes_639_1(&[IsoCode639_1::DE, IsoCode639_1::ZU]);
@@ -313,7 +313,7 @@ mod tests {
     #[should_panic(expected = "LanguageDetector needs at least 2 languages to choose from")]
     fn assert_detector_cannot_be_built_from_too_few_iso_639_3_codes() {
         LanguageDetectorBuilder::from_iso_codes_639_3(&[IsoCode639_3::DEU]);
-    }
+    } */
 
     #[test]
     #[should_panic(expected = "Minimum relative distance must lie in between 0.0 and 0.99")]

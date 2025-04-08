@@ -50,8 +50,8 @@ name = "cli_train"
 name = "cli_train_files"
 required-features = ["alphabet_detector/cli_alphabet_intersection"]
 
-[[bin]]
-name = "cli_detect"
+# [[bin]]
+# name = "cli_detect"
 
 [[bin]]
 name = "accuracy_reports"
