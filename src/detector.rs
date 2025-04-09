@@ -15,7 +15,7 @@ use ::std::{
 };
 use ahash::{AHashMap, AHashSet};
 use alphabet_detector::{
-    fulltext_langs_best, slang_arr_default_nc, Script, ScriptLanguage, ScriptLanguageArr,
+    fulltext_filter_with_margin, slang_arr_default_nc, Script, ScriptLanguage, ScriptLanguageArr,
 };
 use debug_unsafe::slice::SliceGetter;
 use fraction::Zero;
@@ -608,7 +608,7 @@ impl LanguageDetector {
                 }
             }
         } */
-        let (words, langs) = fulltext_langs_best::<Vec<char>, 95>(text_str.char_indices());
+        let (words, langs) = fulltext_filter_with_margin::<Vec<char>, 95>(text_str.char_indices());
         let filtered_languages: AHashSet<_> = langs
             .filter(|(l, _)| search_languages.contains(l))
             .map(|(l, _)| l) // todo: maybe use count?
@@ -988,8 +988,8 @@ impl LanguageDetector {
         (sum, cnt)
     }
 
-    fn sum_up_probabilities<'a>(
-        &'a self,
+    fn sum_up_probabilities(
+        &self,
         probabilities: Vec<ScriptLanguageArr<(f64, usize)>>,
         filtered_languages: AHashSet<ScriptLanguage>,
     ) -> Vec<(ScriptLanguage, f64)> {

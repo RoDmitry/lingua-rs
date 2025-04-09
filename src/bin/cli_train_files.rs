@@ -10,7 +10,7 @@ use ::std::{
 use alphabet_detector::{slang_arr_default, Script, ScriptLanguage};
 use cap::Cap;
 use clap::Parser;
-use lingua::{read_iter::ReadCharsChunks, LanguageModelFilesWriter};
+use lingua::{reader::ReadCharsChunks, LanguageModelFilesWriter};
 // #[cfg(not(target_env = "msvc"))]
 // use jemallocator::Jemalloc;
 // use rayon::prelude::*;

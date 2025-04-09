@@ -27,8 +27,7 @@ impl<'t> TrainingDataLanguageModel<'t> {
 
             for i in 0..=chars.len() - ngram_length {
                 let ngram = &chars[i..i + ngram_length];
-                let v = absolute_frequencies.entry(ngram).or_default();
-                *v += 1;
+                *absolute_frequencies.entry(ngram).or_default() += 1;
             }
         }
 
