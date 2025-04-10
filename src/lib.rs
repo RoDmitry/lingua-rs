@@ -426,7 +426,7 @@ macro_rules! ahashset {
 
 pub use alphabet_detector::*;
 
-mod builder;
+// mod builder;
 mod constant;
 mod detector;
 mod fraction;
@@ -436,8 +436,8 @@ mod model;
 mod result;
 mod writer;
 
-pub use builder::LanguageDetectorBuilder;
-pub use detector::LanguageDetector;
+// pub use builder::LanguageDetectorBuilder;
+pub use detector::{LanguageDetector, LanguageDetectorConfig};
 pub use result::DetectionResult;
 #[cfg(target_family = "wasm")]
 pub use wasm::{

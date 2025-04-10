@@ -7,7 +7,7 @@ use crate::{
 use ::core::{
     cmp::Ordering,
     hash::{BuildHasher, Hash},
-    ops::Range,
+    ops::RangeInclusive,
 };
 use ::std::{
     collections::{HashMap, HashSet},
@@ -15,7 +15,7 @@ use ::std::{
 };
 use ahash::{AHashMap, AHashSet};
 use alphabet_detector::{
-    fulltext_filter_with_margin, slang_arr_default_nc, Script, ScriptLanguage, ScriptLanguageArr,
+    fulltext_filter_with_margin, slang_arr_default_nc, ScriptLanguage, ScriptLanguageArr,
 };
 use debug_unsafe::slice::SliceGetter;
 use fraction::Zero;
@@ -80,7 +80,7 @@ type LanguagesModels = ScriptLanguageArr<RwLock<LanguageModel>>;
 // static LANGUAGES_MODELS: LazyLock<LanguagesModels> =
 // LazyLock::new(|| ::core::array::from_fn(|_| Default::default()));
 
-/// final result
+/* /// final result
 pub struct Word {
     pub chars: Vec<char>,
     pub range: Range<usize>,
@@ -89,18 +89,137 @@ pub struct Word {
     pub checked_languages: Vec<(ScriptLanguage, Script, f64)>,
     /// can include most frequent Alphabet, but for different languages
     pub unverified_alphabet_languages: AHashMap<ScriptLanguage, Vec<Script>>,
+} */
+
+pub struct LanguageDetectorConfig<S: BuildHasher + Default = ahash::RandomState> {
+    pub languages: HashSet<ScriptLanguage, S>,
+    long_text_minlen: usize,
+    long_text_ngrams: RangeInclusive<usize>,
+    short_text_ngrams: RangeInclusive<usize>,
+}
+
+impl<S: BuildHasher + Default> Default for LanguageDetectorConfig<S> {
+    #[inline]
+    fn default() -> Self {
+        Self {
+            languages: HashSet::with_hasher(S::default()),
+            long_text_minlen: 120,
+            long_text_ngrams: 3..=NGRAM_MAX_SIZE,
+            short_text_ngrams: 1..=NGRAM_MAX_SIZE,
+        }
+    }
+}
+
+impl LanguageDetectorConfig<ahash::RandomState> {
+    #[inline(always)]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[inline]
+    pub fn new_low_accuracy() -> Self {
+        let new = Self::new();
+        new.low_accuracy()
+    }
+
+    #[inline]
+    pub fn new_all_languages() -> Self {
+        let new = Self::new();
+        new.all_languages()
+    }
+}
+
+impl<S: BuildHasher + Default> LanguageDetectorConfig<S> {
+    #[inline]
+    pub fn with_languages(languages: HashSet<ScriptLanguage, S>) -> Self {
+        Self {
+            languages,
+            ..Default::default()
+        }
+    }
+
+    #[inline]
+    pub fn low_accuracy(mut self) -> Self {
+        self.long_text_ngrams = 3..=3;
+        self.short_text_ngrams = 1..=3;
+        self
+    }
+
+    #[inline]
+    pub fn languages(mut self, languages: HashSet<ScriptLanguage, S>) -> Self {
+        self.languages = languages;
+        self
+    }
+
+    #[inline]
+    pub fn all_languages(self) -> Self {
+        self.languages(ScriptLanguage::all().collect())
+    }
+
+    #[inline]
+    pub fn long_ngrams(mut self, long_text_ngrams: RangeInclusive<usize>) -> Self {
+        debug_assert!(*long_text_ngrams.end() <= NGRAM_MAX_SIZE && *long_text_ngrams.start() > 0);
+        self.long_text_ngrams = long_text_ngrams;
+        self
+    }
+
+    #[inline]
+    pub fn short_ngrams(mut self, short_text_ngrams: RangeInclusive<usize>) -> Self {
+        debug_assert!(*short_text_ngrams.end() <= NGRAM_MAX_SIZE && *short_text_ngrams.start() > 0);
+        self.short_text_ngrams = short_text_ngrams;
+        self
+    }
+
+    #[inline]
+    pub fn minlen(mut self, long_text_minlen: usize) -> Self {
+        self.long_text_minlen = long_text_minlen;
+        self
+    }
+
+    pub fn preload_languages_models(&self, detector: &LanguageDetector) {
+        #[cfg(not(target_family = "wasm"))]
+        let languages_iter = self.languages.par_iter();
+        #[cfg(target_family = "wasm")]
+        let languages_iter = self.languages.iter();
+
+        let min_ngram = *self
+            .long_text_ngrams
+            .start()
+            .min(self.short_text_ngrams.start());
+        let max_ngram = *self
+            .long_text_ngrams
+            .end()
+            .max(self.short_text_ngrams.end());
+
+        languages_iter.for_each(|&language| {
+            (min_ngram..=max_ngram)
+                .for_each(|ngram_length| detector.load_language_model(language, ngram_length));
+        });
+    }
 }
 
 /// This struct detects the language of given input text.
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
 pub struct LanguageDetector {
-    languages_preloaded: AHashSet<ScriptLanguage>,
-    is_low_accuracy_mode_enabled: bool,
     languages_models: LanguagesModels,
 }
 
+impl Default for LanguageDetector {
+    #[inline]
+    fn default() -> Self {
+        Self {
+            languages_models: ::core::array::from_fn(|_| Default::default()),
+        }
+    }
+}
+
 impl LanguageDetector {
-    pub(crate) fn new(
+    #[inline]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /* pub(crate) fn new(
         languages_preload: AHashSet<ScriptLanguage>,
         is_low_accuracy_mode_enabled: bool,
     ) -> Self {
@@ -113,29 +232,11 @@ impl LanguageDetector {
         detector.load_languages_models(&detector.languages_preloaded);
 
         detector
-    }
-
-    fn load_languages_models(&self, languages: &AHashSet<ScriptLanguage>) {
-        #[cfg(not(target_family = "wasm"))]
-        let languages_iter = languages.par_iter();
-        #[cfg(target_family = "wasm")]
-        let languages_iter = languages.iter();
-
-        languages_iter.for_each(|&language| {
-            self.load_language_model(language, 1);
-            self.load_language_model(language, 2);
-            self.load_language_model(language, 3);
-
-            if !self.is_low_accuracy_mode_enabled {
-                self.load_language_model(language, 4);
-                self.load_language_model(language, 5);
-            }
-        });
-    }
+    } */
 
     /// Clears all language models loaded by this [`LanguageDetector`] instance
     /// and frees allocated memory previously consumed by the models.
-    pub fn unload_language_models(&self) {
+    /* pub fn unload_language_models(&self) {
         #[cfg(not(target_family = "wasm"))]
         let languages_iter = self.languages_preloaded.par_iter();
         #[cfg(target_family = "wasm")]
@@ -148,14 +249,14 @@ impl LanguageDetector {
                 .write()
                 .unwrap() = Default::default();
         });
-    }
+    } */
 
     /// Detects the language of given input text.
     /// If the language cannot be reliably detected, [`None`] is returned.
     ///
     /// This method operates in a single thread. If you want to classify
     /// a very large set of texts, you will probably want to use method
-    /// [`detect_in_parallel`](#method.detect_in_parallel)
+    /// [`detect_best_in_parallel`](#method.detect_best_in_parallel)
     /// instead.
     ///
     /// ```
@@ -174,8 +275,33 @@ impl LanguageDetector {
     ///
     /// assert_eq!(detected_language, Some(English));
     /// ```
-    pub fn detect(&self, text: &str, minimum_distance: f64) -> Option<ScriptLanguage> {
-        self.detect_with_languages(text, &self.languages_preloaded, minimum_distance)
+    pub fn detect_best<S: BuildHasher + Default>(
+        &self,
+        text: &str,
+        config: &LanguageDetectorConfig<S>,
+        minimum_distance: f64,
+    ) -> Option<ScriptLanguage> {
+        debug_assert!(
+            (0.0..1.0).contains(&minimum_distance),
+            "Minimum relative distance must lie in between 0.0 and 0.99"
+        );
+        let mut confidence = self.compute_confidence(text, config).into_iter();
+
+        let (most_likely_language, most_likely_language_probability) = confidence.next()?;
+
+        let Some((_, second_most_likely_language_probability)) = confidence.next() else {
+            return Some(most_likely_language);
+        };
+
+        let language_probability_diff =
+            (most_likely_language_probability - second_most_likely_language_probability).abs();
+
+        if language_probability_diff < f64::EPSILON || language_probability_diff < minimum_distance
+        {
+            return None;
+        }
+
+        Some(most_likely_language)
     }
 
     /// Detects the languages of all given input texts.
@@ -201,7 +327,7 @@ impl LanguageDetector {
     /// ])
     /// .build();
     ///
-    /// let detected_languages = detector.detect_in_parallel(&[
+    /// let detected_languages = detector.detect_best_in_parallel(&[
     ///     "languages are awesome",
     ///     "Sprachen sind großartig",
     ///     "des langues sont géniales",
@@ -219,46 +345,16 @@ impl LanguageDetector {
     /// );
     /// ```
     #[cfg(not(target_family = "wasm"))]
-    pub fn detect_in_parallel(
+    pub fn detect_best_in_parallel<S: BuildHasher + Default + Sync>(
         &self,
         texts: &[&str],
+        config: &LanguageDetectorConfig<S>,
         minimum_distance: f64,
     ) -> Vec<Option<ScriptLanguage>> {
         texts
             .into_par_iter()
-            .map(|text| self.detect(text, minimum_distance))
+            .map(|text| self.detect_best(text, config, minimum_distance))
             .collect()
-    }
-
-    pub fn detect_with_languages<S: BuildHasher + Default>(
-        &self,
-        text: &str,
-        languages: &HashSet<ScriptLanguage, S>,
-        minimum_distance: f64,
-    ) -> Option<ScriptLanguage> {
-        debug_assert!(
-            (0.0..1.0).contains(&minimum_distance),
-            "Minimum relative distance must lie in between 0.0 and 0.99"
-        );
-        let mut confidence = self
-            .compute_confidence_for_languages(text, languages)
-            .into_iter();
-
-        let (most_likely_language, most_likely_language_probability) = confidence.next()?;
-
-        let Some((_, second_most_likely_language_probability)) = confidence.next() else {
-            return Some(most_likely_language);
-        };
-
-        let language_probability_diff =
-            (most_likely_language_probability - second_most_likely_language_probability).abs();
-
-        if language_probability_diff < f64::EPSILON || language_probability_diff < minimum_distance
-        {
-            return None;
-        }
-
-        Some(most_likely_language)
     }
 
     /// Attempts to detect multiple languages in mixed-language text.
@@ -327,8 +423,9 @@ impl LanguageDetector {
 
         let mut results = vec![];
         let mut language_counts = AHashMap::new();
+        let mut config = LanguageDetectorConfig::new().all_languages();
 
-        let language = self.detect(text_str, 0.0);
+        let language = self.detect_best(text_str, &config, 0.0);
         if let Some(lang) = language {
             Self::increment_counter(&mut language_counts, lang, 1);
         }
@@ -337,7 +434,7 @@ impl LanguageDetector {
             if word.chars().count() < 5 {
                 continue;
             }
-            let language = self.detect(word, 0.0);
+            let language = self.detect_best(word, &config, 0.0);
             if let Some(lang) = language {
                 Self::increment_counter(&mut language_counts, lang, 1);
             }
@@ -357,6 +454,8 @@ impl LanguageDetector {
             };
             results.push(result);
         } else {
+            config.languages = languages.into();
+
             let mut current_start_index = 0;
             let mut current_end_index = 0;
             let mut word_count = 0;
@@ -367,7 +466,7 @@ impl LanguageDetector {
 
             for (i, token_match) in token_matches.enumerate() {
                 let word = token_match.as_str();
-                let language = self.detect_with_languages(word, &languages, 0.0);
+                let language = self.detect_best(word, &config, 0.0);
 
                 if i == 0 || (current_language.is_none() && language.is_some()) {
                     current_language = language;
@@ -505,8 +604,83 @@ impl LanguageDetector {
     ///     ]
     /// );
     /// ```
-    pub fn compute_confidence(&self, text: &str) -> Vec<(ScriptLanguage, f64)> {
-        self.compute_confidence_for_languages(text, &self.languages_preloaded)
+    pub fn compute_confidence<S: BuildHasher + Default>(
+        &self,
+        text: &str,
+        config: &LanguageDetectorConfig<S>,
+    ) -> Vec<(ScriptLanguage, f64)> {
+        if text.is_empty() {
+            return Default::default();
+        }
+
+        let (words, langs) = fulltext_filter_with_margin::<Vec<char>, 95>(text.char_indices());
+        let filtered_languages: AHashSet<_> = langs
+            .filter(|(l, _)| config.languages.contains(l))
+            .map(|(l, _)| l) // todo: maybe use count?
+            .collect();
+
+        if words.is_empty() || filtered_languages.is_empty() {
+            return Default::default();
+        }
+
+        if filtered_languages.len() == 1 {
+            let lang = filtered_languages.into_iter().next().unwrap();
+            return vec![(lang, 0.0)];
+        }
+
+        let character_count: usize = words.iter().map(|wd| wd.buf.len()).sum();
+
+        /*  let ngram_length_range = if self.is_low_accuracy_mode_enabled {
+            if character_count >= 120 {
+                3..=3usize
+            } else {
+                1..=3usize
+            }
+        } else if character_count >= 120 {
+            3..=NGRAM_MAX_SIZE
+        } else {
+            1..=NGRAM_MAX_SIZE
+        }; */
+        let ngram_length_range = if character_count >= config.long_text_minlen {
+            config.long_text_ngrams.clone()
+        } else {
+            config.short_text_ngrams.clone()
+        };
+
+        /* if character_count < ngram_length_range.start {
+            return filtered_languages
+                .into_iter()
+                .map(|l| (l, f64::NEG_INFINITY))
+                .collect();
+        } */
+
+        self.load_language_models_by_ngram_len(*ngram_length_range.end(), &filtered_languages);
+
+        let probabilities: Vec<_> = ngram_length_range
+            .into_iter()
+            .filter(|i| *i <= character_count)
+            .map(|ngram_length| {
+                self.compute(
+                    words.iter().map(|wd| wd.buf.as_ref()),
+                    ngram_length,
+                    &filtered_languages,
+                )
+            })
+            .collect();
+
+        let mut probabilities_sums = self.sum_up_probabilities(probabilities, filtered_languages);
+
+        if probabilities_sums.is_empty() {
+            return Default::default();
+        }
+
+        probabilities_sums.sort_unstable_by(order_by_probability_and_lang);
+        /* println!(
+            "res {:?}",
+            &probabilities_sums[..probabilities_sums.len().min(5)]
+        ); */
+
+        probabilities_sums
     }
 
     /// Computes confidence values for each language supported by this detector for all the given
@@ -563,88 +737,15 @@ impl LanguageDetector {
     ///     ]
     /// );
     #[cfg(not(target_family = "wasm"))]
-    pub fn compute_confidence_in_parallel(
+    pub fn compute_confidence_in_parallel<S: BuildHasher + Default + Sync>(
         &self,
         texts: &[&str],
+        config: &LanguageDetectorConfig<S>,
     ) -> Vec<Vec<(ScriptLanguage, f64)>> {
         texts
             .into_par_iter()
-            .map(|&text| self.compute_confidence(text))
+            .map(|&text| self.compute_confidence(text, config))
             .collect()
-    }
-
-    pub fn compute_confidence_for_languages<S: BuildHasher + Default>(
-        &self,
-        text_str: &str,
-        search_languages: &HashSet<ScriptLanguage, S>,
-    ) -> Vec<(ScriptLanguage, f64)> {
-        if text_str.is_empty() {
-            return Default::default();
-        }
-
-        let (words, langs) = fulltext_filter_with_margin::<Vec<char>, 95>(text_str.char_indices());
-        let filtered_languages: AHashSet<_> = langs
-            .filter(|(l, _)| search_languages.contains(l))
-            .map(|(l, _)| l) // todo: maybe use count?
-            .collect();
-
-        if words.is_empty() || filtered_languages.is_empty() {
-            return Default::default();
-        }
-
-        if filtered_languages.len() == 1 {
-            let lang = filtered_languages.into_iter().next().unwrap();
-            return vec![(lang, 0.0)];
-        }
-
-        let character_count: usize = words.iter().map(|wd| wd.buf.len()).sum();
-
-        let ngram_length_range = if self.is_low_accuracy_mode_enabled {
-            if character_count >= 120 {
-                3..4usize
-            } else {
-                1..4usize
-            }
-        } else if character_count >= 120 {
-            3..NGRAM_MAX_SIZE + 1
-        } else {
-            1..NGRAM_MAX_SIZE + 1
-        };
-
-        /* if character_count < ngram_length_range.start {
-            return filtered_languages
-                .into_iter()
-                .map(|l| (l, f64::NEG_INFINITY))
-                .collect();
-        } */
-
-        self.load_language_models_by_ngram_len(ngram_length_range.end - 1, &filtered_languages);
-
-        let probabilities: Vec<_> = ngram_length_range
-            .into_iter()
-            .filter(|i| *i <= character_count)
-            .map(|ngram_length| {
-                self.compute(
-                    words.iter().map(|wd| wd.buf.as_ref()),
-                    ngram_length,
-                    &filtered_languages,
-                )
-            })
-            .collect();
-
-        let mut probabilities_sums = self.sum_up_probabilities(probabilities, filtered_languages);
-
-        if probabilities_sums.is_empty() {
-            return Default::default();
-        }
-
-        probabilities_sums.sort_unstable_by(order_by_probability_and_lang);
-        /* println!(
-            "res {:?}",
-            &probabilities_sums[..probabilities_sums.len().min(5)]
-        ); */
-
-        probabilities_sums
     }
 
     /// Computes the confidence value for the given language and input text. This value denotes
@@ -677,8 +778,13 @@ impl LanguageDetector {
     ///
     /// assert_eq!(rounded_confidence, 0.04);
     /// ```
-    pub fn compute_relative_probability(&self, text: &str, language: ScriptLanguage) -> f64 {
-        let mut confidence = self.compute_confidence(text);
+    pub fn compute_relative_probability<S: BuildHasher + Default>(
+        &self,
+        text: &str,
+        config: &LanguageDetectorConfig<S>,
+        language: ScriptLanguage,
+    ) -> f64 {
+        let mut confidence = self.compute_confidence(text, config);
         LanguageDetector::transform_to_relative_probabilities(&mut confidence);
         confidence
             .into_iter()
@@ -736,14 +842,15 @@ impl LanguageDetector {
     /// );
     /// ```
     #[cfg(not(target_family = "wasm"))]
-    pub fn compute_relative_probability_in_parallel(
+    pub fn compute_relative_probability_in_parallel<S: BuildHasher + Default + Sync>(
         &self,
         texts: &[&str],
+        config: &LanguageDetectorConfig<S>,
         language: ScriptLanguage,
     ) -> Vec<f64> {
         texts
             .into_par_iter()
-            .map(|text| self.compute_relative_probability(text, language))
+            .map(|text| self.compute_relative_probability(text, config, language))
             .collect()
     }
 
@@ -1063,7 +1170,7 @@ fn merge_adjacent_results(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{builder::LanguageDetectorBuilder, ScriptLanguage::*};
+    use crate::ScriptLanguage::*;
     use ::std::sync::LazyLock;
     use float_cmp::approx_eq;
     use rstest::*;
@@ -1152,8 +1259,6 @@ mod tests {
     // ##############################
 
     static MOCK_DETECTOR_ENGLISH_AND_GERMAN: LazyLock<LanguageDetector> = LazyLock::new(|| {
-        let languages = ahashset!(English, German);
-
         let languages_models: LanguagesModels =
             ::core::array::from_fn(|_| RwLock::new(Default::default()));
         *languages_models
@@ -1165,15 +1270,15 @@ mod tests {
             .write()
             .unwrap() = language_model_for_german();
 
-        LanguageDetector {
-            languages_preloaded: languages,
-            is_low_accuracy_mode_enabled: false,
-            languages_models,
-        }
+        LanguageDetector { languages_models }
     });
 
-    static DETECTOR_ALL_LANGUAGES: LazyLock<LanguageDetector> =
-        LazyLock::new(|| LanguageDetector::new(ScriptLanguage::all().collect(), false));
+    static DETECTOR_ALL_LANGUAGES_PRELOADED: LazyLock<LanguageDetector> = LazyLock::new(|| {
+        let detector = LanguageDetector::new();
+        let config = LanguageDetectorConfig::new_all_languages();
+        config.preload_languages_models(&detector);
+        detector
+    });
 
     // ##############################
     // TESTS
@@ -1323,7 +1428,10 @@ mod tests {
         case::unknown_ngrams("проарплап", vec![]),
     )]
     fn test_compute_confidence(text: &str, expected_confidence: Vec<(ScriptLanguage, f64)>) {
-        let mut confidence = MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_confidence(text);
+        let mut confidence = MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_confidence(
+            text,
+            &LanguageDetectorConfig::with_languages(ahashset!(English, German)),
+        );
 
         LanguageDetector::transform_to_relative_probabilities(&mut confidence);
         confidence
@@ -1342,10 +1450,8 @@ mod tests {
         text: &str,
         expected_confidence: Vec<(ScriptLanguage, f64)>,
     ) {
-        let mut confidence = MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_confidence_for_languages(
-            text,
-            &ScriptLanguage::all().collect::<AHashSet<_>>(),
-        );
+        let mut confidence = MOCK_DETECTOR_ENGLISH_AND_GERMAN
+            .compute_confidence(text, &LanguageDetectorConfig::new_all_languages());
 
         LanguageDetector::transform_to_relative_probabilities(&mut confidence);
         confidence
@@ -1373,8 +1479,11 @@ mod tests {
         language: ScriptLanguage,
         expected_confidence: f64,
     ) {
-        let confidence =
-            MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_relative_probability(text, language);
+        let confidence = MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_relative_probability(
+            text,
+            &LanguageDetectorConfig::with_languages(ahashset!(English, German)),
+            language,
+        );
 
         assert_eq!(round_to_two_decimal_places(confidence), expected_confidence);
     }
@@ -1386,13 +1495,19 @@ mod tests {
         case("проарплап", None)
     )]
     fn test_detect(word: &str, expected_language: Option<ScriptLanguage>) {
-        let detected_language = MOCK_DETECTOR_ENGLISH_AND_GERMAN.detect(word, 0.0);
+        let detected_language = MOCK_DETECTOR_ENGLISH_AND_GERMAN.detect_best(
+            word,
+            &LanguageDetectorConfig::with_languages(ahashset!(English, German)),
+            0.0,
+        );
         assert_eq!(detected_language, expected_language);
     }
 
     #[rstest]
     fn test_detect_multiple_for_empty_string() {
-        assert!(DETECTOR_ALL_LANGUAGES.detect_multiple("").is_empty());
+        assert!(DETECTOR_ALL_LANGUAGES_PRELOADED
+            .detect_multiple("")
+            .is_empty());
     }
 
     #[rstest(
@@ -1412,7 +1527,7 @@ mod tests {
         expected_word_count: usize,
         expected_language: ScriptLanguage,
     ) {
-        let results = DETECTOR_ALL_LANGUAGES.detect_multiple(sentence);
+        let results = DETECTOR_ALL_LANGUAGES_PRELOADED.detect_multiple(sentence);
         assert_eq!(results.len(), 1);
 
         let result = &results[0];
@@ -1467,7 +1582,7 @@ mod tests {
         expected_second_word_count: usize,
         expected_second_language: ScriptLanguage,
     ) {
-        let results = DETECTOR_ALL_LANGUAGES.detect_multiple(sentence);
+        let results = DETECTOR_ALL_LANGUAGES_PRELOADED.detect_multiple(sentence);
         assert_eq!(results.len(), 2);
 
         let first_result = &results[0];
@@ -1531,7 +1646,7 @@ mod tests {
         expected_third_word_count: usize,
         expected_third_language: ScriptLanguage,
     ) {
-        let results = DETECTOR_ALL_LANGUAGES.detect_multiple(sentence);
+        let results = DETECTOR_ALL_LANGUAGES_PRELOADED.detect_multiple(sentence);
         assert_eq!(results.len(), 3, "{} {:?}", sentence, results);
 
         let first_result = &results[0];
@@ -1630,23 +1745,25 @@ mod tests {
         builder_languages,
         text,
         expected_language,
-        case(vec![English, Kazakh], "нормаланбайды", Some(Kazakh)),
-        case(vec![English, Kazakh], "нормаланбайды I", Some(Kazakh)),
-        case(vec![Kazakh, MongolianHalh], "Балаларды жүзуге үй-рету бассейнінің үй-жайы", Some(Kazakh)),
-        // case::simplified_chinese(vec![ChineseSimplified, ChineseTraditional, ChineseCantoneseTraditional, Japanese], "经济", Some(ChineseSimplified)),
-        // case::traditional_chinese(vec![ChineseSimplified, Japanese], "經濟", Some(ChineseSimplified)),
-        case::kanji(vec![ChineseSimplified, Japanese], "経済", Some(Japanese)),
-        case::kanji2(vec![ChineseSimplified, Japanese], "自動販売機", Some(Japanese)),
-        // case::arab(vec![Acehnese, Arabic], "والموضوع", Some(Arabic)),
+        case(ahashset![English, Kazakh], "нормаланбайды", Some(Kazakh)),
+        case(ahashset![English, Kazakh], "нормаланбайды I", Some(Kazakh)),
+        case(ahashset![Kazakh, MongolianHalh], "Балаларды жүзуге үй-рету бассейнінің үй-жайы", Some(Kazakh)),
+        // case::simplified_chinese(ahashset![ChineseSimplified, ChineseTraditional, ChineseCantoneseTraditional, Japanese], "经济", Some(ChineseSimplified)),
+        // case::traditional_chinese(ahashset![ChineseSimplified, Japanese], "經濟", Some(ChineseSimplified)),
+        case::kanji(ahashset![ChineseSimplified, Japanese], "経済", Some(Japanese)),
+        case::kanji2(ahashset![ChineseSimplified, Japanese], "自動販売機", Some(Japanese)),
+        // case::arab(ahashset![Acehnese, Arabic], "والموضوع", Some(Arabic)),
     )]
     fn test_specific_language_detection_problems(
-        builder_languages: Vec<ScriptLanguage>,
+        builder_languages: AHashSet<ScriptLanguage>,
         text: &str,
         expected_language: Option<ScriptLanguage>,
     ) {
-        let detector = LanguageDetectorBuilder::from_languages(&builder_languages).build();
-
-        let language = detector.detect(text, 0.0);
+        let language = DETECTOR_ALL_LANGUAGES_PRELOADED.detect_best(
+            text,
+            &LanguageDetectorConfig::with_languages(builder_languages.into()),
+            0.0,
+        );
         assert_eq!(language, expected_language);
     }
 
@@ -1674,12 +1791,26 @@ mod tests {
 
     #[rstest(invalid_str, case(""), case(" \n  \t;"), case("3<856%)§"))]
     fn assert_strings_without_letters_return_no_language(invalid_str: &str) {
-        assert_eq!(DETECTOR_ALL_LANGUAGES.detect(invalid_str, 0.0), None);
+        assert_eq!(
+            DETECTOR_ALL_LANGUAGES_PRELOADED.detect_best(
+                invalid_str,
+                &LanguageDetectorConfig::new_all_languages(),
+                0.0
+            ),
+            None
+        );
     }
 
     #[rstest(text, expected_language, case("I know you әлем", Some(English)))]
     fn assert_language_detection_correct(text: &str, expected_language: Option<ScriptLanguage>) {
-        assert_eq!(DETECTOR_ALL_LANGUAGES.detect(text, 0.0), expected_language);
+        assert_eq!(
+            DETECTOR_ALL_LANGUAGES_PRELOADED.detect_best(
+                text,
+                &LanguageDetectorConfig::new_all_languages(),
+                0.0
+            ),
+            expected_language
+        );
     }
 
     #[rstest(text, languages,
@@ -1693,10 +1824,17 @@ mod tests {
         )
     )]
     fn assert_language_detection_is_deterministic(text: &str, languages: Vec<ScriptLanguage>) {
-        let detector = LanguageDetector::new(languages.iter().cloned().collect(), false);
+        let detector = LanguageDetector::new();
+        let detector_config = LanguageDetectorConfig::with_languages(
+            languages
+                .iter()
+                .cloned()
+                .collect::<HashSet<_, ahash::RandomState>>(),
+        );
+
         let mut detected_languages = AHashSet::new();
         for _ in 0..100 {
-            let language = detector.detect(text, 0.0);
+            let language = detector.detect_best(text, &detector_config, 0.0);
             detected_languages.insert(language.unwrap());
         }
         assert_eq!(
@@ -1709,12 +1847,14 @@ mod tests {
 
     #[rstest]
     fn test_low_accuracy_mode() {
-        let detector = LanguageDetector::new(ahashset!(English, German), true);
+        let detector = LanguageDetector::new();
+        let detector_config =
+            LanguageDetectorConfig::with_languages(ahashset!(English, German)).low_accuracy();
 
-        assert_ne!(detector.detect("bed", 0.0), None);
-        assert_ne!(detector.detect("be", 0.0), None);
-        assert_ne!(detector.detect("b", 0.0), None);
+        assert_ne!(detector.detect_best("bed", &detector_config, 0.0), None);
+        assert_ne!(detector.detect_best("be", &detector_config, 0.0), None);
+        assert_ne!(detector.detect_best("b", &detector_config, 0.0), None);
 
-        assert_eq!(detector.detect("", 0.0), None);
+        assert_eq!(detector.detect_best("", &detector_config, 0.0), None);
     }
 }

@@ -1,21 +1,6 @@
-/*
- * Copyright © 2020-present Peter M. Stahl pemistahl@gmail.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+use ::std::collections::HashSet;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use lingua::{LanguageDetectorBuilder, ScriptLanguage};
+use lingua::{LanguageDetector, LanguageDetectorConfig, ScriptLanguage};
 
 // This is the common subset of languages that is supported by all
 // language detection libraries in this benchmark.
@@ -60,52 +45,28 @@ const SENTENCES: &[&str] = &[
 fn benchmark_detector(c: &mut Criterion) {
     let mut group_all_preloaded = c.benchmark_group("Detector all languages preloaded");
 
-    let high_accuracy_detector_all_languages_preloaded =
-        LanguageDetectorBuilder::from_all_languages().build();
+    let detector = LanguageDetector::new();
+    let config_high_accuracy_all_languages = LanguageDetectorConfig::new_all_languages();
+    config_high_accuracy_all_languages.preload_languages_models(&detector);
+
     group_all_preloaded.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_all_languages_preloaded.detect(sentence, 0.0));
+                black_box(detector.detect_best(sentence, &config_high_accuracy_all_languages, 0.0));
             });
         });
     });
 
-    let low_accuracy_detector_all_languages_preloaded =
-        LanguageDetectorBuilder::from_all_languages()
-            .with_low_accuracy_mode()
-            .build();
+    let config_low_accuracy_all_languages =
+        LanguageDetectorConfig::new_all_languages().low_accuracy();
     group_all_preloaded.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_all_languages_preloaded.detect(sentence, 0.0));
+                black_box(detector.detect_best(sentence, &config_low_accuracy_all_languages, 0.0));
             });
         });
     });
     group_all_preloaded.finish();
-
-    /*let mut group_all = c.benchmark_group("Detector all languages load");
-
-    group_all.bench_function("high accuracy", |bencher| {
-        bencher.iter(|| {
-            let high_accuracy_detector_all_languages =
-                LanguageDetectorBuilder::from_all_languages().build();
-            SENTENCES.iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_all_languages.detect(sentence));
-            });
-        });
-    });
-
-    group_all.bench_function("low accuracy", |bencher| {
-        bencher.iter(|| {
-            let low_accuracy_detector_all_languages = LanguageDetectorBuilder::from_all_languages()
-                .with_low_accuracy_mode()
-                .build();
-            SENTENCES.iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_all_languages.detect(sentence));
-            });
-        });
-    });
-    group_all.finish(); */
 
     /* let mut group2 = c.benchmark_group("Detector with all languages in multiple threads");
     group2.bench_function("low accuracy", |bencher| {
@@ -126,24 +87,33 @@ fn benchmark_detector(c: &mut Criterion) {
 
     let mut group_common_preloaded = c.benchmark_group("Detector common languages");
 
-    let high_accuracy_detector_common_languages =
-        LanguageDetectorBuilder::from_languages(COMMON_LANGUAGES).build();
+    let config_high_accuracy_common_languages = LanguageDetectorConfig::with_languages(
+        COMMON_LANGUAGES
+            .iter()
+            .copied()
+            .collect::<HashSet<_, ahash::RandomState>>(),
+    );
     group_common_preloaded.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_common_languages.detect(sentence, 0.0));
+                black_box(detector.detect_best(
+                    sentence,
+                    &config_high_accuracy_common_languages,
+                    0.0,
+                ));
             });
         });
     });
 
-    let low_accuracy_detector_common_languages =
-        LanguageDetectorBuilder::from_languages(COMMON_LANGUAGES)
-            .with_low_accuracy_mode()
-            .build();
+    let config_low_accuracy_common_languages = config_high_accuracy_common_languages.low_accuracy();
     group_common_preloaded.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_common_languages.detect(sentence, 0.0));
+                black_box(detector.detect_best(
+                    sentence,
+                    &config_low_accuracy_common_languages,
+                    0.0,
+                ));
             });
         });
     });
@@ -174,8 +144,9 @@ fn benchmark_preload_all_languages(c: &mut Criterion) {
     group.sample_size(10);
     group.bench_function("all languages", |bencher| {
         bencher.iter(|| {
-            let detector = LanguageDetectorBuilder::from_all_languages().build();
-            detector.unload_language_models();
+            let detector = LanguageDetector::new();
+            let config_high_accuracy_all_languages = LanguageDetectorConfig::new_all_languages();
+            config_high_accuracy_all_languages.preload_languages_models(&detector);
         })
     });
 }
