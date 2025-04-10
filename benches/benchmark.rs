@@ -61,13 +61,11 @@ fn benchmark_detector(c: &mut Criterion) {
     let mut group_all_preloaded = c.benchmark_group("Detector all languages preloaded");
 
     let high_accuracy_detector_all_languages_preloaded =
-        LanguageDetectorBuilder::from_all_languages()
-            .with_preloaded_language_models()
-            .build();
+        LanguageDetectorBuilder::from_all_languages().build();
     group_all_preloaded.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_all_languages_preloaded.detect(sentence));
+                black_box(high_accuracy_detector_all_languages_preloaded.detect(sentence, 0.0));
             });
         });
     });
@@ -75,12 +73,11 @@ fn benchmark_detector(c: &mut Criterion) {
     let low_accuracy_detector_all_languages_preloaded =
         LanguageDetectorBuilder::from_all_languages()
             .with_low_accuracy_mode()
-            .with_preloaded_language_models()
             .build();
     group_all_preloaded.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_all_languages_preloaded.detect(sentence));
+                black_box(low_accuracy_detector_all_languages_preloaded.detect(sentence, 0.0));
             });
         });
     });
@@ -130,13 +127,11 @@ fn benchmark_detector(c: &mut Criterion) {
     let mut group_common_preloaded = c.benchmark_group("Detector common languages");
 
     let high_accuracy_detector_common_languages =
-        LanguageDetectorBuilder::from_languages(COMMON_LANGUAGES)
-            .with_preloaded_language_models()
-            .build();
+        LanguageDetectorBuilder::from_languages(COMMON_LANGUAGES).build();
     group_common_preloaded.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(high_accuracy_detector_common_languages.detect(sentence));
+                black_box(high_accuracy_detector_common_languages.detect(sentence, 0.0));
             });
         });
     });
@@ -144,12 +139,11 @@ fn benchmark_detector(c: &mut Criterion) {
     let low_accuracy_detector_common_languages =
         LanguageDetectorBuilder::from_languages(COMMON_LANGUAGES)
             .with_low_accuracy_mode()
-            .with_preloaded_language_models()
             .build();
     group_common_preloaded.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(low_accuracy_detector_common_languages.detect(sentence));
+                black_box(low_accuracy_detector_common_languages.detect(sentence, 0.0));
             });
         });
     });
@@ -180,9 +174,7 @@ fn benchmark_preload_all_languages(c: &mut Criterion) {
     group.sample_size(10);
     group.bench_function("all languages", |bencher| {
         bencher.iter(|| {
-            let detector = LanguageDetectorBuilder::from_all_languages()
-                .with_preloaded_language_models()
-                .build();
+            let detector = LanguageDetectorBuilder::from_all_languages().build();
             detector.unload_language_models();
         })
     });
