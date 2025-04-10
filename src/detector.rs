@@ -94,26 +94,23 @@ pub struct Word {
 /// This struct detects the language of given input text.
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
 pub struct LanguageDetector {
-    languages: AHashSet<ScriptLanguage>,
+    languages_preloaded: AHashSet<ScriptLanguage>,
     is_low_accuracy_mode_enabled: bool,
     languages_models: LanguagesModelsRef,
 }
 
 impl LanguageDetector {
-    pub(crate) fn from(
-        languages: AHashSet<ScriptLanguage>,
-        is_every_language_model_preloaded: bool,
+    pub(crate) fn new(
+        languages_preload: AHashSet<ScriptLanguage>,
         is_low_accuracy_mode_enabled: bool,
     ) -> Self {
         let detector = Self {
-            languages,
+            languages_preloaded: languages_preload,
             is_low_accuracy_mode_enabled,
             languages_models: &LANGUAGES_MODELS,
         };
 
-        if is_every_language_model_preloaded {
-            detector.load_languages_models(&detector.languages);
-        }
+        detector.load_languages_models(&detector.languages_preloaded);
 
         detector
     }
@@ -140,7 +137,7 @@ impl LanguageDetector {
     /// and frees allocated memory previously consumed by the models.
     pub fn unload_language_models(&self) {
         #[cfg(not(target_family = "wasm"))]
-        let languages_iter = self.languages.par_iter();
+        let languages_iter = self.languages_preloaded.par_iter();
         #[cfg(target_family = "wasm")]
         let languages_iter = self.languages.iter();
 
@@ -178,7 +175,7 @@ impl LanguageDetector {
     /// assert_eq!(detected_language, Some(English));
     /// ```
     pub fn detect(&self, text: &str, minimum_distance: f64) -> Option<ScriptLanguage> {
-        self.detect_with_languages(text, &self.languages, minimum_distance)
+        self.detect_with_languages(text, &self.languages_preloaded, minimum_distance)
     }
 
     /// Detects the languages of all given input texts.
@@ -509,7 +506,7 @@ impl LanguageDetector {
     /// );
     /// ```
     pub fn compute_confidence(&self, text: &str) -> Vec<(ScriptLanguage, f64)> {
-        self.compute_confidence_for_languages(text, &self.languages)
+        self.compute_confidence_for_languages(text, &self.languages_preloaded)
     }
 
     /// Computes confidence values for each language supported by this detector for all the given
@@ -1225,7 +1222,7 @@ mod tests {
         let languages = ahashset!(English, German);
 
         LanguageDetector {
-            languages,
+            languages_preloaded: languages,
             is_low_accuracy_mode_enabled: false,
             languages_models: mock_languages_models,
         }
@@ -1233,7 +1230,7 @@ mod tests {
 
     #[fixture]
     fn detector_for_all_languages() -> LanguageDetector {
-        LanguageDetector::from(ScriptLanguage::all().collect(), true, false)
+        LanguageDetector::new(ScriptLanguage::all().collect(), false)
     }
 
     // ##############################
@@ -1727,9 +1724,7 @@ mod tests {
         text: &str,
         expected_language: Option<ScriptLanguage>,
     ) {
-        let detector = LanguageDetectorBuilder::from_languages(&builder_languages)
-            .with_preloaded_language_models()
-            .build();
+        let detector = LanguageDetectorBuilder::from_languages(&builder_languages).build();
 
         let language = detector.detect(text, 0.0);
         assert_eq!(language, expected_language);
@@ -1789,7 +1784,7 @@ mod tests {
         )
     )]
     fn assert_language_detection_is_deterministic(text: &str, languages: Vec<ScriptLanguage>) {
-        let detector = LanguageDetector::from(languages.iter().cloned().collect(), true, false);
+        let detector = LanguageDetector::new(languages.iter().cloned().collect(), false);
         let mut detected_languages = AHashSet::new();
         for _ in 0..100 {
             let language = detector.detect(text, 0.0);
@@ -1805,7 +1800,7 @@ mod tests {
 
     #[rstest]
     fn test_low_accuracy_mode() {
-        let detector = LanguageDetector::from(ahashset!(English, German), true, true);
+        let detector = LanguageDetector::new(ahashset!(English, German), true);
 
         assert_ne!(detector.detect("bed", 0.0), None);
         assert_ne!(detector.detect("be", 0.0), None);

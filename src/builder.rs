@@ -29,7 +29,6 @@ pub(crate) const MINIMUM_RELATIVE_DISTANCE_MESSAGE: &str =
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
 pub struct LanguageDetectorBuilder {
     languages: AHashSet<ScriptLanguage>,
-    is_every_language_model_preloaded: bool,
     is_low_accuracy_mode_enabled: bool,
 }
 
@@ -148,10 +147,10 @@ impl LanguageDetectorBuilder {
     /// For web services, for instance, it is rather beneficial to preload all language
     /// models into memory to avoid unexpected latency while waiting for the
     /// service response. This method allows to switch between these two loading modes.
-    pub fn with_preloaded_language_models(&mut self) -> &mut Self {
+    /* pub fn with_preloaded_language_models(&mut self) -> &mut Self {
         self.is_every_language_model_preloaded = true;
         self
-    }
+    } */
 
     /// Disables the high accuracy mode in order to save memory and increase performance.
     ///
@@ -171,9 +170,8 @@ impl LanguageDetectorBuilder {
 
     /// Creates and returns the configured instance of [LanguageDetector].
     pub fn build(&mut self) -> LanguageDetector {
-        LanguageDetector::from(
+        LanguageDetector::new(
             AHashSet::from_iter(self.languages.iter().cloned()),
-            self.is_every_language_model_preloaded,
             self.is_low_accuracy_mode_enabled,
         )
     }
@@ -181,7 +179,6 @@ impl LanguageDetectorBuilder {
     fn from(languages: AHashSet<ScriptLanguage>) -> Self {
         Self {
             languages,
-            is_every_language_model_preloaded: false,
             is_low_accuracy_mode_enabled: false,
         }
     }
