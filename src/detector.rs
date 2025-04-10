@@ -582,34 +582,6 @@ impl LanguageDetector {
             return Default::default();
         }
 
-        // let mut values = Vec::with_capacity(search_languages.len());
-
-        /* for &language in search_languages {
-            values.push((language, 0.0));
-        } */
-
-        /* let words = split_text_into_words(text_str);
-        if words.is_empty() {
-            return values;
-        } */
-
-        // let filtered_languages = Self::process_words(&words, search_languages);
-
-        /* let found_words = alphabet_detector::from_ch_iter(text_str.char_indices());
-
-        let mut words = Vec::new();
-        let mut languages: AHashMap<Language, usize> = Default::default();
-        for wd in found_words {
-            let len = wd.chars.len();
-            words.push(wd.chars);
-            let langs = langs_count_max(wd.langs_cnt).0;
-            for search_lang in search_languages {
-                if langs.contains(search_lang) {
-                    let cnt = languages.entry(*search_lang).or_default();
-                    *cnt += len;
-                }
-            }
-        } */
         let (words, langs) = fulltext_filter_with_margin::<Vec<char>, 95>(text_str.char_indices());
         let filtered_languages: AHashSet<_> = langs
             .filter(|(l, _)| search_languages.contains(l))
@@ -620,42 +592,12 @@ impl LanguageDetector {
             return Default::default();
         }
 
-        /* let lang_alphabets_count_max = languages.iter().fold(1, |acc, (_, &cnt)| acc.max(cnt));
-        languages.retain(|_, cnt| {
-            *cnt == lang_alphabets_count_max
-        }); */
-
-        // let language_detected_by_rules =
-        // Self::find_most_frequent_opt(&mut total_language_counts);
-
-        /* if let Some(language) = language_detected_by_rules {
-            update_confidence_values(&mut values, language, 1.0);
-            values.sort_by(confidence_values_comparator);
-            return values;
-        } */
-
-        // let words_count_half = (words.len() as f64) * 0.5;
-        /* let filtered_languages = self.filter_languages_by_rules(
-            &words,
-            // search_languages,
-            words_count_half,
-            // total_script_counts,
-            filtered_languages,
-        ); */
-
         if filtered_languages.len() == 1 {
             let lang = filtered_languages.into_iter().next().unwrap();
-            // update_confidence_values(&mut values, lang, 0.0);
-            // values.sort_by(order_by_probability);
             return vec![(lang, 0.0)];
         }
 
         let character_count: usize = words.iter().map(|wd| wd.buf.len()).sum();
-
-        /* if self.is_low_accuracy_mode_enabled && character_count < 3 {
-            values.sort_by(order_by_probability);
-            return values;
-        } */
 
         let ngram_length_range = if self.is_low_accuracy_mode_enabled {
             if character_count >= 120 {
@@ -668,6 +610,13 @@ impl LanguageDetector {
         } else {
             1..NGRAM_MAX_SIZE + 1
         };
+
+        /* if character_count < ngram_length_range.start {
+            return filtered_languages
+                .into_iter()
+                .map(|l| (l, f64::NEG_INFINITY))
+                .collect();
+        } */
 
         self.load_language_models_by_ngram_len(ngram_length_range.end - 1, &filtered_languages);
 
