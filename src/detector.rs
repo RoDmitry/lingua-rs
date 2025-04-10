@@ -11,7 +11,7 @@ use ::core::{
 };
 use ::std::{
     collections::{HashMap, HashSet},
-    sync::{LazyLock, RwLock},
+    sync::RwLock,
 };
 use ahash::{AHashMap, AHashSet};
 use alphabet_detector::{
@@ -75,10 +75,10 @@ impl From<LanguageModelNgrams> for LanguageModel {
 }
 
 type LanguagesModels = ScriptLanguageArr<RwLock<LanguageModel>>;
-type LanguagesModelsRef = &'static LanguagesModels;
+// type LanguagesModelsRef = &'static LanguagesModels;
 
-static LANGUAGES_MODELS: LazyLock<LanguagesModels> =
-    LazyLock::new(|| ::core::array::from_fn(|_| Default::default()));
+// static LANGUAGES_MODELS: LazyLock<LanguagesModels> =
+// LazyLock::new(|| ::core::array::from_fn(|_| Default::default()));
 
 /// final result
 pub struct Word {
@@ -96,7 +96,7 @@ pub struct Word {
 pub struct LanguageDetector {
     languages_preloaded: AHashSet<ScriptLanguage>,
     is_low_accuracy_mode_enabled: bool,
-    languages_models: LanguagesModelsRef,
+    languages_models: LanguagesModels,
 }
 
 impl LanguageDetector {
@@ -107,7 +107,7 @@ impl LanguageDetector {
         let detector = Self {
             languages_preloaded: languages_preload,
             is_low_accuracy_mode_enabled,
-            languages_models: &LANGUAGES_MODELS,
+            languages_models: ::core::array::from_fn(|_| Default::default()),
         };
 
         detector.load_languages_models(&detector.languages_preloaded);
@@ -1115,7 +1115,7 @@ fn merge_adjacent_results(
 mod tests {
     use super::*;
     use crate::{builder::LanguageDetectorBuilder, ScriptLanguage::*};
-    use ::std::sync::OnceLock;
+    use ::std::sync::LazyLock;
     use float_cmp::approx_eq;
     use rstest::*;
 
@@ -1198,40 +1198,33 @@ mod tests {
         ])
     }
 
-    #[fixture]
-    fn mock_languages_models() -> LanguagesModelsRef {
-        static MODELS_FIXTURE: OnceLock<LanguagesModels> = OnceLock::new();
-        MODELS_FIXTURE.get_or_init(|| {
-            let init: LanguagesModels = ::core::array::from_fn(|_| RwLock::new(Default::default()));
-            *init.get_safe_unchecked(English as usize).write().unwrap() =
-                language_model_for_english();
-            *init.get_safe_unchecked(German as usize).write().unwrap() =
-                language_model_for_german();
-            init
-        })
-    }
-
     // ##############################
     // DETECTORS
     // ##############################
 
-    #[fixture]
-    fn mock_detector_for_english_and_german(
-        mock_languages_models: LanguagesModelsRef,
-    ) -> LanguageDetector {
+    static MOCK_DETECTOR_ENGLISH_AND_GERMAN: LazyLock<LanguageDetector> = LazyLock::new(|| {
         let languages = ahashset!(English, German);
+
+        let languages_models: LanguagesModels =
+            ::core::array::from_fn(|_| RwLock::new(Default::default()));
+        *languages_models
+            .get_safe_unchecked(English as usize)
+            .write()
+            .unwrap() = language_model_for_english();
+        *languages_models
+            .get_safe_unchecked(German as usize)
+            .write()
+            .unwrap() = language_model_for_german();
 
         LanguageDetector {
             languages_preloaded: languages,
             is_low_accuracy_mode_enabled: false,
-            languages_models: mock_languages_models,
+            languages_models,
         }
-    }
+    });
 
-    #[fixture]
-    fn detector_for_all_languages() -> LanguageDetector {
-        LanguageDetector::new(ScriptLanguage::all().collect(), false)
-    }
+    static DETECTOR_ALL_LANGUAGES: LazyLock<LanguageDetector> =
+        LazyLock::new(|| LanguageDetector::new(ScriptLanguage::all().collect(), false));
 
     // ##############################
     // TESTS
@@ -1252,17 +1245,12 @@ mod tests {
         case(German, "lter", 0.28),
         case(German, "alter", 0.3)
     )]
-    fn test_model_ngram_lookup(
-        mock_detector_for_english_and_german: LanguageDetector,
-        language: ScriptLanguage,
-        ngram: &str,
-        expected_probability: f64,
-    ) {
+    fn test_model_ngram_lookup(language: ScriptLanguage, ngram: &str, expected_probability: f64) {
         let ngram_length = ngram.chars().count();
-        mock_detector_for_english_and_german
-            .load_language_models_by_ngram_len(ngram_length, &ahashset!(language));
+        // mock_detector_for_english_and_german
+        // .load_language_models_by_ngram_len(ngram_length, &ahashset!(language));
 
-        let language_model_lock = mock_detector_for_english_and_german
+        let language_model_lock = MOCK_DETECTOR_ENGLISH_AND_GERMAN
             .languages_models
             .get_safe_unchecked(language as usize)
             .read()
@@ -1305,14 +1293,13 @@ mod tests {
             1.0_f64.ln()
         )
     )]
-    fn test_compute_ngrams_confidence(
-        mock_detector_for_english_and_german: LanguageDetector,
-        ngrams: Vec<&'static str>,
-        expected_ngrams_confidence: f64,
-    ) {
-        mock_detector_for_english_and_german.load_languages_models(&ahashset!(English));
-        let (ngrams_confidence, _cnt) = mock_detector_for_english_and_german
-            .compute_ngrams_confidence(English, ngrams.iter().copied(), ngrams[0].chars().count());
+    fn test_compute_ngrams_confidence(ngrams: Vec<&'static str>, expected_ngrams_confidence: f64) {
+        // mock_detector_for_english_and_german.load_languages_models(&ahashset!(English));
+        let (ngrams_confidence, _cnt) = MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_ngrams_confidence(
+            English,
+            ngrams.iter().copied(),
+            ngrams[0].chars().count(),
+        );
 
         assert!(
             approx_eq!(f64, ngrams_confidence, expected_ngrams_confidence, ulps = 1),
@@ -1350,17 +1337,15 @@ mod tests {
         )
     )]
     fn test_compute_languages_ngrams_confidence(
-        mock_detector_for_english_and_german: LanguageDetector,
         ngrams: Vec<&'static str>,
         expected_probabilities: AHashMap<ScriptLanguage, f64>,
     ) {
         let languages = ahashset!(English, German);
-        let probabilities = mock_detector_for_english_and_german
-            .compute_languages_ngrams_confidence(
-                ngrams.iter().copied(),
-                &languages,
-                ngrams[0].chars().count(),
-            );
+        let probabilities = MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_languages_ngrams_confidence(
+            ngrams.iter().copied(),
+            &languages,
+            ngrams[0].chars().count(),
+        );
 
         for (language, (probability, _cnt)) in probabilities.into_iter().enumerate() {
             if probability.is_zero() {
@@ -1388,12 +1373,8 @@ mod tests {
         case::unique_ngrams("o", vec![(English, 0.5), (German, 0.5)]),
         case::unknown_ngrams("проарплап", vec![]),
     )]
-    fn test_compute_confidence(
-        mock_detector_for_english_and_german: LanguageDetector,
-        text: &str,
-        expected_confidence: Vec<(ScriptLanguage, f64)>,
-    ) {
-        let mut confidence = mock_detector_for_english_and_german.compute_confidence(text);
+    fn test_compute_confidence(text: &str, expected_confidence: Vec<(ScriptLanguage, f64)>) {
+        let mut confidence = MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_confidence(text);
 
         LanguageDetector::transform_to_relative_probabilities(&mut confidence);
         confidence
@@ -1409,11 +1390,10 @@ mod tests {
         case::script_no_models("ꨕ", vec![(ChamEastern, 0.5), (ChamWestern, 0.5)]),
     )]
     fn test_compute_confidence_no_filter(
-        mock_detector_for_english_and_german: LanguageDetector,
         text: &str,
         expected_confidence: Vec<(ScriptLanguage, f64)>,
     ) {
-        let mut confidence = mock_detector_for_english_and_german.compute_confidence_for_languages(
+        let mut confidence = MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_confidence_for_languages(
             text,
             &ScriptLanguage::all().collect::<AHashSet<_>>(),
         );
@@ -1440,13 +1420,12 @@ mod tests {
         case::unknown_language("groß", French, 0.0)
     )]
     fn test_compute_relative_probability(
-        mock_detector_for_english_and_german: LanguageDetector,
         text: &str,
         language: ScriptLanguage,
         expected_confidence: f64,
     ) {
         let confidence =
-            mock_detector_for_english_and_german.compute_relative_probability(text, language);
+            MOCK_DETECTOR_ENGLISH_AND_GERMAN.compute_relative_probability(text, language);
 
         assert_eq!(round_to_two_decimal_places(confidence), expected_confidence);
     }
@@ -1457,18 +1436,14 @@ mod tests {
         case("Alter", Some(German)),
         case("проарплап", None)
     )]
-    fn test_detect(
-        mock_detector_for_english_and_german: LanguageDetector,
-        word: &str,
-        expected_language: Option<ScriptLanguage>,
-    ) {
-        let detected_language = mock_detector_for_english_and_german.detect(word, 0.0);
+    fn test_detect(word: &str, expected_language: Option<ScriptLanguage>) {
+        let detected_language = MOCK_DETECTOR_ENGLISH_AND_GERMAN.detect(word, 0.0);
         assert_eq!(detected_language, expected_language);
     }
 
     #[rstest]
-    fn test_detect_multiple_for_empty_string(detector_for_all_languages: LanguageDetector) {
-        assert!(detector_for_all_languages.detect_multiple("").is_empty());
+    fn test_detect_multiple_for_empty_string() {
+        assert!(DETECTOR_ALL_LANGUAGES.detect_multiple("").is_empty());
     }
 
     #[rstest(
@@ -1484,12 +1459,11 @@ mod tests {
         case::kazakh("V төзімділік спорт", 3, Kazakh)
     )]
     fn test_detect_multiple_with_one_language(
-        detector_for_all_languages: LanguageDetector,
         sentence: &str,
         expected_word_count: usize,
         expected_language: ScriptLanguage,
     ) {
-        let results = detector_for_all_languages.detect_multiple(sentence);
+        let results = DETECTOR_ALL_LANGUAGES.detect_multiple(sentence);
         assert_eq!(results.len(), 1);
 
         let result = &results[0];
@@ -1536,7 +1510,6 @@ mod tests {
         )
     )]
     fn test_detect_multiple_with_two_languages(
-        detector_for_all_languages: LanguageDetector,
         sentence: &str,
         expected_first_substring: &str,
         expected_first_word_count: usize,
@@ -1545,7 +1518,7 @@ mod tests {
         expected_second_word_count: usize,
         expected_second_language: ScriptLanguage,
     ) {
-        let results = detector_for_all_languages.detect_multiple(sentence);
+        let results = DETECTOR_ALL_LANGUAGES.detect_multiple(sentence);
         assert_eq!(results.len(), 2);
 
         let first_result = &results[0];
@@ -1598,7 +1571,6 @@ mod tests {
         ), */
     )]
     fn test_detect_multiple_with_three_languages(
-        detector_for_all_languages: LanguageDetector,
         sentence: &str,
         expected_first_substring: &str,
         expected_first_word_count: usize,
@@ -1610,7 +1582,7 @@ mod tests {
         expected_third_word_count: usize,
         expected_third_language: ScriptLanguage,
     ) {
-        let results = detector_for_all_languages.detect_multiple(sentence);
+        let results = DETECTOR_ALL_LANGUAGES.detect_multiple(sentence);
         assert_eq!(results.len(), 3, "{} {:?}", sentence, results);
 
         let first_result = &results[0];
@@ -1663,7 +1635,6 @@ mod tests {
         )
     )]
     fn test_detect_multiple_with_four_languages(
-        detector_for_all_languages: LanguageDetector,
         sentence: &str,
         expected_first_substring: &str,
         expected_first_word_count: usize,
@@ -1678,7 +1649,7 @@ mod tests {
         expected_fourth_word_count: usize,
         expected_fourth_language: Language,
     ) {
-        let results = detector_for_all_languages.detect_multiple(sentence);
+        let results = DETECTOR_ALL_LANGUAGES.detect_multiple(sentence);
         assert_eq!(results.len(), 4, "{:?}", results);
 
         let first_result = &results[0];
@@ -1735,18 +1706,17 @@ mod tests {
         case("kejurnas iii пїѕ aa boxer cup iii пїѕ bertempat di bandung jumlah peserta petarung dari daerah provinsi jawa barat dki jakarta jawa timur sumatera utara sumatera barat nusa tenggara barat bali kalimantan barat"),
     )]
     fn assert_language_filtering_with_rules_text_panics(
-        detector_for_all_languages: LanguageDetector,
         text: &str,
     ) {
         let words = split_text_into_words(text);
 
         let filtered_languages =
-            LanguageDetector::process_words(&words, &detector_for_all_languages.languages);
+            LanguageDetector::process_words(&words, &DETECTOR_ALL_LANGUAGES.languages);
 
         /* let words_count_half = (words.len() as f64) * 0.5;
-        let filtered_languages = detector_for_all_languages.filter_languages_by_rules(
+        let filtered_languages = DETECTOR_ALL_LANGUAGES.filter_languages_by_rules(
             &words,
-            // &detector_for_all_languages.languages,
+            // &DETECTOR_ALL_LANGUAGES.languages,
             words_count_half,
             // alps,
             filtered_languages,
@@ -1754,23 +1724,13 @@ mod tests {
     } */
 
     #[rstest(invalid_str, case(""), case(" \n  \t;"), case("3<856%)§"))]
-    fn assert_strings_without_letters_return_no_language(
-        detector_for_all_languages: LanguageDetector,
-        invalid_str: &str,
-    ) {
-        assert_eq!(detector_for_all_languages.detect(invalid_str, 0.0), None);
+    fn assert_strings_without_letters_return_no_language(invalid_str: &str) {
+        assert_eq!(DETECTOR_ALL_LANGUAGES.detect(invalid_str, 0.0), None);
     }
 
     #[rstest(text, expected_language, case("I know you әлем", Some(English)))]
-    fn assert_language_detection_correct(
-        detector_for_all_languages: LanguageDetector,
-        text: &str,
-        expected_language: Option<ScriptLanguage>,
-    ) {
-        assert_eq!(
-            detector_for_all_languages.detect(text, 0.0),
-            expected_language
-        );
+    fn assert_language_detection_correct(text: &str, expected_language: Option<ScriptLanguage>) {
+        assert_eq!(DETECTOR_ALL_LANGUAGES.detect(text, 0.0), expected_language);
     }
 
     #[rstest(text, languages,
