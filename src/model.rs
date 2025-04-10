@@ -1,4 +1,4 @@
-use crate::{fraction::Fraction, json::FileLanguageModel};
+use crate::{detector::NGRAM_MAX_SIZE, fraction::Fraction, json::FileLanguageModel};
 use ahash::{AHashMap, AHashSet};
 use arraystring::{typenum::U20, ArrayString};
 use fraction::GenericFraction;
@@ -164,8 +164,8 @@ pub(crate) fn prepare_ngrams<'a>(
     ngram_length: usize,
 ) -> Vec<NgramString> {
     debug_assert!(
-        (1..6).contains(&ngram_length),
-        "ngram length {ngram_length} is not in range 1..6"
+        (1..=NGRAM_MAX_SIZE).contains(&ngram_length),
+        "ngram length {ngram_length} is not in range 1..={NGRAM_MAX_SIZE}"
     );
 
     let mut ngrams_tmp = AHashSet::new();
