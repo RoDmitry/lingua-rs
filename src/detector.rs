@@ -95,7 +95,6 @@ pub struct Word {
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
 pub struct LanguageDetector {
     languages: AHashSet<ScriptLanguage>,
-    minimum_distance: f64,
     is_low_accuracy_mode_enabled: bool,
     languages_models: LanguagesModelsRef,
 }
@@ -103,13 +102,11 @@ pub struct LanguageDetector {
 impl LanguageDetector {
     pub(crate) fn from(
         languages: AHashSet<ScriptLanguage>,
-        minimum_distance: f64,
         is_every_language_model_preloaded: bool,
         is_low_accuracy_mode_enabled: bool,
     ) -> Self {
         let detector = Self {
             languages,
-            minimum_distance,
             is_low_accuracy_mode_enabled,
             languages_models: &LANGUAGES_MODELS,
         };
@@ -180,8 +177,8 @@ impl LanguageDetector {
     ///
     /// assert_eq!(detected_language, Some(English));
     /// ```
-    pub fn detect(&self, text: &str) -> Option<ScriptLanguage> {
-        self.detect_with_languages(text, &self.languages)
+    pub fn detect(&self, text: &str, minimum_distance: f64) -> Option<ScriptLanguage> {
+        self.detect_with_languages(text, &self.languages, minimum_distance)
     }
 
     /// Detects the languages of all given input texts.
@@ -225,10 +222,14 @@ impl LanguageDetector {
     /// );
     /// ```
     #[cfg(not(target_family = "wasm"))]
-    pub fn detect_in_parallel(&self, texts: &[&str]) -> Vec<Option<ScriptLanguage>> {
+    pub fn detect_in_parallel(
+        &self,
+        texts: &[&str],
+        minimum_distance: f64,
+    ) -> Vec<Option<ScriptLanguage>> {
         texts
             .into_par_iter()
-            .map(|text| self.detect(text))
+            .map(|text| self.detect(text, minimum_distance))
             .collect()
     }
 
@@ -236,7 +237,12 @@ impl LanguageDetector {
         &self,
         text: &str,
         languages: &HashSet<ScriptLanguage, S>,
+        minimum_distance: f64,
     ) -> Option<ScriptLanguage> {
+        debug_assert!(
+            (0.0..1.0).contains(&minimum_distance),
+            "Minimum relative distance must lie in between 0.0 and 0.99"
+        );
         let mut confidence = self
             .compute_confidence_for_languages(text, languages)
             .into_iter();
@@ -250,8 +256,7 @@ impl LanguageDetector {
         let language_probability_diff =
             (most_likely_language_probability - second_most_likely_language_probability).abs();
 
-        if language_probability_diff < f64::EPSILON
-            || language_probability_diff < self.minimum_distance
+        if language_probability_diff < f64::EPSILON || language_probability_diff < minimum_distance
         {
             return None;
         }
@@ -326,7 +331,7 @@ impl LanguageDetector {
         let mut results = vec![];
         let mut language_counts = AHashMap::new();
 
-        let language = self.detect(text_str);
+        let language = self.detect(text_str, 0.0);
         if let Some(lang) = language {
             Self::increment_counter(&mut language_counts, lang, 1);
         }
@@ -335,7 +340,7 @@ impl LanguageDetector {
             if word.chars().count() < 5 {
                 continue;
             }
-            let language = self.detect(word);
+            let language = self.detect(word, 0.0);
             if let Some(lang) = language {
                 Self::increment_counter(&mut language_counts, lang, 1);
             }
@@ -365,7 +370,7 @@ impl LanguageDetector {
 
             for (i, token_match) in token_matches.enumerate() {
                 let word = token_match.as_str();
-                let language = self.detect_with_languages(word, &languages);
+                let language = self.detect_with_languages(word, &languages, 0.0);
 
                 if i == 0 || (current_language.is_none() && language.is_some()) {
                     current_language = language;
@@ -1221,7 +1226,6 @@ mod tests {
 
         LanguageDetector {
             languages,
-            minimum_distance: 0.0,
             is_low_accuracy_mode_enabled: false,
             languages_models: mock_languages_models,
         }
@@ -1229,7 +1233,7 @@ mod tests {
 
     #[fixture]
     fn detector_for_all_languages() -> LanguageDetector {
-        LanguageDetector::from(ScriptLanguage::all().collect(), 0.0, true, false)
+        LanguageDetector::from(ScriptLanguage::all().collect(), true, false)
     }
 
     // ##############################
@@ -1461,7 +1465,7 @@ mod tests {
         word: &str,
         expected_language: Option<ScriptLanguage>,
     ) {
-        let detected_language = mock_detector_for_english_and_german.detect(word);
+        let detected_language = mock_detector_for_english_and_german.detect(word, 0.0);
         assert_eq!(detected_language, expected_language);
     }
 
@@ -1727,7 +1731,7 @@ mod tests {
             .with_preloaded_language_models()
             .build();
 
-        let language = detector.detect(text);
+        let language = detector.detect(text, 0.0);
         assert_eq!(language, expected_language);
     }
 
@@ -1759,7 +1763,7 @@ mod tests {
         detector_for_all_languages: LanguageDetector,
         invalid_str: &str,
     ) {
-        assert_eq!(detector_for_all_languages.detect(invalid_str), None);
+        assert_eq!(detector_for_all_languages.detect(invalid_str, 0.0), None);
     }
 
     #[rstest(text, expected_language, case("I know you әлем", Some(English)))]
@@ -1768,7 +1772,10 @@ mod tests {
         text: &str,
         expected_language: Option<ScriptLanguage>,
     ) {
-        assert_eq!(detector_for_all_languages.detect(text), expected_language);
+        assert_eq!(
+            detector_for_all_languages.detect(text, 0.0),
+            expected_language
+        );
     }
 
     #[rstest(text, languages,
@@ -1782,11 +1789,10 @@ mod tests {
         )
     )]
     fn assert_language_detection_is_deterministic(text: &str, languages: Vec<ScriptLanguage>) {
-        let detector =
-            LanguageDetector::from(languages.iter().cloned().collect(), 0.0, true, false);
+        let detector = LanguageDetector::from(languages.iter().cloned().collect(), true, false);
         let mut detected_languages = AHashSet::new();
         for _ in 0..100 {
-            let language = detector.detect(text);
+            let language = detector.detect(text, 0.0);
             detected_languages.insert(language.unwrap());
         }
         assert_eq!(
@@ -1799,12 +1805,12 @@ mod tests {
 
     #[rstest]
     fn test_low_accuracy_mode() {
-        let detector = LanguageDetector::from(ahashset!(English, German), 0.0, true, true);
+        let detector = LanguageDetector::from(ahashset!(English, German), true, true);
 
-        assert_ne!(detector.detect("bed"), None);
-        assert_ne!(detector.detect("be"), None);
-        assert_ne!(detector.detect("b"), None);
+        assert_ne!(detector.detect("bed", 0.0), None);
+        assert_ne!(detector.detect("be", 0.0), None);
+        assert_ne!(detector.detect("b", 0.0), None);
 
-        assert_eq!(detector.detect(""), None);
+        assert_eq!(detector.detect("", 0.0), None);
     }
 }

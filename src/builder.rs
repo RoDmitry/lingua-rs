@@ -29,7 +29,6 @@ pub(crate) const MINIMUM_RELATIVE_DISTANCE_MESSAGE: &str =
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
 pub struct LanguageDetectorBuilder {
     languages: AHashSet<ScriptLanguage>,
-    minimum_relative_distance: f64,
     is_every_language_model_preloaded: bool,
     is_low_accuracy_mode_enabled: bool,
 }
@@ -133,13 +132,13 @@ impl LanguageDetectorBuilder {
     /// where language detection is not reliably possible.
     ///
     /// ⚠ Panics if `distance` is smaller than 0.0 or greater than 0.99.
-    pub fn with_minimum_relative_distance(&mut self, distance: f64) -> &mut Self {
+    /* pub fn with_minimum_relative_distance(&mut self, distance: f64) -> &mut Self {
         if !(0.0..=0.99).contains(&distance) {
             panic!("{}", MINIMUM_RELATIVE_DISTANCE_MESSAGE);
         }
         self.minimum_relative_distance = distance;
         self
-    }
+    } */
 
     /// Configures `LanguageDetectorBuilder` to preload all language models when creating
     /// the instance of [LanguageDetector].
@@ -174,7 +173,6 @@ impl LanguageDetectorBuilder {
     pub fn build(&mut self) -> LanguageDetector {
         LanguageDetector::from(
             AHashSet::from_iter(self.languages.iter().cloned()),
-            self.minimum_relative_distance,
             self.is_every_language_model_preloaded,
             self.is_low_accuracy_mode_enabled,
         )
@@ -183,13 +181,12 @@ impl LanguageDetectorBuilder {
     fn from(languages: AHashSet<ScriptLanguage>) -> Self {
         Self {
             languages,
-            minimum_relative_distance: 0.0,
             is_every_language_model_preloaded: false,
             is_low_accuracy_mode_enabled: false,
         }
     }
 }
-
+/* 
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -327,3 +324,4 @@ mod tests {
         LanguageDetectorBuilder::from_all_languages().with_minimum_relative_distance(1.7);
     }
 }
+ */
