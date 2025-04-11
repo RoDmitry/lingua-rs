@@ -1,6 +1,6 @@
 use ::std::collections::HashSet;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use lingua::{LanguageDetector, LanguageDetectorConfig, ScriptLanguage};
+use lingua::{LanguageDetector, LanguageDetectorConfig, ModelsStorage, ScriptLanguage};
 
 // This is the common subset of languages that is supported by all
 // language detection libraries in this benchmark.
@@ -45,24 +45,28 @@ const SENTENCES: &[&str] = &[
 fn benchmark_detector(c: &mut Criterion) {
     let mut group_all_preloaded = c.benchmark_group("Detector all languages preloaded");
 
-    let detector = LanguageDetector::new();
+    let models_storage = ModelsStorage::default();
     let config_high_accuracy_all_languages = LanguageDetectorConfig::new_all_languages();
-    config_high_accuracy_all_languages.preload_languages_models(&detector);
+    let detector_high_accuracy_all_languages =
+        LanguageDetector::new(config_high_accuracy_all_languages, &models_storage);
+    detector_high_accuracy_all_languages.preload_models();
 
     group_all_preloaded.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(detector.detect_best(sentence, &config_high_accuracy_all_languages, 0.0));
+                black_box(detector_high_accuracy_all_languages.detect_best(sentence, 0.0));
             });
         });
     });
 
     let config_low_accuracy_all_languages =
         LanguageDetectorConfig::new_all_languages().low_accuracy();
+    let detector_low_accuracy_all_languages =
+        LanguageDetector::new(config_low_accuracy_all_languages, &models_storage);
     group_all_preloaded.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(detector.detect_best(sentence, &config_low_accuracy_all_languages, 0.0));
+                black_box(detector_low_accuracy_all_languages.detect_best(sentence, 0.0));
             });
         });
     });
@@ -93,27 +97,29 @@ fn benchmark_detector(c: &mut Criterion) {
             .copied()
             .collect::<HashSet<_, ahash::RandomState>>(),
     );
+    let detector_high_accuracy_common_languages =
+        LanguageDetector::new(config_high_accuracy_common_languages, &models_storage);
     group_common_preloaded.bench_function("high accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(detector.detect_best(
-                    sentence,
-                    &config_high_accuracy_common_languages,
-                    0.0,
-                ));
+                black_box(detector_high_accuracy_common_languages.detect_best(sentence, 0.0));
             });
         });
     });
 
-    let config_low_accuracy_common_languages = config_high_accuracy_common_languages.low_accuracy();
+    let config_low_accuracy_common_languages = LanguageDetectorConfig::with_languages(
+        COMMON_LANGUAGES
+            .iter()
+            .copied()
+            .collect::<HashSet<_, ahash::RandomState>>(),
+    )
+    .low_accuracy();
+    let detector_low_accuracy_common_languages =
+        LanguageDetector::new(config_low_accuracy_common_languages, &models_storage);
     group_common_preloaded.bench_function("low accuracy", |bencher| {
         bencher.iter(|| {
             SENTENCES.iter().for_each(|sentence| {
-                black_box(detector.detect_best(
-                    sentence,
-                    &config_low_accuracy_common_languages,
-                    0.0,
-                ));
+                black_box(detector_low_accuracy_common_languages.detect_best(sentence, 0.0));
             });
         });
     });
@@ -144,9 +150,11 @@ fn benchmark_preload_all_languages(c: &mut Criterion) {
     group.sample_size(10);
     group.bench_function("all languages", |bencher| {
         bencher.iter(|| {
-            let detector = LanguageDetector::new();
+            let models_storage = ModelsStorage::default();
             let config_high_accuracy_all_languages = LanguageDetectorConfig::new_all_languages();
-            config_high_accuracy_all_languages.preload_languages_models(&detector);
+            let detector =
+                LanguageDetector::new(config_high_accuracy_all_languages, &models_storage);
+            detector.preload_models();
         })
     });
 }

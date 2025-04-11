@@ -437,7 +437,7 @@ mod result;
 mod writer;
 
 // pub use builder::LanguageDetectorBuilder;
-pub use detector::{LanguageDetector, LanguageDetectorConfig};
+pub use detector::{LanguageDetector, LanguageDetectorConfig, ModelsStorage};
 pub use result::DetectionResult;
 #[cfg(target_family = "wasm")]
 pub use wasm::{
