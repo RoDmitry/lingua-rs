@@ -88,7 +88,7 @@ pub(crate) fn parse_model(
     res
 }
 
-pub(crate) const MODELS_DIRECTORY: Dir = include_dir!("$CARGO_MANIFEST_DIR/lang_models");
+pub(crate) const MODELS_DIRECTORY: Dir = include_dir!("$CARGO_MANIFEST_DIR/../language_models/models");
 
 pub(crate) fn load_model(
     language: ScriptLanguage,

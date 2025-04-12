@@ -426,13 +426,11 @@ macro_rules! ahashset {
 
 pub use alphabet_detector::*;
 
-// mod builder;
 mod constant;
 mod detector;
 mod fraction;
 mod json;
 mod model;
-// mod ngram;
 mod result;
 mod writer;
 
