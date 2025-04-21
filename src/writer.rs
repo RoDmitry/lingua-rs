@@ -79,7 +79,7 @@ impl LanguageModelFilesWriter {
             .filter(|(_, wd)| !wd.alphabets_count.contains_key(language))
             .collect();
         println!("wrong_words {}", wrong_words.len()); */
-        let is_han = ScriptLanguage::all_with_script(Script::Han).contains(&language);
+        let is_han = UcdScript::from(language) == UcdScript::Han;
         let mut word_chars: Vec<Vec<char>> = words
             // .inspect(|wld| println!("{:?}", wld))
             // filter
